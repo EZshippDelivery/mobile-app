@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "53315141549",
+    "project_id": "ezshipp-mapsapi-283606",
+    "storage_bucket": "ezshipp-mapsapi-283606.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53315141549:android:d6f1893c3700d05902ab24",
+        "android_client_info": {
+          "package_name": "com.delivery.ezshipp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "53315141549-rv2hlt6lg3rdtfd08hsl03oia40lavd3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuvs8lj4MQgGWE26w3twaifCgxk_Vk8Yw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "53315141549-rv2hlt6lg3rdtfd08hsl03oia40lavd3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
