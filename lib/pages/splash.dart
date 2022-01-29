@@ -1,17 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:device_info/device_info.dart';
+import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/pages/customer_homepage.dart';
+import 'package:ezshipp/utils/routes.dart';
+import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:ezshipp/utils/routes.dart';
-import 'package:ezshipp/utils/themes.dart';
+import 'package:provider/provider.dart';
 
 import 'homepage.dart';
 
@@ -24,24 +25,29 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController animcontroller;
-  late Animation _anim;
+  late Animation<double> _anim;
   FirebaseMessaging fcm = FirebaseMessaging.instance;
+  late UpdateLoginProvider updateLoginProvider;
   List types = ["Delivery Person", "Customer"];
-
   settimer() async {
-    var pref = await SharedPreferences.getInstance();
-    pref.setInt("color_index", Random().nextInt(Colors.primaries.length));
-    pref.setString("username1", "9652638197");
-    pref.setString("password1", "Pradeep@2765");
-    pref.setString("usertype1", "driver");
-    pref.setString("username2", "8885858583");
-    pref.setString("password2", "Hitesh&6999");
-    pref.setString("usertype2", "customer");
-    bool islogin = pref.getBool("islogin") ?? false;
+    await Variables.pref.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString());
+    await Variables.pref.write(key: "username1", value: "9652638197");
+    await Variables.pref.write(key: "password1", value: "Pradeep@2765");
+    await Variables.pref.write(key: "usertype1", value: "driver");
+    await Variables.pref.write(key: "username2", value: "8885858583");
+    await Variables.pref.write(key: "password2", value: "Hitesh&6999");
+    await Variables.pref.write(key: "usertype2", value: "customer");
+    final login = await Variables.pref.read(key: "islogin");
+    bool islogin = login != null ? login.toLowerCase() == "true" : false;
     String userType = "";
     if (islogin) {
-      List type = pref.getStringList("usertype") ?? ["driver"];
-      userType = type.isNotEmpty ? type[pref.getInt("type-index") ?? 0] : "driver";
+      final username = await Variables.pref.read(key: "username");
+      final password = await Variables.pref.read(key: "password");
+      updateLoginProvider.login(jsonEncode({"password": password, "username": username}));
+      final list = await Variables.pref.read(key: "usertype");
+      List type = List.from(list == null ? ["driver"] : jsonDecode(list));
+      final index = await Variables.pref.read(key: "type-index");
+      userType = type.isNotEmpty ? type[index == null ? 0 : int.parse(index)] : "driver";
     }
     Timer(
         const Duration(seconds: 3),
@@ -57,10 +63,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   initState() {
     super.initState();
+    updateLoginProvider = Provider.of<UpdateLoginProvider>(context, listen: false);
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _anim = Tween(begin: 0.0, end: 1.0).animate(animcontroller);
     CurvedAnimation(curve: Curves.fastOutSlowIn, parent: animcontroller);
-    animcontroller.addListener(() => setState(() {}));
     animcontroller.forward();
     initPlatformState();
     setlogin();
@@ -83,9 +89,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     if (!mounted) return;
 
-    setState(() {
-      Variables.deviceInfo = deviceData!;
-    });
+    Variables.deviceInfo = deviceData;
   }
 
   Future<Map<String, String>> _readAndroidBuildData(AndroidDeviceInfo build) async {
@@ -128,14 +132,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 top: (constraints.maxHeight - 60.0) * (0.15),
                 left: (constraints.maxWidth - 200) * 0.5,
                 height: 60,
-                child: Opacity(opacity: _anim.value, child: Image.asset("assets/images/Logo-Light.png"))),
+                child: FadeTransition(opacity: _anim, child: Image.asset("assets/images/Logo-Light.png"))),
           ]),
         ));
   }
 
   Future<void> setlogin() async {
-    var pref = await SharedPreferences.getInstance();
-    pref.setBool("islogin", false);
+    await Variables.pref.write(key: "islogin", value: false.toString());
   }
 
   @override

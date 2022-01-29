@@ -17,7 +17,7 @@ class CustomerInvitePage extends StatelessWidget {
       appBar: Variables.app(),
       body: Column(
         children: [
-          dividerName("SHARE eZShipp"),
+          Variables.dividerName("SHARE eZShipp"),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
               child: Text(
@@ -39,7 +39,7 @@ class CustomerInvitePage extends StatelessWidget {
             padding: const EdgeInsets.all(20.0),
             child: Image.asset("assets/images/Logo.png", height: 38),
           ),
-          dividerName("SHARE YOUR CODE"),
+          Variables.dividerName("SHARE YOUR CODE"),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -71,29 +71,5 @@ class CustomerInvitePage extends StatelessWidget {
       Variables.showtoast("Unable to locate $e");
     }
     return IconButton(onPressed: () {}, icon: const Icon(Icons.ac_unit));
-  }
-
-  Padding dividerName(String name) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-      child: Row(children: [
-        const Expanded(
-            child: Divider(
-          indent: 10,
-          endIndent: 10,
-          thickness: 2,
-        )),
-        Text(
-          name,
-          style: Variables.font(fontSize: 15, color: Colors.grey),
-        ),
-        const Expanded(
-            child: Divider(
-          indent: 10,
-          endIndent: 10,
-          thickness: 2,
-        )),
-      ]),
-    );
   }
 }

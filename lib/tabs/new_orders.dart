@@ -24,7 +24,7 @@ class _NewOrdersState extends State<NewOrders> {
           if (reference.newOrderList.isEmpty) {
             return Center(
               child: Text(
-                "Orders list is not updated",
+                "No New Orders",
                 style: Variables.font(fontSize: 18),
               ),
             );
@@ -58,7 +58,7 @@ class _NewOrdersState extends State<NewOrders> {
                                     ),
                                     ElevatedButton(
                                         onPressed: () {
-                                          setState(() => reference.newOrderList.removeAt(index));
+                                          reference.newOrderList.removeAt(index);
                                           Navigator.of(context).pop(true);
                                         },
                                         child: Padding(
@@ -119,7 +119,7 @@ class _NewOrdersState extends State<NewOrders> {
                       )),
                   onDismissed: (direction) async {
                     if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
-                      setState(() => reference.newOrderList.removeAt(index));
+                      reference.newOrderList.removeAt(index);
                     }
                     if (direction == DismissDirection.startToEnd) {
                       Timer? timer = Timer.periodic(

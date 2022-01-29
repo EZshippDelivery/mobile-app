@@ -24,15 +24,13 @@ class _ZonedPageState extends State<ZonedPage> {
                   separatorBuilder: (context, index) => const Divider(),
                   itemBuilder: (context, index) => ListTile(
                         onTap: () {
-                          setState(() {
-                            if (temp == -1) {
-                              temp = index;
-                            } else {
-                              Variables.centers[temp][2] = false;
-                              temp = index;
-                            }
-                            Variables.centers[temp][2] = true;
-                          });
+                          if (temp == -1) {
+                            temp = index;
+                          } else {
+                            Variables.centers[temp][2] = false;
+                            temp = index;
+                          }
+                          Variables.centers[temp][2] = true;
                         },
                         title: Text(Variables.centers[index][0], style: Variables.font(fontSize: 16)),
                         subtitle: Text(Variables.centers[index][1],

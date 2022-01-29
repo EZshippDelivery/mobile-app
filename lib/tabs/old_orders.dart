@@ -1,4 +1,6 @@
 import 'package:ezshipp/Provider/update_order_povider.dart';
+import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/order_detailspage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/customer_drawer.dart';
@@ -15,18 +17,19 @@ class OldOrders extends StatefulWidget {
 class _OldOrdersState extends State<OldOrders> {
   ScrollController scrollController = ScrollController();
   late UpdateOrderProvider updateOrderProvider;
-  int pageNumber = 1;
+  late UpdateScreenProvider updateScreenProvider;
 
   @override
   void initState() {
     super.initState();
     updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
+    updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
     updateOrderProvider.getRecentOrders();
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!updateOrderProvider.islastpageloaded1) {
-          pageNumber += 1;
-          updateOrderProvider.accepted(pageNumber, true);
+          updateScreenProvider.pageNumber += 1;
+          updateOrderProvider.accepted(updateScreenProvider.pageNumber, true);
         }
       }
     });
@@ -49,7 +52,7 @@ class _OldOrdersState extends State<OldOrders> {
                           child: Text("Recent", style: Variables.font(fontSize: 15))),
                       PopupMenuItem(
                           onTap: () {
-                            updateOrderProvider.accepted(pageNumber, true);
+                            updateOrderProvider.accepted(updateScreenProvider.pageNumber, true);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("All", style: Variables.font(fontSize: 15)))
@@ -57,7 +60,7 @@ class _OldOrdersState extends State<OldOrders> {
                 child: const Icon(Icons.filter_list_rounded)),
           )
         ]),
-        body: Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
+        body: Consumer2<UpdateOrderProvider,UpdateScreenProvider>(builder: (context, reference,reference1, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
               return ListView.builder(
@@ -66,6 +69,7 @@ class _OldOrdersState extends State<OldOrders> {
                 itemBuilder: (context, index) => Card(
                     child: ListTile(
                   contentPadding: const EdgeInsets.all(3),
+                  onTap: () => Variables.push(context, OrderDetailsPage(reference.customerOrders[index])),
                   title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Variables.text(
                         head: "Booking ID: ",
@@ -101,7 +105,6 @@ class _OldOrdersState extends State<OldOrders> {
 
   @override
   void dispose() {
-    updateOrderProvider.dispose();
     scrollController.dispose();
     super.dispose();
   }

@@ -1,16 +1,14 @@
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/update_order_povider.dart';
-import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:signature/signature.dart';
 
-import 'homepage.dart';
-
 // ignore: must_be_immutable
 class DeliveredPage extends StatefulWidget {
+  static bool addsignature = false;
   NewOrderList reference;
   int? index;
   bool isdetails;
@@ -21,7 +19,7 @@ class DeliveredPage extends StatefulWidget {
 }
 
 class _DeliveredPageState extends State<DeliveredPage> {
-  bool addsignature = false;
+  
   SignatureController signatureController = SignatureController(penColor: Palette.deepgrey);
   @override
   Widget build(BuildContext context) {
@@ -50,10 +48,11 @@ class _DeliveredPageState extends State<DeliveredPage> {
             ),
             const SizedBox(height: 5),
             Variables.text(
-                head: "Order Date: ", value: Variables.datetime(widget.reference.orderCreatedTime), padding: 5),
-            Variables.text(head: "Delivery distance: ", value: "${widget.reference.pickToDropDistance} km", padding: 5),
+                head: "Order Date: ", value: Variables.datetime(widget.reference.orderCreatedTime), vpadding: 5),
             Variables.text(
-                head: "Delivery duration: ", value: "${widget.reference.pickToDropDuration} min", padding: 5),
+                head: "Delivery distance: ", value: "${widget.reference.pickToDropDistance} km", vpadding: 5),
+            Variables.text(
+                head: "Delivery duration: ", value: "${widget.reference.pickToDropDuration} min", vpadding: 5),
             if (widget.isdetails == false)
               Row(
                 children: [
@@ -268,7 +267,7 @@ class _DeliveredPageState extends State<DeliveredPage> {
                                     )) ??
                             "";
 
-                        setState(() => addsignature = value.isNotEmpty);
+                         DeliveredPage.addsignature = value.isNotEmpty;
                       },
                       child: Text("Add Signature", style: Variables.font(color: null, fontSize: 16)))
                 ]),
@@ -280,7 +279,7 @@ class _DeliveredPageState extends State<DeliveredPage> {
                   child: FloatingActionButton.extended(
                     elevation: 4,
                     onPressed: () {
-                      if (addsignature == false) {
+                      if (DeliveredPage.addsignature == false) {
                         Variables.showtoast("Add a Signature");
                       } else {
                         Variables.updateOrder(

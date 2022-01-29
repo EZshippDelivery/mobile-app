@@ -4,27 +4,34 @@ import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
 import 'package:ezshipp/APIs/new_orderlist.dart';
+import 'package:ezshipp/APIs/places/place_address.dart';
 import 'package:ezshipp/APIs/places/place_details.dart';
+import 'package:ezshipp/utils/http_requests.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../APIs/get_top_addresses.dart';
 import '../APIs/places/place_search.dart';
 import '../utils/variables.dart';
 
 class MapsProvider extends ChangeNotifier {
   List<LatLng> info = [];
-  List<PlaceSearch> placesList = [];
-  BitmapDescriptor? originMarker, destinationMarker;
-  Marker? pickmark, dropmark;
+  List placesList = [];
+  List<GetAllAddresses> savedAddress = [];
+  BitmapDescriptor? originMarker, destinationMarker, driverMarker;
+  Marker? pickmark, dropmark, driver;
   List focus = [true, true];
   double latitude = 0, longitude = 0;
   late PlaceDetails placesDetails;
-  bool isorigin = false, placeAdress = false, currentLocation = false, isOnline = false;
-  List boundsMap = [], directioDetails = [], savedAddress = [];
-  Timer? timer;
+  late PlaceAddress placeAddress;
+  bool isorigin = false, currentLocation = false, isOnline = false;
+  List boundsMap = [], directioDetails = [];
+  Timer? timer, timer1;
+
+  bool fileExists = false;
 
   MapsProvider() {
     getMarkers();
@@ -56,6 +63,8 @@ class MapsProvider extends ChangeNotifier {
               infoWindow: InfoWindow(title: "Delivery Address", snippet: reference.dropAddress));
         }
         info = PolylinePoints().decodePolyline(encodedString).map((e) => LatLng(e.latitude, e.longitude)).toList();
+        Variables.showtoast("Status updated");
+
         break;
       case 400:
         Variables.showtoast(response.data.toString());
@@ -71,14 +80,16 @@ class MapsProvider extends ChangeNotifier {
     }
   }
 
-  dynamic returnResponse(dio.Response response, bool isdetails) {
+  dynamic returnResponse(dio.Response response, int details) {
     switch (response.statusCode) {
       case 200:
-        if (!isdetails) {
+        if (details == 0) {
           placesList = List.generate(response.data['predictions']!.length,
               (index) => PlaceSearch.fromMap(response.data['predictions'][index]));
-        } else {
+        } else if (details == 1) {
           placesDetails = PlaceDetails.fromMap(response.data);
+        } else {
+          placeAddress = PlaceAddress.fromMap(response.data);
         }
         break;
       case 400:
@@ -126,6 +137,8 @@ class MapsProvider extends ChangeNotifier {
         const ImageConfiguration(size: Size(10, 10)), "assets/icon/pickmarker.png");
     destinationMarker = await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(10, 10)), "assets/icon/dropmarker.png");
+    driverMarker =
+        await BitmapDescriptor.fromAssetImage(const ImageConfiguration(size: Size(10, 10)), "assets/icon/ic_rider.png");
   }
 
   getAutoComplete(String value) async {
@@ -138,10 +151,10 @@ class MapsProvider extends ChangeNotifier {
           "types": "geocode|establishment",
           "input": value,
           "location": "17.387140,78.491684",
-          "key": "AIzaSyCuvs8lj4MQgGWE26w3twaifCgxk_Vk8Yw",
+          "key": Variables.key,
           "components": "country:in"
         });
-        returnResponse(response, false);
+        returnResponse(response, 0);
       } else {
         placesList.clear();
       }
@@ -159,7 +172,7 @@ class MapsProvider extends ChangeNotifier {
           "place_id": value,
           "key": Variables.key,
         });
-        returnResponse(response, true);
+        returnResponse(response, 1);
       } else {
         placesList.clear();
       }
@@ -169,9 +182,8 @@ class MapsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  clear({bool? value, bool complete = false}) {
+  clear({bool? value}) {
     isorigin = value ?? isorigin;
-    placeAdress = complete;
     placesList.clear();
     notifyListeners();
   }
@@ -216,33 +228,125 @@ class MapsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void filter(String value) {
-    savedAddress = savedAddress.where((element) => element.address1.startsWith(value)).toList();
+  getTopAddresses(customerId) async {
+    try {
+      final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
+      var responseJson = Variables.returnResponse(response);
+      if (responseJson != null) {
+        savedAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
+        savedAddress.sort((a, b) => a.addressType.compareTo(b.addressType));
+      }
+    } on SocketException {
+      Variables.showtoast('No Internet connection');
+    }
+    await setCurrentLocation(customerId);
     notifyListeners();
   }
 
   online(bool value, int bikerId, {bool fromhomepage = false}) async {
+    Directory dir;
+    dir = (await getExternalStorageDirectory())!;
+    File file = File("${dir.path}/location.json");
+    fileExists = file.existsSync();
     if (value) {
       timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
         await getCurrentlocations();
-        final response = await put(Variables.uri(path: "/biker/onoff/$bikerId"),
-            body: jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}),
-            headers: Variables.headers);
+        final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
+            jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
+        writeToJsonFile(dir, file, {
+          "timestamp:": DateTime.now().toIso8601String(),
+          "driverId": bikerId,
+          "latitude": latitude,
+          "longitude": longitude,
+          "onlineMode": value
+        });
         Variables.returnResponse(response, onlinemode: true);
       });
       Variables.showtoast("You are in online mode ");
     } else {
       if (timer != null) timer!.cancel();
       await getCurrentlocations();
-      final response = await put(Variables.uri(path: "/biker/onoff/$bikerId"),
-          body: jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}),
-          headers: Variables.headers);
+      final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
+          jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
       Variables.returnResponse(response, onlinemode: true);
       Variables.showtoast("You are in offline mode ");
     }
-    final pref = await SharedPreferences.getInstance();
-    pref.setBool("isOnline", value);
+
+    await Variables.pref.write(key: "isOnline", value: value.toString());
     isOnline = value;
     if (!fromhomepage) notifyListeners();
+  }
+
+  Future<void> setCurrentLocation(customerId) async {
+    try {
+      await getCurrentlocations();
+      final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
+        "latlng": "$latitude,$longitude",
+        "key": Variables.key,
+      });
+      returnResponse(response, 2);
+      placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
+          i.addressComponents.first.types.contains("premise")));
+      placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
+      String state = placeAddress.results.first.addressComponents
+          .where((element) => element.types.contains("administrative_area_level_1"))
+          .first
+          .longName;
+      String city = placeAddress.results.first.addressComponents
+          .where((element) => element.types.contains("administrative_area_level_2"))
+          .first
+          .longName;
+
+      Map<String, dynamic> currentLocation = {
+        "customerId": customerId,
+        "address1": placeAddress.results.first.formattedAddress,
+        "pincode": int.parse(placeAddress.results.first.addressComponents.last.longName),
+        "state": state,
+        "addressType": "CURRENT",
+        "longitude": longitude,
+        "latitude": latitude,
+        "city": city,
+      };
+      savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
+    } on SocketException {
+      Variables.showtoast('No Internet connection');
+    }
+    notifyListeners();
+  }
+
+  refreshCurrentLocation() {
+    getCurrentlocations().then((value) {
+      savedAddress[0].latitude = latitude;
+      savedAddress[0].longitude = longitude;
+    });
+    notifyListeners();
+  }
+
+  void writeToJsonFile(Directory dir, File file, Map<String, Object> map) {
+    if (fileExists) {
+      List fileContent = jsonDecode(file.readAsStringSync());
+      fileContent.add(map);
+      file.writeAsStringSync(jsonEncode(fileContent));
+    } else {
+      file.createSync();
+      fileExists = true;
+      file.writeAsStringSync(jsonEncode([map]));
+    }
+  }
+
+  livebikerTracking(int driverId, int orderId) {
+    timer1 = Timer.periodic(const Duration(seconds: 5), (time) async {
+      final response = await HTTPRequest.getRequest(
+          Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
+      Map<String, dynamic>? map = Variables.returnResponse(response);
+      if (map != null) {
+        driver = Marker(
+            markerId: const MarkerId("origin"),
+            icon: driverMarker!,
+            position: LatLng(map["lastLatitude"], map["lastLongitude"]),
+            infoWindow: const InfoWindow(title: "Driver Location"));
+      }
+      notifyListeners();
+    });
   }
 }

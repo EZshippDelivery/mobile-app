@@ -21,126 +21,157 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Palette.deepgrey,
+        elevation: 0,
         title: Text(
           "Profile",
           style: Variables.font(fontSize: 17, color: Colors.white),
         ),
-        actions: [
-          IconButton(
-              onPressed: () => Variables.push(context, const EditProfilePage()),
-              icon: const Icon(Icons.edit_outlined))
-        ],
       ),
-      extendBodyBehindAppBar: true,
       body: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {
-        return SingleChildScrollView(
-          child: Column(
+        return Column(children: [
+          ClipPath(
+              clipper: Clipper(cut: 30),
+              child: Container(
+                  color: Palette.kOrange,
+                  height: size.height / 3.1,
+                  margin: const EdgeInsets.only(bottom: 3),
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: ClipPath(
+                      clipper: Clipper(cut: 40),
+                      child: Container(
+                          color: Colors.amber[800],
+                          margin: const EdgeInsets.only(bottom: 5),
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: ClipPath(
+                              clipper: Clipper(cut: 55, curve: 16),
+                              child: Container(
+                                  color: Palette.deepgrey,
+                                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                    const SizedBox(height: 15),
+                                    Hero(
+                                        tag: "Driver Profile",
+                                        child: reference.getProfileImage(size: size.width / 3.5, isNotEqual: true)),
+                                    Padding(
+                                      padding: const EdgeInsets.all(3),
+                                      child: Text(reference.fullName,
+                                          style: Variables.font(color: Colors.grey[300], fontSize: 16)),
+                                    ),
+                                    Text(reference.profile.email, style: Variables.font(color: Colors.grey)),
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text("+91 " + reference.profile.phone.toString(),
+                                          style: Variables.font(color: Colors.grey)),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(),
+                                  ]))))))),
+          Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              elevation: 3,
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                    profileOrders("Total Orders", reference.profile.totalOrdersDelivered.toString()),
+                    profileOrders(
+                        "Last Bill",
+                        reference.profile.lastOrderAmount == 0
+                            ? "0"
+                            : "₹ " + reference.profile.lastOrderAmount.toString()),
+                    profileOrders("Today Earnings",
+                        reference.profile.todayEarnings == 0 ? "0" : "₹ " + reference.profile.todayEarnings.toString()),
+                  ]))),
+          const SizedBox(height: 15),
+          Variables.text1(
+              head: "Aadhar Number",
+              value: reference.profile.aadhaarNumber.toString(),
+              hpadding: 30,
+              vpadding: 4,
+              headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
+              valueStyle: Variables.font(fontSize: 16)),
+          Variables.text1(
+              head: "License Number",
+              value: reference.profile.licenseNumber.toString(),
+              hpadding: 30,
+              vpadding: 4,
+              headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
+              valueStyle: Variables.font(fontSize: 16)),
+          Variables.text1(
+              head: "Vehicle Number",
+              value: reference.profile.numberPlate.toString(),
+              hpadding: 30,
+              vpadding: 4,
+              headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
+              valueStyle: Variables.font(fontSize: 16)),
+          const Spacer(),
+          Stack(
             children: [
-              Container(
-                  color: Palette.deepgrey,
-                  height: size.height * 0.6,
-                  width: size.width,
-                  child: Column(children: [
-                    SizedBox(height: size.height * 0.2),
-                    reference.getProfileImage(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(reference.fullName, style: Variables.font(color: Colors.white, fontSize: 27)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Text(reference.profile.email,
-                          style: Variables.font(color: Colors.grey.shade500, fontSize: 15)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Text("+91 " + reference.profile.phone.toString(),
-                          style: Variables.font(color: Colors.grey.shade500, fontSize: 15)),
-                    )
-                  ])),
-              Padding(
-                padding: const EdgeInsets.all(13.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Text("Total Orders", style: Variables.font(fontSize: 15, color: Colors.grey[600])),
-                        const SizedBox(height: 5),
-                        Text(
-                          reference.profile.totalOrdersDelivered.toString(),
-                          style: Variables.font(fontSize: 25),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text("Last Bill", style: Variables.font(fontSize: 15, color: Colors.grey[600])),
-                        const SizedBox(height: 5),
-                        Text(
-                          reference.profile.lastOrderAmount == 0
-                              ? "0"
-                              : "₹ " + reference.profile.lastOrderAmount.toString(),
-                          style: Variables.font(fontSize: 25),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text("Today Earnings", style: Variables.font(fontSize: 15, color: Colors.grey[600])),
-                        const SizedBox(height: 5),
-                        Text(
-                          reference.profile.todayEarnings == 0
-                              ? "0"
-                              : "₹ " + reference.profile.todayEarnings.toString(),
-                          style: Variables.font(fontSize: 25),
-                        )
-                      ],
-                    )
-                  ],
-                ),
+              Column(
+                children: [
+                  const SizedBox(height: (48 / 2) - 3),
+                  RotatedBox(
+                      quarterTurns: 2,
+                      child: ClipPath(
+                          clipper: Clipper(cut: 30, curve: 10),
+                          child: Container(
+                            color: Palette.kOrange,
+                            height: size.height * 0.1,
+                          ))),
+                ],
               ),
-              const Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Aadhar Number", style: Variables.font(fontSize: 15)),
-                    Text(reference.profile.aadhaarNumber.toString(),
-                        style: Variables.font(fontSize: 15, color: Colors.grey[600]))
-                  ],
-                ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: FloatingActionButton.extended(
+                    onPressed: () => Variables.push(context, const EditProfilePage()),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(
+                      "Edit",
+                      style: Variables.font(color: null),
+                    )),
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("License Number", style: Variables.font(fontSize: 15)),
-                    Text(reference.profile.licenseNumber.toString(),
-                        style: Variables.font(fontSize: 15, color: Colors.grey[600]))
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Vehicle Number", style: Variables.font(fontSize: 15)),
-                    Text(reference.profile.numberPlate.toString(),
-                        style: Variables.font(fontSize: 15, color: Colors.grey[600]))
-                  ],
-                ),
-              )
             ],
           ),
-        );
+        ]);
       }),
     );
   }
 
-  
+  Column profileOrders(String head, String value) {
+    return Column(
+      children: [
+        Text(head, style: Variables.font(fontSize: 15, color: Colors.grey[600])),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          style: Variables.font(fontSize: 25),
+        )
+      ],
+    );
+  }
+}
+
+class Clipper extends CustomClipper<Path> {
+  int _cut = 0;
+  int _curve = 0;
+  Clipper({required int cut, int curve = 0}) {
+    _cut = cut;
+    _curve = curve;
+  }
+
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - _cut);
+    var controlpoint = Offset(size.width / 2, size.height + 10 + _curve);
+    var endpoint = Offset(size.width, size.height - _cut);
+    path.quadraticBezierTo(controlpoint.dx, controlpoint.dy, endpoint.dx, endpoint.dy);
+    path.lineTo(size.width, 0);
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    return true;
+  }
 }

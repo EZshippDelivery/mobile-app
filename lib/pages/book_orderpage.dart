@@ -1,247 +1,369 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/pages/confirm_addresspage.dart';
+import 'package:contacts_service/contacts_service.dart';
+import 'package:ezshipp/Provider/get_addresses_provider.dart';
+import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/confirm_orderpage.dart';
+import 'package:ezshipp/pages/set_locationpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class BookOrderPage extends StatefulWidget {
+  static List<int?> selectedradio = [1, 1, 2];
   const BookOrderPage({Key? key}) : super(key: key);
 
   @override
   _BookOrderPageState createState() => _BookOrderPageState();
 }
 
-class _BookOrderPageState extends State<BookOrderPage> {
-  double slider = 0;
-  late MapsProvider mapsProvider;
-  TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
-  late GoogleMapController mapController;
-  LatLng? screenCoordinates;
+class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMixin {
+  List<Contact> contacts = [];
+  TextEditingController senderName = TextEditingController(),
+      senderPhone = TextEditingController(),
+      receiverName = TextEditingController(),
+      receiverPhone = TextEditingController();
+  late void Function(AnimationStatus) _statusListener;
+  late AnimationController _animationController;
+  late SuggestionsBoxController _suggestionsBoxController;
+  late GetAddressesProvider getAddressesProvider;
+  GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  ValueNotifier<int> cod = ValueNotifier<int>(0);
 
+  String imageURL = "";
   @override
   void initState() {
     super.initState();
-    mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    mapsProvider.getCurrentlocations();
+    getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    _animationController = AnimationController(vsync: this);
+    _suggestionsBoxController = SuggestionsBoxController();
+    _statusListener = (AnimationStatus status) {
+      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        _suggestionsBoxController.resize();
+      }
+    };
+    _animationController.addStatusListener(_statusListener);
+    getAllContacts();
+  }
+
+  getAllContacts() async {
+    if (await Permission.contacts.request().isGranted) {
+      List<Contact> _contacts = await ContactsService.getContacts(withThumbnails: true);
+      setState(() {
+        contacts = _contacts;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final devicePixelRatio = Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
-    return Consumer<MapsProvider>(builder: (context, reference, child) {
-      return Scaffold(
-          appBar: Variables.app(),
-          body: Stack(
-            children: [
-              reference.latitude > 0 && reference.longitude > 0
-                  ? GoogleMap(
-                      markers: {
-                        if (reference.pickmark != null) reference.pickmark!,
-                        if (reference.dropmark != null) reference.dropmark!
-                      },
-                      onCameraIdle: () async {
-                        screenCoordinates = await mapController.getLatLng(ScreenCoordinate(
-                          x: (size.width * devicePixelRatio) ~/ 2.0,
-                          y: (size.height * devicePixelRatio) ~/ 2.0,
-                        ));
-                      },
-                      onMapCreated: ((controller) => mapController = controller),
-                      polylines: {
-                        if (reference.info.isNotEmpty)
-                          Polyline(
-                              endCap: Cap.roundCap,
-                              startCap: Cap.roundCap,
-                              polylineId: const PolylineId("direction"),
-                              points: reference.info,
-                              width: 3)
-                      },
-                      initialCameraPosition:
-                          CameraPosition(target: LatLng(reference.latitude, reference.longitude), zoom: 14),
-                      myLocationEnabled: true,
-                      zoomControlsEnabled: false,
-                    )
-                  : const Center(child: CircularProgressIndicator.adaptive()),
-              if (reference.isorigin && slider == 0)
-                Positioned(
-                  bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                      ? size.height * 0.1
-                      : (size.height - (size.height * 0.2)) / 2.0,
-                  left: (size.width - 30) / 2.0,
-                  child: Image.asset("assets/icon/pickmarker.png"),
-                  height: 45,
-                ),
-              if (reference.isorigin && slider == 1)
-                Positioned(
-                  bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                      ? size.height * 0.1
-                      : (size.height - (size.height * 0.2)) / 2.0,
-                  left: (size.width - 30) / 2.0,
-                  child: Image.asset("assets/icon/dropmarker.png"),
-                  height: 45,
-                ),
-              Column(
-                children: [
-                  Card(
-                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                    child: Row(children: [
-                      SizedBox(
-                        height: size.height * 0.17,
-                        child: RotatedBox(
-                          quarterTurns: 1,
-                          child: SliderTheme(
-                              data: SliderThemeData(
-                                  trackHeight: 1.0,
-                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-                                  disabledThumbColor: Palette.kOrange[50],
-                                  disabledActiveTrackColor: Palette.kOrange),
-                              child: Slider(value: slider, min: 0, max: 1, onChanged: null)),
+    return Scaffold(
+      appBar: Variables.app(),
+      body: contacts.isNotEmpty
+          ? SingleChildScrollView(
+              child: Consumer<GetAddressesProvider>(
+                  builder: (context, reference, child) => Form(
+                      key: formkey,
+                      child: Column(children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("SHIPMENT PACKAGE",
+                              style: Variables.font(color: Palette.kOrange, fontWeight: FontWeight.bold, fontSize: 19)),
                         ),
-                      ),
-                      Expanded(
-                          child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FocusScope(
-                              child: Focus(
-                                  onFocusChange: (value) => reference.setfocus(0, value),
-                                  child: textfields(0, "Pickup Location", pickup))),
-                          FocusScope(
-                              child: Focus(
-                                  onFocusChange: (value) => reference.setfocus(1, value),
-                                  child: textfields(1, "Delivery Location", delivery)))
-                        ],
-                      ))
-                    ]),
-                  ),
-                ],
-              ),
-              if ((reference.placesList.isNotEmpty && reference.focus[slider.toInt()]) ||
-                  reference.savedAddress.isNotEmpty)
-                Container(
-                  margin: EdgeInsets.only(top: slider == 0 ? 65 : 140),
-                  decoration: BoxDecoration(color: Colors.grey[200]),
-                  child: Column(
-                    children: [
-                      if (reference.savedAddress.isNotEmpty)
-                        ...ListTile.divideTiles(
-                            tiles: List.generate(
-                                reference.savedAddress.length, (index) => ListTile(leading: Icon(Icons.home_rounded)))),
-                      if (reference.placesList.isNotEmpty && reference.focus[slider.toInt()])
-                        Expanded(
-                          child: ListView.separated(
-                            itemCount: reference.placesList.length,
-                            separatorBuilder: (BuildContext context, int index) => const Divider(),
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                                leading: const Icon(Icons.location_on_outlined),
-                                title: Text(reference.placesList[index].description, style: Variables.font()),
-                                onTap: () {
-                                  if (slider == 0) {
-                                    pickup.text = reference.placesList[index].description;
-                                    reference.getPlaceDetails(reference.placesList[index].place_id).then((value) {
-                                      var location = reference.placesDetails.result.geometry.location;
-                                      screenCoordinates = LatLng(location.lat, location.lng);
-                                      mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                          CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                    });
-                                  } else {
-                                    delivery.text = reference.placesList[index].description;
-                                    reference.getPlaceDetails(reference.placesList[index].place_id).then((value) {
-                                      var location = reference.placesDetails.result.geometry.location;
-                                      screenCoordinates = LatLng(location.lat, location.lng);
-                                      mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                          CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                    });
-                                  }
-                                  reference.clear(value: true);
-                                  reference.setfocus(slider.toInt(), false);
-                                },
-                              );
-                            },
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  "Sender Details",
+                                  style: Variables.font(fontSize: 18),
+                                ),
+                              ),
+                              text("Sender Name", senderName, senderPhone, keyboardtype: TextInputType.name),
+                              text("Sender Phone", senderPhone, senderName, keyboardtype: TextInputType.phone),
+                              textboxes("Sender Address", SetLocationPage.pickup, isaddress: true)
+                            ]),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: reference.isorigin
-              ? FloatingActionButton.extended(
-                  onPressed: () {
-                    if (slider == 0) {
-                      reference.setMarkers(mapController, pickup: screenCoordinates);
-                      reference.clear(value: false);
-                    } else {
-                      reference.setMarkers(mapController, delivery: screenCoordinates);
-                      reference.clear(value: false, complete: true);
-                    }
-                  },
-                  label: Text(
-                    "Cofirm Location",
-                    style: Variables.font(color: null, fontSize: 15),
-                  ))
-              : reference.placeAdress
-                  ? FloatingActionButton(
-                      onPressed: () => Variables.push(context, const ConfirmAddressPage()),
-                      child: const Icon(Icons.keyboard_arrow_right_rounded),
-                    )
-                  : null);
-    });
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  "Receiver Details",
+                                  style: Variables.font(fontSize: 18),
+                                ),
+                              ),
+                              text("Receiver Name", receiverName, receiverPhone, keyboardtype: TextInputType.name),
+                              text("Receiver Phone", receiverPhone, receiverName, keyboardtype: TextInputType.phone),
+                              textboxes("Receiver Address", SetLocationPage.delivery, isaddress: true)
+                            ]),
+                          ),
+                        ),
+                        Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
+                          return Card(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text(
+                                      "Payment Details",
+                                      style: Variables.font(fontSize: 18),
+                                    ),
+                                    radio(true, "CASH", "ONLINE", 0, reference1, cashonly: true),
+                                    radio(BookOrderPage.selectedradio[0] == 1, "Collect At PickUp",
+                                        "Collect At Delivery", 1, reference1),
+                                    textboxes("Item Description", null),
+                                    textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
+                                        child: Row(children: [
+                                          Text("Take a Photo of your Item", style: Variables.font()),
+                                          const SizedBox(width: 20),
+                                          FloatingActionButton.small(
+                                            elevation: 3,
+                                            heroTag: "capture",
+                                            onPressed: () async {
+                                              XFile? image;
+                                              try {
+                                                image = await ImagePicker().pickImage(source: ImageSource.camera);
+                                              } catch (e) {
+                                                Variables.showtoast("Invlalid Image");
+                                              } finally {
+                                                if (image != null) {
+                                                  List<int> bytes = await File(image.path).readAsBytes();
+                                                  reference.createOrder.itemImageUrl = base64Encode(bytes) ;
+                                                }
+                                              }
+                                            },
+                                            child: const Icon(LineIcons.retroCamera),
+                                          )
+                                        ])),
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
+                                        child: Row(children: [
+                                          Flexible(
+                                              child: Text("Does your Item have Cash on Delivery charges?",
+                                                  style: Variables.font())),
+                                          const SizedBox(width: 10),
+                                          radio(true, "Yes", "No", 2, reference1)
+                                        ])),
+                                    if (BookOrderPage.selectedradio[2] == 1)
+                                      textboxes("Cash on Delivery Charges", null, keyboardtype: TextInputType.number)
+                                  ])));
+                        }),
+                        const SizedBox(height: 15),
+                        Variables.text1(
+                            head: "Delivery Charge",
+                            value: "₹ ${reference.delivery}",
+                            vpadding: 3,
+                            valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16)),
+                        ValueListenableBuilder(
+                            valueListenable: cod,
+                            builder: (context, int value, widget) => value > 0
+                                ? Variables.text1(
+                                    head: "Cash on Delivery Charge",
+                                    value: "₹ $value",
+                                    valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16))
+                                : Container()),
+                        ValueListenableBuilder(
+                            valueListenable: cod,
+                            builder: (context, int value, widget) => Variables.text1(
+                                head: "Total",
+                                value: "₹ ${reference.delivery + value}",
+                                valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16))),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                          child: FloatingActionButton.extended(
+                              onPressed: () {
+                                if (formkey.currentState!.validate()) {
+                                  String pay = BookOrderPage.selectedradio[0] == 1 ? "CASH" : "ONLINE";
+                                  reference.createOrder.bookingType = "SAMEDAY";
+                                  reference.createOrder.collectAtPickUp = BookOrderPage.selectedradio[1] == 1;
+                                  reference.createOrder.customerId = Variables.driverId;
+                                  reference.createOrder.payType = pay;
+                                  reference.createOrder.paymentId = "";
+                                  reference.createOrder.senderName = senderName.text;
+                                  reference.createOrder.senderPhone = senderPhone.text;
+                                  reference.createOrder.receiverName = receiverName.text;
+                                  reference.createOrder.receiverPhone = receiverPhone.text;
+                                  reference.createOrder.orderType = "STORE";
+                                  reference.createOrder.orderSource = Variables.device[Platform.isAndroid
+                                      ? 0
+                                      : Platform.isIOS
+                                          ? 1
+                                          : 2];
+                                  Variables.push(context, const ConfirmOrderPage());
+                                }
+                              },
+                              label: Text("Book Order", style: Variables.font(color: null))),
+                        )
+                      ]))))
+          : const Center(child: CircularProgressIndicator.adaptive()),
+    );
   }
 
-  Padding textfields(double sliderValue, String labelText, TextEditingController controller) {
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 15, 10, 10),
-        child: TextFormField(
-            controller: controller,
-            keyboardType: TextInputType.streetAddress,
-            onFieldSubmitted: (text) => mapsProvider.setfocus(sliderValue.toInt(), false),
-            onTap: () {
-              mapsProvider.setfocus(sliderValue.toInt(), true);
-              setState(() => slider = sliderValue);
+  Visibility radio(bool visible, String value1, String value2, int index, UpdateScreenProvider reference,
+          {bool cashonly = false}) =>
+      Visibility(
+          visible: visible,
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              SizedBox(
+                width: 30,
+                child: Radio<int>(
+                    value: 1,
+                    visualDensity: VisualDensity.adaptivePlatformDensity,
+                    groupValue: BookOrderPage.selectedradio[index],
+                    activeColor: Palette.kOrange,
+                    onChanged: (value) {
+                      BookOrderPage.selectedradio[index] = value;
+                      reference.updateScreen();
+                    }),
+              ),
+              Text(value1, style: Variables.font())
+            ]),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              SizedBox(
+                width: 30,
+                child: Radio<int>(
+                    value: 2,
+                    visualDensity: VisualDensity.adaptivePlatformDensity,
+                    groupValue: BookOrderPage.selectedradio[index],
+                    activeColor: Palette.kOrange,
+                    onChanged: (value) {
+                      if (cashonly) {
+                        Variables.showtoast("Online Payment Gateway is not yet Ready");
+                      } else {
+                        BookOrderPage.selectedradio[index] = value;
+                      }
+                      reference.updateScreen();
+                    }),
+              ),
+              Text(value2, style: Variables.font())
+            ])
+          ]));
+
+  Padding text(String labelText, TextEditingController? controller, TextEditingController? controller2,
+          {TextInputType keyboardtype = TextInputType.none}) =>
+      Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: TypeAheadFormField<Contact>(
+            hideOnEmpty: true,
+            hideOnLoading: true,
+            debounceDuration: const Duration(microseconds: 10),
+            validator: (value) {
+              if (value!.isEmpty) return "Enter $labelText";
+              return null;
             },
-            onChanged: (value) async {
-              if (mapsProvider.currentLocation) {
-                mapsProvider.savedAddress.removeAt(0);
-                mapsProvider.currentLocation = false;
+            textFieldConfiguration: TextFieldConfiguration(
+                controller: controller,
+                keyboardType: keyboardtype,
+                decoration: InputDecoration(contentPadding: EdgeInsets.zero, labelText: labelText)),
+            onSuggestionSelected: (suggestion) {
+              String phone = suggestion.phones!.isNotEmpty
+                  ? suggestion.phones!.elementAt(0).value!.trim().replaceAll(RegExp(r"^(\+91)|\D"), "")
+                  : "";
+              if (labelText.contains("Phone")) {
+                controller!.text = phone;
+                controller2!.text = suggestion.displayName!;
+              } else {
+                controller!.text = suggestion.displayName!;
+                controller2!.text = phone;
               }
-              mapsProvider.filter(value);
-              Variables.locations[labelText] = value;
-              if (mapsProvider.focus[sliderValue.toInt()]) await mapsProvider.getAutoComplete(value);
             },
-            decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                suffixIcon: controller.text.isNotEmpty && mapsProvider.focus[sliderValue.toInt()]
-                    ? IconButton(
-                        onPressed: () {
-                          Variables.locations[labelText] = null;
-                          mapsProvider.clear();
-                          controller.clear();
-                        },
-                        icon: const Icon(Icons.clear_rounded))
-                    : null,
-                contentPadding: const EdgeInsets.only(right: 10),
-                prefixIcon: Padding(
-                    padding: const EdgeInsets.all(8.0), child: Image.asset("assets/icon/icons8-location-pin-49.png")),
-                labelText: labelText,
-                hintText: "Search $labelText",
-                prefixIconConstraints: const BoxConstraints(maxHeight: 40))));
-  }
+            itemBuilder: (context, contact) => Row(mainAxisSize: MainAxisSize.min, children: [
+                  Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: contact.avatar != null && contact.avatar!.isNotEmpty
+                          ? CircleAvatar(backgroundImage: MemoryImage(contact.avatar!))
+                          : CircleAvatar(child: Text(contact.initials()))),
+                  const SizedBox(width: 15),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(contact.displayName!.trim(), style: Variables.font()),
+                      if (contact.phones!.isNotEmpty)
+                        Text(contact.phones!.elementAt(0).value!.trim(),
+                            style: Variables.font(fontSize: 12, color: Colors.grey))
+                    ],
+                  )
+                ]),
+            suggestionsCallback: (value) {
+              if (value.isEmpty) {
+                return List<Contact>.empty();
+              } else {
+                return contacts.where((element) {
+                  if (element.displayName!.toLowerCase().contains(value.toLowerCase())) return true;
+                  String phone = element.phones!.isNotEmpty
+                      ? element.phones!.elementAt(0).value!.trim().replaceAll(RegExp(r"^(\+91)|\D"), "")
+                      : "";
+                  return phone.contains(value);
+                }).toList();
+              }
+            }),
+      );
+
+  Widget textboxes(String labelText, TextEditingController? controller,
+          {bool isaddress = false, TextInputType keyboardtype = TextInputType.name}) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
+        child: TextFormField(
+          controller: controller,
+          keyboardType: isaddress ? TextInputType.multiline : keyboardtype,
+          maxLines: isaddress ? null : 1,
+          enabled: !isaddress,
+          onChanged: (value) {
+            if (labelText.contains("Delivery Charges")) {
+              if (value.isEmpty) {
+                cod.value = 0;
+                getAddressesProvider.createOrder.codAmount = 0;
+              } else {
+                cod.value = int.parse(value);
+                getAddressesProvider.createOrder.codAmount = int.parse(value);
+              }
+              getAddressesProvider.createOrder.amount =
+                  getAddressesProvider.delivery + getAddressesProvider.createOrder.codAmount;
+            } else if (labelText.contains("Description")) {
+              if (value.isEmpty) {
+                getAddressesProvider.createOrder.itemDescription = "";
+                getAddressesProvider.createOrder.itemName = "";
+              } else {
+                getAddressesProvider.createOrder.itemDescription = value;
+                getAddressesProvider.createOrder.itemName = value;
+              }
+            }
+          },
+          validator: (value) {
+            if (labelText.contains("Description")) {
+              if (value!.isEmpty) return "Enter $labelText";
+            } else if (labelText.contains("Delivery Charges") && BookOrderPage.selectedradio[2] == 1) {
+              if (value!.isEmpty) return "Enter $labelText";
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+            border: isaddress ? InputBorder.none : const UnderlineInputBorder(),
+            contentPadding: EdgeInsets.zero,
+            labelText: labelText,
+          ),
+        ),
+      );
 
   @override
   void dispose() {
-    mapsProvider.dispose();
-    mapController.dispose();
-    pickup.dispose();
-    delivery.dispose();
+    _animationController.removeStatusListener(_statusListener);
+    _animationController.dispose();
     super.dispose();
   }
 }

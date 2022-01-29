@@ -5,19 +5,31 @@ import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import '../Provider/update_order_povider.dart';
 
 class Variables {
   static GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  static String token = "";
   static Map<String, String> headers = {"Content-Type": 'application/json'};
   static String locationPin = "assets/icon/icons8-location-48.png";
   static String key = "AIzaSyCuvs8lj4MQgGWE26w3twaifCgxk_Vk8Yw";
+  static List menuItems = ["Recipient", "Watchman", "Receptionist", "Neighbours", "Others"];
+  static String currentMenuItem = menuItems[0];
+  static bool showdialog = true;
+  static Map<String, String?> locations = {};
+  static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
+  static int driverId = 18;
+  static const pref = FlutterSecureStorage(aOptions: AndroidOptions(encryptedSharedPreferences: true));
+
   static String referalCode = "";
   static String subject = "EZShipp - A Fastest Delivery App";
   static String sendText =
@@ -45,10 +57,6 @@ class Variables {
     'os': "",
     'userType': ""
   };
-  static List menuItems = ["Recipient", "Watchman", "Receptionist", "Neighbours", "Others"];
-  static String currentMenuItem = menuItems[0];
-  static bool showdialog = true;
-  static Map<String, String?> locations = {};
 
   static List centers = [
     ["Hitech City", "Office", false],
@@ -60,7 +68,6 @@ class Variables {
     ["Balanagar", "Y Junction", false],
     ["Uppal", "Uppal Junction", false]
   ];
-  static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
   static List cancelReasons = [
     [1, 'Entered wrong address', 0, 0],
     [2, 'Package is not ready to pickup', 0, 1],
@@ -70,6 +77,11 @@ class Variables {
     [6, 'Heavy Items', 0, 1],
     [7, "Customer Rejected", 0, 0]
   ];
+
+  static InternetConnectionStatus internetStatus = InternetConnectionStatus.disconnected;
+
+  static List device = ["ANDROID", "IOS", "WEB"];
+
   static push(BuildContext context, Widget route) => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => route,
       ));
@@ -77,25 +89,44 @@ class Variables {
   static TextStyle font(
           {double fontSize = 14, FontWeight fontWeight = FontWeight.normal, Color? color = Palette.deepgrey}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight);
+  static Uri uri({required String path, queryParameters}) =>
+      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
 
   static text(
           {String head = "Order ID:",
           String value = "XXXXXXXXX",
-          double padding = 1.0,
+          double vpadding = 1.0,
+          double hpadding = 10.0,
           Color? valueColor,
           Color? headColor,
-          double valueFontSize = 16}) =>
+          double valueFontSize = 16,
+          double headFontSize = 14}) =>
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: padding),
+        padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
         child: RichText(
-            text: TextSpan(text: head, style: Variables.font(color: headColor ?? Palette.deepgrey), children: [
-          TextSpan(
-              text: value, style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
-        ])),
+            text: TextSpan(
+                text: head,
+                style: Variables.font(color: headColor ?? Palette.deepgrey, fontSize: headFontSize),
+                children: [
+              TextSpan(
+                  text: value,
+                  style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
+            ])),
       );
-
-  static Uri uri({required String path, queryParameters}) =>
-      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
+  static text1(
+          {String head = "Order ID:",
+          String value = "XXXXXXXXX",
+          double vpadding = 3.0,
+          double hpadding = 15,
+          TextStyle? headStyle,
+          TextStyle? valueStyle}) =>
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(head, style: headStyle), if (value.isNotEmpty) Text(value, style: valueStyle)],
+        ),
+      );
 
   static AppBar app({actions, color, elevation = 3}) => AppBar(
       elevation: elevation.toDouble(),
@@ -116,23 +147,25 @@ class Variables {
         backgroundColor: Colors.black54);
   }
 
-  static String datetime(time) {
+  static String datetime(value, {bool timeNeed = false}) {
     DateTime _time = DateTime.now();
-    if (time != null) {
-      if (time is DateTime) {
-        _time = time;
+    if (value.toString() != "null" && value.toString().isNotEmpty) {
+      if (value is DateTime) {
+        _time = value;
       } else {
-        _time = DateTime.parse(time);
+        _time = DateTime.parse(value);
       }
+      String time = DateFormat().add_jm().format(_time);
+      String date = DateFormat().add_MMMd().format(_time) + "," + DateFormat().add_y().format(_time);
+      if (DateTime.now() == _time) {
+        return "Today, $time";
+      } else if (DateTime.now().subtract(const Duration(days: 1)) == _time) {
+        return "Yesterday, $time";
+      }
+      if (timeNeed) return "$date | $time";
+      return date;
     }
-    String date = DateFormat().add_MMMd().format(_time) + "," + DateFormat().add_y().format(_time);
-    if (DateTime.now() == _time) {
-      date = "Today, " + (DateFormat().add_jm().format(_time));
-    } else if (DateTime.now().subtract(const Duration(days: 1)) == _time) {
-      return "Yesterday, " + (DateFormat().add_jm().format(_time));
-    }
-
-    return date;
+    return "";
   }
 
   static Future<String> scantext(BuildContext context, TextEditingController controller,
@@ -238,8 +271,8 @@ class Variables {
     var result = await value.getDistance(jsonEncode(body));
     if (result != null) {
       Variables.updateOrderMap.distance = result;
-      Variables.updateOrderMap.driverId = value.driverId;
-      Variables.updateOrderMap.newDriverId = value.driverId;
+      Variables.updateOrderMap.driverId = driverId;
+      Variables.updateOrderMap.newDriverId = driverId;
       value.update(Variables.updateOrderMap.toJson(), value.newOrderList[index].id);
     }
   }
@@ -262,4 +295,30 @@ class Variables {
         break;
     }
   }
+
+  static OverlaySupportEntry overlayNotification() =>
+      showSimpleNotification(Text("No Internet Connection", style: font(color: Colors.white, fontSize: 18)),
+          background: Colors.red);
+
+  static Padding dividerName(String name, {double hpadding = 10, double vpadding = 15}) => Padding(
+        padding: EdgeInsets.symmetric(vertical: vpadding, horizontal: hpadding),
+        child: Row(children: [
+          const Expanded(
+              child: Divider(
+            indent: 10,
+            endIndent: 10,
+            thickness: 2,
+          )),
+          Text(
+            name,
+            style: Variables.font(fontSize: 15, color: Colors.grey),
+          ),
+          const Expanded(
+              child: Divider(
+            indent: 10,
+            endIndent: 10,
+            thickness: 2,
+          )),
+        ]),
+      );
 }

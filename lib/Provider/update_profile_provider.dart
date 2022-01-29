@@ -4,10 +4,10 @@ import 'dart:math';
 import 'package:ezshipp/APIs/profile.dart';
 import 'package:ezshipp/APIs/update_profile.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import '../APIs/get_customerprofile.dart';
+import '../utils/http_requests.dart';
 import '../utils/themes.dart';
 import '../utils/variables.dart';
 
@@ -27,7 +27,7 @@ class UpdateProfileProvider extends ChangeNotifier {
 
   getprofile(String path) async {
     try {
-      final response = await get(Variables.uri(path: path));
+      final response = await HTTPRequest.getRequest(Variables.uri(path: path));
       var responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         if (path.contains("customer")) {
@@ -43,8 +43,8 @@ class UpdateProfileProvider extends ChangeNotifier {
   }
 
   getcolor(bool isdriver, {driverid = 18}) async {
-    var pref = await SharedPreferences.getInstance();
-    index = pref.getInt("color_index") ?? Random().nextInt(Colors.primaries.length);
+    final colorIndex = await Variables.pref.read(key: "color_index");
+    index = colorIndex == null ? Random().nextInt(Colors.primaries.length) : int.parse(colorIndex);
     if (isdriver) {
       await getprofile("/biker/profile/$driverid");
     } else {
@@ -53,7 +53,7 @@ class UpdateProfileProvider extends ChangeNotifier {
     }
     if (profile != null) {
       decorationImage =
-          profile.profileUrl!.isEmpty ? null : DecorationImage(image: NetworkImage(profile.profileUrl ?? ""));
+          profile.profileUrl!.isEmpty ? null : DecorationImage(image: MemoryImage(profile.profileUrl ?? ""));
       setName(profile.name);
       fullName = profile.name;
     }
@@ -72,13 +72,12 @@ class UpdateProfileProvider extends ChangeNotifier {
   updateProfile(Map<String, String> update, int driverId) async {
     try {
       var json = UpdateProfile.fromMap1(profile.toMap(), update).toJson();
-      final response =
-          await put(Variables.uri(path: "/biker/profile/$driverId"), body: json, headers: Variables.headers);
+      final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/$driverId"), json);
       var responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         Variables.showtoast("Updating profile successfull");
         decorationImage =
-            profile.profileUrl!.isEmpty ? null : DecorationImage(image: NetworkImage(profile.profileUrl ?? ""));
+            profile.profileUrl!.isEmpty ? null : DecorationImage(image: MemoryImage(profile.profileUrl ?? ""));
         if (profile.name.contains(RegExp(r'\s'))) {
           name = profile.name[0] + profile.name[profile.name.indexOf(' ') + 1];
         } else {
@@ -95,35 +94,48 @@ class UpdateProfileProvider extends ChangeNotifier {
   }
 
   getColor() async {
-    index = (await SharedPreferences.getInstance()).getInt("color_index") ?? Random().nextInt(Colors.primaries.length);
+    final colorIndex = await Variables.pref.read(key: "color_index");
+    index = colorIndex != null ? int.parse(colorIndex) : Random().nextInt(Colors.primaries.length);
     notifyListeners();
   }
 
-  getProfileImage({double size = 150, bool canEdit = false}) {
-    return Container(
-        height: size,
-        width: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.primaries[index], image: decorationImage),
-        child: decorationImage == null
-            ? Stack(
-                children: [
-                  Center(child: Text(name, style: const TextStyle(fontSize: 65, color: Colors.white))),
-                  if (canEdit)
-                    Align(
-                        alignment: Alignment.bottomRight,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Palette.deepgrey,
-                              border: Border.all(width: 4, color: size == 100 ? Palette.kOrange : Colors.grey[200]!)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Icon(Icons.edit, color: Colors.white, size: size == 100 ? 13 : 25),
-                          ),
-                        ))
-                ],
-              )
-            : null);
+  getProfileImage({double size = 150, bool canEdit = false, bool isNotEqual = false}) {
+    return Material(
+      shape: const CircleBorder(),
+      elevation: 2,
+      child: CircleAvatar(
+        radius: size / 2,
+        backgroundColor: isNotEqual ? Colors.white : Colors.primaries[index],
+        child: Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: Container(
+              height: size,
+              width: size,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.primaries[index], image: decorationImage),
+              child: decorationImage == null
+                  ? Stack(
+                      children: [
+                        Center(child: Text(name, style: Variables.font(fontSize: size / 2.5, color: Colors.white))),
+                        if (canEdit)
+                          Align(
+                              alignment: Alignment.bottomRight,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Palette.deepgrey,
+                                    border:
+                                        Border.all(width: 4, color: size < 130 ? Palette.kOrange : Colors.grey[200]!)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Icon(Icons.edit, color: Colors.white, size: size < 130 ? 13 : 25),
+                                ),
+                              ))
+                      ],
+                    )
+                  : null),
+        ),
+      ),
+    );
   }
 
   void inkwell(BuildContext context) async {

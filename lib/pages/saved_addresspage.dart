@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../utils/variables.dart';
 
 class SavedAddressPage extends StatefulWidget {
+  static bool delete = false;
   const SavedAddressPage({Key? key}) : super(key: key);
 
   @override
@@ -15,7 +16,7 @@ class SavedAddressPage extends StatefulWidget {
 class _SavedAddressPageState extends State<SavedAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
-  bool delete = false;
+  
   late GetAddressesProvider getAddressesProvider;
   List<bool> addresstypesC = [false, false, false];
   List<String> addresstypes = ["Home", "Office", "Others"];
@@ -32,8 +33,8 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
     return Scaffold(
       appBar: Variables.app(actions: [
         TextButton(
-            onPressed: () => setState(() => delete = !delete),
-            child: Text(delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
+            onPressed: () => SavedAddressPage.delete = !SavedAddressPage.delete,
+            child: Text(SavedAddressPage.delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
       ]),
       body: Consumer<GetAddressesProvider>(builder: (context, reference, child) {
         if (reference.getallAdresses.isNotEmpty) {
@@ -56,7 +57,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                     title: Text("${addressType2[0]}${addressType2.substring(1).toLowerCase()}",
                         style: Variables.font(fontSize: 17)),
                     subtitle: Text(data, style: Variables.font(color: Colors.grey.shade600, fontSize: 15)),
-                    trailing: delete
+                    trailing: SavedAddressPage.delete
                         ? IconButton(
                             icon: const Icon(Icons.delete_forever_rounded),
                             onPressed: () => reference.deleteAddress(reference.getallAdresses[index]),
@@ -98,18 +99,18 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                               head: "Appartment/House no. :\n",
                                               value: reference.getallAdresses[index].apartment,
                                               valueColor: Colors.grey,
-                                              padding: 5),
+                                              vpadding: 5),
                                           Container(
                                               child: Variables.text(
                                                   head: "Address:\n",
                                                   value: reference.getallAdresses[index].address1,
                                                   valueColor: Colors.grey,
-                                                  padding: 5)),
+                                                  vpadding: 5)),
                                           Variables.text(
                                               head: "Landmark:\n",
                                               value: reference.getallAdresses[index].landmark,
                                               valueColor: Colors.grey,
-                                              padding: 5),
+                                              vpadding: 5),
                                         ],
                                       ),
                                       Flexible(
@@ -156,7 +157,6 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          getAddressesProvider.setAddressType("");
           Variables.push(context, const AddAddressPage());
         },
         label: Text("Add Address", style: Variables.font(color: null, fontSize: 15)),
@@ -167,7 +167,6 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
 
   @override
   void dispose() {
-    getAddressesProvider.dispose();
     super.dispose();
   }
 }

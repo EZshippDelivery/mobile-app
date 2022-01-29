@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:ezshipp/APIs/my_orderlist.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 import '../APIs/new_orderlist.dart';
+import '../utils/http_requests.dart';
 import '../utils/variables.dart';
 
 class UpdateOrderProvider extends ChangeNotifier {
@@ -15,13 +15,14 @@ class UpdateOrderProvider extends ChangeNotifier {
   late MyOrderList myorders;
   bool islastpageloaded = false, islastpageloaded1 = false;
   DateTime start = DateTime.now().subtract(const Duration(days: 7)), end = DateTime.now();
-  int driverId = 18;
+  
+  
 
   Future<dynamic> gethttp(String url) async {}
 
   newOrders() async {
     try {
-      final response = await get(Variables.uri(path: "/biker/orders/$driverId/true"));
+      final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/true"));
       List? responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         newOrderList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
@@ -37,7 +38,7 @@ class UpdateOrderProvider extends ChangeNotifier {
   update(body, orderid) async {
     loading = true;
     try {
-      final response = await put(Variables.uri(path: "/order/$orderid"), body: body, headers: Variables.headers);
+      final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"),body);
       Variables.returnResponse(response);
     } on SocketException {
       Variables.showtoast('No Internet connection');
@@ -48,13 +49,13 @@ class UpdateOrderProvider extends ChangeNotifier {
 
   findOrderbyBarcode(String value, int statusId) async {
     try {
-      final response = await get(Variables.uri(path: "/order/find/barcode/$value"));
+      final response = await HTTPRequest.getRequest(Variables.uri(path: "/order/find/barcode/$value"));
       if (response.statusCode == 500) {
-        Variables.showtoast("Invalid Bardcode");
+        Variables.showtoast("Invalid Barcode");
       } else if (response.statusCode == 200) {
         var body = NewOrderList.fromJson(response.body);
         Variables.updateOrderMap.driverId = body.bikerId;
-        Variables.updateOrderMap.newDriverId = driverId;
+        Variables.updateOrderMap.newDriverId = Variables.driverId;
         Variables.updateOrderMap.barcode = value;
         Variables.getLiveLocation(statusId: statusId);
         Variables.updateOrderMap.distance = (await getDistance(jsonEncode({
@@ -75,8 +76,8 @@ class UpdateOrderProvider extends ChangeNotifier {
   delivered(driverid, int pagenumber, String startdate, String enddate) async {
     try {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
-      final response = await post(Variables.uri(path: "/biker/orders/completed/$driverid"),
-          body: body.toJson(), headers: Variables.headers);
+      final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/completed/$driverid"),
+          body.toJson());
       var responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -96,8 +97,8 @@ class UpdateOrderProvider extends ChangeNotifier {
   accepted(int pagenumber, bool iscustomer) async {
     try {
       final response = iscustomer
-          ? await get(Variables.uri(path: "/customer/$driverId/myorders/$pagenumber/20"))
-          : await get(Variables.uri(path: "/biker/orders/acceptedandinprogressorders/$driverId/$pagenumber/20"));
+          ? await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/myorders/$pagenumber/20"))
+          : await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
       var responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -127,13 +128,13 @@ class UpdateOrderProvider extends ChangeNotifier {
     } else {
       start = value ?? start;
     }
-    await delivered(driverId, pageNumber, start.toString(), this.end.toString());
+    await delivered(Variables.driverId, pageNumber, start.toString(), this.end.toString());
   }
 
   Future<double?> getDistance(body) async {
     try {
       final response =
-          await post(Variables.uri(path: "/biker/orders/$driverId/distance"), body: body, headers: Variables.headers);
+          await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/distance"), body);
       var responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         return responseJson[0]["distance"];
@@ -146,7 +147,7 @@ class UpdateOrderProvider extends ChangeNotifier {
 
   getRecentOrders() async {
     try {
-      final response = await get(Variables.uri(path: "/customer/$driverId/orders"));
+      final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/orders"));
       List? responseJson = Variables.returnResponse(response);
       if (responseJson != null) {
         customerOrders = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
@@ -157,6 +158,4 @@ class UpdateOrderProvider extends ChangeNotifier {
     loading4 = false;
     notifyListeners();
   }
-
-  setTimer(body, orderid) {}
 }

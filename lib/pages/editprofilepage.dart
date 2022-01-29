@@ -28,9 +28,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.initState();
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     email.text = updateProfileProvider.profile.email;
-    phone.text = updateProfileProvider.profile.phone;
+    phone.text = updateProfileProvider.profile.phone.toString();
     if (updateProfileProvider.profile is CustomerDetails) {
-      firstname.text = updateProfileProvider.profile.firtName;
+      firstname.text = updateProfileProvider.profile.firstName;
       lastname.text = updateProfileProvider.profile.lastName;
     } else {
       List name = updateProfileProvider.profile.name.split(" ");

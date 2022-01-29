@@ -7,16 +7,17 @@ import 'package:ezshipp/APIs/register.dart';
 import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/pages/customer_homepage.dart';
 import 'package:ezshipp/tabs/sign_in.dart';
-import 'package:ezshipp/tabs/sing_up.dart';
+import 'package:ezshipp/tabs/sign_up.dart';
 import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
 import 'enter_kycpage.dart';
@@ -50,27 +51,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     updateLoginProvider = Provider.of<UpdateLoginProvider>(context, listen: false);
     animController = AnimationController(vsync: this, duration: const Duration(seconds: 1));
     animController2 = AnimationController(vsync: this, duration: const Duration(milliseconds: 750));
-    animController.addListener(() => setState(() {}));
-    animController2.addListener(() => setState(() {}));
     _anim = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: animController, curve: Curves.fastOutSlowIn));
     _anim2 = Tween(begin: 0.7, end: 1.0).animate(CurvedAnimation(parent: animController2, curve: Curves.fastOutSlowIn));
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(() {
-      setState(() {
-        if (tabController.index == 1) {
-          animController2.forward();
-        } else if (tabController.index == 0) {
-          animController2.reverse();
-        }
-      });
+      if (tabController.index == 1) {
+        animController2.forward();
+      } else if (tabController.index == 0) {
+        animController2.reverse();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     animController.forward();
-    var signin = const SignIn();
-    var signup = SignUp();
     return Scaffold(
       backgroundColor: Palette.kOrange,
       body: SafeArea(
@@ -82,72 +77,55 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         left: (constraints.maxWidth - 200) * 0.5,
                         height: 60,
                         child: Image.asset("assets/images/Logo-Light.png")),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: (constraints.maxHeight * _anim2.value * _anim.value),
-                        decoration: const BoxDecoration(),
-                        child: Scaffold(
-                          extendBodyBehindAppBar: true,
-                          // appBar: AppBar(
-                          //   toolbarHeight: 45,
-                          //   shape: const RoundedRectangleBorder(
-                          //       borderRadius: BorderRadiusDirectional.only(
-                          //           topStart: Radius.circular(20), topEnd: Radius.circular(20))),
-                          //   title: TabBar(
-                          //       controller: tabController,
-                          //       onTap: (value) {
-                          //         if (value == 1) {
-                          //           animController2.forward();
-                          //         } else {
-                          //           animController2.reverse();
-                          //         }
-                          //       },
-                          //       tabs: TabBars.tabs),
-                          // ),
-                          body: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Material(
-                              //     color: Palette.kOrange,
-                              //     child: SizedBox(
-                              //       height: 45,
-                              //       child: Container(),
-                              //     )),
-                              Expanded(
-                                  flex: 10,
-                                  child: Center(
-                                    child: TabBarView(
-                                        controller: tabController,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        children: [signin, signup]),
-                                  ))
-                            ],
-                          ),
-                          bottomNavigationBar: BottomAppBar(
-                            shape: const CircularNotchedRectangle(),
-                            child: TabBar(
-                                labelPadding: const EdgeInsets.all(10),
-                                indicatorWeight: 4.0,
-                                controller: tabController,
-                                onTap: (value) async {
-                                  if (value == 1) {
-                                    animController2.forward();
-                                    if (Variables.showdialog) {
-                                      Variables.showdialog = false;
-                                      show(context).then((value) => setState(() {
-                                            updateLoginProvider.setUsetType(value);
-                                          }));
-                                    }
-                                  } else {
-                                    animController2.reverse();
-                                  }
-                                },
-                                tabs: TabBars.tabs),
-                          ),
-                          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-                          floatingActionButton: floatingbutton(context, signin, signup),
+                    AnimatedBuilder(
+                      animation: _anim,
+                      builder: (context, outerChild) {
+                        return AnimatedBuilder(
+                          animation: _anim2,
+                          builder: (context, innerChild) {
+                            return Align(
+                                alignment: Alignment.bottomCenter,
+                                child: SizedBox(
+                                    height: (constraints.maxHeight * _anim2.value * _anim.value), child: outerChild));
+                          },
+                        );
+                      },
+                      child: Scaffold(
+                        extendBodyBehindAppBar: true,
+                        body: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                                flex: 10,
+                                child: Center(
+                                  child: TabBarView(
+                                      controller: tabController,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      children: const [SignIn(), SignUp()]),
+                                ))
+                          ],
                         ),
+                        bottomNavigationBar: BottomAppBar(
+                          shape: const CircularNotchedRectangle(),
+                          child: TabBar(
+                              labelPadding: const EdgeInsets.all(10),
+                              indicatorWeight: 4.0,
+                              controller: tabController,
+                              onTap: (value) async {
+                                if (value == 1) {
+                                  animController2.forward();
+                                  if (Variables.showdialog) {
+                                    Variables.showdialog = false;
+                                    show(context).then((value) => updateLoginProvider.setUsetType(value));
+                                  }
+                                } else {
+                                  animController2.reverse();
+                                }
+                              },
+                              tabs: TabBars.tabs),
+                        ),
+                        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+                        floatingActionButton: floatingbutton(context),
                       ),
                     ),
                   ],
@@ -156,122 +134,128 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  floatingbutton(BuildContext context, SignIn signin, SignUp signup) => FloatingActionButton(
+  floatingbutton(BuildContext context) => FloatingActionButton(
         heroTag: "login_button",
         onPressed: () async {
-          if (tabController.index == 0) {
-            if (SignIn.formkey1.currentState!.validate()) {
-              updateLoginProvider.store();
-              bool value = await getdetails();
-              String type = "";
-              if (value) {
-                if (userType!.length == 2) {
-                  typeIndex = await settype(userType!.indexOf(await show(context)));
-                  type = userType![typeIndex];
-                } else if (userType!.length == 1) {
-                  type = userType![typeIndex];
-                } else {
-                  type = "driver";
+          if (await InternetConnectionChecker().hasConnection) {
+            if (tabController.index == 0) {
+              if (SignIn.formkey1.currentState!.validate()) {
+                updateLoginProvider.store();
+                bool value = await getdetails();
+                String type = "";
+                if (value) {
+                  if (userType!.length == 2) {
+                    typeIndex = await settype(userType!.indexOf(await show(context)), const FlutterSecureStorage());
+                    type = userType![typeIndex];
+                  } else if (userType!.length == 1) {
+                    type = userType![typeIndex];
+                  } else {
+                    type = "driver";
+                  }
                 }
-              }
-              if (value && enterKYC && type == "driver") {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
-              } else if (value && !enterKYC && type == "driver") {
-                Navigator.pushReplacementNamed(context, MyRoutes.homepage);
-              } else if (value && !enterKYC && type != "driver") {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CustomerHomePage(),
-                    ));
-              }
-            } else {
-              Variables.showtoast("Sign In is failed");
-            }
-          } else if (tabController.index == 1) {
-            if (SignUp.formkey2.currentState!.validate() && signup.check) {
-              if (updateLoginProvider.userType == "Customer") {
-                setState(() {
-                  Variables.deviceInfo["userType"] = "CUSTOMER";
-                });
+                if (value && enterKYC && type == "driver") {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
+                } else if (value && !enterKYC && type == "driver") {
+                  Navigator.pushReplacementNamed(context, MyRoutes.homepage);
+                } else if (value && !enterKYC && type != "driver") {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CustomerHomePage(),
+                      ));
+                }
               } else {
-                setState(() {
+                Variables.showtoast("Sign In is failed");
+              }
+            } else if (tabController.index == 1) {
+              if (SignUp.formkey2.currentState!.validate() && SignUp.check) {
+                if (updateLoginProvider.userType == "Customer") {
+                  Variables.deviceInfo["userType"] = "CUSTOMER";
+                } else {
                   Variables.deviceInfo["userType"] = "DRIVER";
-                });
-              }
-              await setdetails();
-              var response = await updateLoginProvider.httpost(
-                  context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
-              if (updateLoginProvider.userType == "Customer") {
-                if (await showdialog(
-                    context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
-                  animController2.reverse();
-                  tabController.index = 0;
                 }
+                await setdetails();
+                var response = await updateLoginProvider.httpost(
+                    context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+                if (updateLoginProvider.userType == "Customer") {
+                  if (await showdialog(
+                      context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
+                    animController2.reverse();
+                    tabController.index = 0;
+                  }
+                }
+              } else if (!SignUp.check) {
+                Variables.showtoast("Accept Terms & Conditions");
+              } else {
+                Variables.showtoast("Something went wrong. Please Try Again");
               }
-            } else if (!signup.check) {
-              Variables.showtoast("Accept Terms & Conditions");
-            } else {
-              Variables.showtoast("Something went wrong. Please Try Again");
             }
+          } else {
+            Variables.overlayNotification();
           }
         },
         child: const Icon(Icons.keyboard_arrow_right_rounded),
       );
 
   setdetails() async {
-    var pref = await SharedPreferences.getInstance();
-    pref.setString("username", TextFields.data["Phone number"].toString());
-    pref.setString("password", TextFields.data["Password"].toString());
-    var data = pref.getStringList("usertype") ?? [];
+    await Variables.pref.write(key: "username", value: TextFields.data["Email id"].toString());
+    await Variables.pref.write(key: "password", value: TextFields.data["Password"].toString());
+    final list = await Variables.pref.read(key: "usertype");
+    final data = list == null ? [] : List.from(jsonDecode(list));
     if (data.isEmpty) {
-      pref.setStringList("usertype", [updateLoginProvider.userType]);
-      await settype(0);
+      await Variables.pref.write(key: "usertype", value: jsonEncode([updateLoginProvider.userType]));
+      await settype(0, Variables.pref);
     } else {
       var data1 = data.toSet();
       data1.add(updateLoginProvider.userType);
-      pref.setStringList("usertype", data1.toList());
+      await Variables.pref.write(key: "usertype", value: jsonEncode(data1.toList()));
       if (data1.length == 1) {
-        await settype(0);
+        await settype(0, Variables.pref);
       } else {
-        await settype(1);
+        await settype(1, Variables.pref);
       }
     }
-    pref.setBool("mobileSignUp", true);
+    await Variables.pref.write(key: "mobileSignUp", value: true.toString());
     if (updateLoginProvider.userType == "driver") {
-      pref.setBool("enterKYC", true);
+      await Variables.pref.write(key: "enterKYC", value: true.toString());
     } else {
-      pref.setBool("enterKYC", false);
+      await Variables.pref.write(key: "enterKYC", value: false.toString());
     }
   }
 
-  settype(int index) async {
-    var pref = await SharedPreferences.getInstance();
-    pref.setInt("type-index", index);
+  settype(int index, FlutterSecureStorage pref) async {
+    await Variables.pref.write(key: "type-index", value: index.toString());
     return index;
   }
 
   getdetails() async {
-    var pref = await SharedPreferences.getInstance();
-    pref.setBool("islogin", true);
+    Variables.pref.write(key: "islogin", value: true.toString());
     try {
-      bool username = pref.getString("username") == TextFields.data["Phone number"];
-      bool username1 = pref.getString("username1") == TextFields.data["Phone number"];
-      bool username2 = pref.getString("username2") == TextFields.data["Phone number"];
-      bool password = pref.getString("password") == TextFields.data["Password"];
-      bool password1 = pref.getString("password1") == TextFields.data["Password"];
-      bool password2 = pref.getString("password2") == TextFields.data["Password"];
-      enterKYC = pref.getBool("enterKYC") ?? false;
-      typeIndex = pref.getInt("type-index") ?? 0;
+      bool username = (await Variables.pref.read(key: "username")) == TextFields.data["Phone number"];
+      bool username1 = (await Variables.pref.read(key: "username1")) == TextFields.data["Phone number"];
+      bool username2 = (await Variables.pref.read(key: "username2")) == TextFields.data["Phone number"];
+      bool password = (await Variables.pref.read(key: "password")) == TextFields.data["Password"];
+      bool password1 = (await Variables.pref.read(key: "password1")) == TextFields.data["Password"];
+      bool password2 = (await Variables.pref.read(key: "password2")) == TextFields.data["Password"];
+      final kyc = await Variables.pref.read(key: "enterKYC");
+      final index = await Variables.pref.read(key: "type-index");
+      enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
+      typeIndex = index == null ? 0 : int.parse(index);
 
       if (username && password) {
-        userType = pref.getStringList("usertype") ?? ["driver"];
+        final list = await Variables.pref.read(key: "usertype");
+        userType = list != null ? List.from(jsonDecode(list)) : ["driver"];
       } else if (username1 && password1) {
-        userType = [pref.getString("usertype1") ?? "driver"];
+        final string = await Variables.pref.read(key: "usertype1");
+        userType = [string ?? "driver"];
       } else if (username2 && password2) {
-        userType = [pref.getString("usertype2") ?? "customer"];
+        final string = await Variables.pref.read(key: "usertype2");
+        userType = [string ?? "customer"];
       } else {
-        throw "error";
+        updateLoginProvider
+            .login(jsonEncode({"password": TextFields.data["Password"], "username": TextFields.data["Email id"]}));
+        setdetails();
+        userType = [updateLoginProvider.userType];
       }
       return true;
     } catch (e) {
@@ -336,11 +320,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 child: Align(
                     alignment: Alignment.center,
                     child: PinFieldAutoFill(
-                      codeLength: 6,
-                      keyboardType: TextInputType.number,
-                      onCodeChanged: (p0) => code = p0!,
-                      onCodeSubmitted: (p0) => setState(() => code = p0),
-                    )),
+                        codeLength: 6,
+                        keyboardType: TextInputType.number,
+                        onCodeChanged: (p0) => code = p0!,
+                        onCodeSubmitted: (p0) => code = p0)),
               ),
               Column(
                 children: [

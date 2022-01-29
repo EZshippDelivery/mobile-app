@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable, prefer_typing_uninitialized_variables
 
+import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
@@ -42,15 +43,28 @@ class TabBars {
             height: 45,
           )
       ];
-      
-  static List<Widget> tabs2 = [
-    for (final name in tab2)
-      Tab(
-        icon: name,
-        iconMargin: const EdgeInsets.all(0),
-        height: 45,
-      )
-  ];
+
+  static List<Widget> tabs2(int count) => [
+        Tab(
+          icon: tab2[0],
+          iconMargin: const EdgeInsets.all(0),
+          height: 45,
+        ),
+        SizedBox(
+          width: 30,
+          child: Stack(
+            children: [
+              Tab(
+                icon: tab2[1],
+                iconMargin: const EdgeInsets.all(0),
+                height: 45,
+              ),
+              if (count > 0)
+                const Positioned(top: 0, right: 0, child: CircleAvatar(backgroundColor: Palette.deepgrey, radius: 10))
+            ],
+          ),
+        )
+      ];
 
   static List<Widget> tabs3 = [Text("Accepted", style: Variables.font()), Text("Delivered", style: Variables.font())];
 }

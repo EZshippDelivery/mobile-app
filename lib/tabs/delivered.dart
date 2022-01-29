@@ -76,7 +76,7 @@ class _DeliveredState extends State<Delivered> {
                 child: Align(
                   alignment: Alignment.center,
                   child: Text(
-                    "In range of your dates, there is no orders that you acepted",
+                    "In range of your dates, there is no orders that are delivered",
                     style: Variables.font(fontSize: 18, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),

@@ -1,5 +1,3 @@
-// ignore_for_file: non_constant_identifier_names
-
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -16,9 +14,9 @@ class PlaceDetails {
     };
   }
 
-  factory PlaceDetails.fromMap(Map<String, dynamic> map) {
+  factory PlaceDetails.fromMap(Map<String, dynamic> map, {bool geocode = false}) {
     return PlaceDetails(
-      result: Result.fromMap(map['result']),
+      result: Result.fromMap(geocode ? map['results'] : map['result']),
     );
   }
 
@@ -32,9 +30,8 @@ class PlaceDetails {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is PlaceDetails &&
-      other.result == result;
+
+    return other is PlaceDetails && other.result == result;
   }
 
   @override
@@ -42,32 +39,33 @@ class PlaceDetails {
 }
 
 class Result {
-  final List<Address_component> address_components;
+  final List<AddressComponent> addressComponents;
   final Geometry geometry;
   final String icon;
-  final String icon_background_color;
+  final String iconBackgroundColor;
   Result({
-    required this.address_components,
+    required this.addressComponents,
     required this.geometry,
     required this.icon,
-    required this.icon_background_color,
+    required this.iconBackgroundColor,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'address_components': address_components.map((x) => x.toMap()).toList(),
+      'address_components': addressComponents.map((x) => x.toMap()).toList(),
       'geometry': geometry.toMap(),
       'icon': icon,
-      'icon_background_color': icon_background_color,
+      'icon_background_color': iconBackgroundColor,
     };
   }
 
   factory Result.fromMap(Map<String, dynamic> map) {
     return Result(
-      address_components: List<Address_component>.from(map['address_components']?.map((x) => Address_component.fromMap(x))),
+      addressComponents:
+          List<AddressComponent>.from(map['address_components']?.map((x) => AddressComponent.fromMap(x))),
       geometry: Geometry.fromMap(map['geometry']),
       icon: map['icon'] ?? '',
-      icon_background_color: map['icon_background_color'] ?? '',
+      iconBackgroundColor: map['icon_background_color'] ?? '',
     );
   }
 
@@ -77,75 +75,71 @@ class Result {
 
   @override
   String toString() {
-    return 'Result(address_components: $address_components, geometry: $geometry, icon: $icon, icon_background_color: $icon_background_color)';
+    return 'Result(address_components: $addressComponents, geometry: $geometry, icon: $icon, icon_background_color: $iconBackgroundColor)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is Result &&
-      listEquals(other.address_components, address_components) &&
-      other.geometry == geometry &&
-      other.icon == icon &&
-      other.icon_background_color == icon_background_color;
+        listEquals(other.addressComponents, addressComponents) &&
+        other.geometry == geometry &&
+        other.icon == icon &&
+        other.iconBackgroundColor == iconBackgroundColor;
   }
 
   @override
   int get hashCode {
-    return address_components.hashCode ^
-      geometry.hashCode ^
-      icon.hashCode ^
-      icon_background_color.hashCode;
+    return addressComponents.hashCode ^ geometry.hashCode ^ icon.hashCode ^ iconBackgroundColor.hashCode;
   }
 }
 
-// ignore: camel_case_types
-class Address_component {
-  final String long_name;
-  final String short_name;
+class AddressComponent {
+  final String longName;
+  final String shortName;
   final List<String> types;
-  Address_component({
-    required this.long_name,
-    required this.short_name,
+  AddressComponent({
+    required this.longName,
+    required this.shortName,
     required this.types,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'long_name': long_name,
-      'short_name': short_name,
+      'long_name': longName,
+      'short_name': shortName,
       'types': types,
     };
   }
 
-  factory Address_component.fromMap(Map<String, dynamic> map) {
-    return Address_component(
-      long_name: map['long_name'] ?? '',
-      short_name: map['short_name'] ?? '',
+  factory AddressComponent.fromMap(Map<String, dynamic> map) {
+    return AddressComponent(
+      longName: map['long_name'] ?? '',
+      shortName: map['short_name'] ?? '',
       types: List<String>.from(map['types']),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Address_component.fromJson(String source) => Address_component.fromMap(json.decode(source));
+  factory AddressComponent.fromJson(String source) => AddressComponent.fromMap(json.decode(source));
 
   @override
-  String toString() => 'Address_component(long_name: $long_name, short_name: $short_name, types: $types)';
+  String toString() => 'Address_component(long_name: $longName, short_name: $shortName, types: $types)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is Address_component &&
-      other.long_name == long_name &&
-      other.short_name == short_name &&
-      listEquals(other.types, types);
+
+    return other is AddressComponent &&
+        other.longName == longName &&
+        other.shortName == shortName &&
+        listEquals(other.types, types);
   }
 
   @override
-  int get hashCode => long_name.hashCode ^ short_name.hashCode ^ types.hashCode;
+  int get hashCode => longName.hashCode ^ shortName.hashCode ^ types.hashCode;
 }
 
 class Geometry {
@@ -176,9 +170,8 @@ class Geometry {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is Geometry &&
-      other.location == location;
+
+    return other is Geometry && other.location == location;
   }
 
   @override
@@ -217,10 +210,8 @@ class Location {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is Location &&
-      other.lat == lat &&
-      other.lng == lng;
+
+    return other is Location && other.lat == lat && other.lng == lng;
   }
 
   @override

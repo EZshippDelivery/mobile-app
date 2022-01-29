@@ -8,8 +8,8 @@ class GetAllAddresses {
   final int pincode;
   final String state;
   final String addressType;
-  final double longitude;
-  final double latitude;
+  double longitude;
+  double latitude;
   final String apartment;
   final String landmark;
   final String city;
@@ -50,7 +50,7 @@ class GetAllAddresses {
       addressId: map['addressId']?.toInt() ?? 0,
       customerId: map['customerId']?.toInt() ?? 0,
       address1: map['address1'] ?? '',
-      address2: map['address2']??"",
+      address2: map['address2'] ?? "",
       pincode: map['pincode']?.toInt() ?? 0,
       state: map['state'] ?? '',
       addressType: map['addressType'] ?? '',
@@ -106,6 +106,3 @@ class GetAllAddresses {
         city.hashCode;
   }
 }
-
-
-

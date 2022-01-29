@@ -46,7 +46,7 @@ class _AcceptedState extends State<Accepted> {
                 child: Align(
                   alignment: Alignment.center,
                   child: Text(
-                    "In range of your dates, there is no orders that you acepted",
+                    "There is no new orders that are accepted",
                     style: Variables.font(fontSize: 18, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),

@@ -341,6 +341,10 @@ class _OrderState extends State<Order> {
                                                     Variables.updateOrderMap.longitude),
                                                 LatLng(list.pickLatitude, list.pickLongitude)
                                               ]);
+                                              Timer.periodic(const Duration(seconds: 10), (timer) {
+                                                // ignore: avoid_print
+                                                print("Timer is calling ${DateTime.now()}");
+                                              });
                                               int temp = mapsProvider.directioDetails[0]["value"];
                                               Timer.periodic(const Duration(minutes: 1), (timer) async {
                                                 await mapsProvider.directions(null, null, places: [
@@ -348,8 +352,9 @@ class _OrderState extends State<Order> {
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
-                                                if (temp > mapsProvider.directioDetails[0]["value"])
+                                                if (temp > mapsProvider.directioDetails[0]["value"]) {
                                                   Variables.updateOrder(reference, widget.index, 4);
+                                                }
                                                 timer.cancel();
                                               });
                                               Timer.periodic(
@@ -360,8 +365,9 @@ class _OrderState extends State<Order> {
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
-                                                if (mapsProvider.directioDetails[0]["value"] < 1000)
+                                                if (mapsProvider.directioDetails[0]["value"] < 1000) {
                                                   Variables.updateOrder(reference, widget.index, 5);
+                                                }
                                                 timer.cancel();
                                               });
                                               launchApps(

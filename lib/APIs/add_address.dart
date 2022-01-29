@@ -5,13 +5,13 @@ class AddAddress {
   String address2;
   String apartment;
   String city;
-  final String complexName;
+  String complexName;
   int customerId;
   String landmark;
   double latitude;
   double longitude;
   int pincode;
-  final String stag;
+  String stag;
   String state;
   String type;
   AddAddress({

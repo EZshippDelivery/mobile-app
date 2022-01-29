@@ -2,7 +2,6 @@ import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:otp/otp.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_advanced/sms_advanced.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
@@ -22,8 +21,7 @@ class _SignInState extends State<SignIn> {
   String code = "";
 
   store() async {
-    var pref = await SharedPreferences.getInstance();
-    var islogin = pref.setString("password", TextFields.data["Password"].toString());
+    var islogin = Variables.pref.write(key: "password", value: TextFields.data["Password"].toString());
     return islogin;
   }
 
@@ -95,16 +93,6 @@ class _SignInState extends State<SignIn> {
                 SizedBox(
                   height: maxH * (0.35),
                 ),
-                // Align(
-                //   alignment: Alignment.bottomCenter,
-                //   child: FloatingActionButton(
-                //     onPressed: () async {
-                //       if (widget.formkey1.currentState!.validate()) {
-                //
-                //     },
-                //     child: const Icon(Icons.keyboard_arrow_right_rounded),
-                //   ),
-                // )
               ],
             ),
           )),
@@ -148,11 +136,10 @@ class _SignInState extends State<SignIn> {
                 child: Align(
                     alignment: Alignment.center,
                     child: PinFieldAutoFill(
-                      codeLength: 6,
-                      keyboardType: TextInputType.number,
-                      onCodeChanged: (p0) => this.code = p0!,
-                      onCodeSubmitted: (p0) => setState(() => this.code = p0),
-                    )),
+                        codeLength: 6,
+                        keyboardType: TextInputType.number,
+                        onCodeChanged: (p0) => this.code = p0!,
+                        onCodeSubmitted: (p0) => this.code = p0)),
               ),
               ElevatedButton(
                   style: ButtonStyle(

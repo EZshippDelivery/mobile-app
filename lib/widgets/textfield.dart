@@ -65,17 +65,15 @@ class _TextFieldsState extends State<TextFields> {
           obscureText: widget.hidepass && hidepass2,
           keyboardType: widget.type,
           onChanged: (value) {
-            setState(() {
-              TextFields.data[title] = value;
-              if (TextFields.data["First Name"]!.isNotEmpty &&
-                  TextFields.data["Last Name"]!.isNotEmpty &&
-                  widget.onchange != null) {
-                widget.onchange!
-                    .setName((TextFields.data["First Name"]![0] + TextFields.data["Last Name"]![0]).toUpperCase());
-              } else if (TextFields.data["First Name"]!.isNotEmpty && widget.onchange != null) {
-                widget.onchange!.setName((TextFields.data["First Name"]![0]).toUpperCase());
-              }
-            });
+            TextFields.data[title] = value;
+            if (TextFields.data["First Name"]!.isNotEmpty &&
+                TextFields.data["Last Name"]!.isNotEmpty &&
+                widget.onchange != null) {
+              widget.onchange!
+                  .setName((TextFields.data["First Name"]![0] + TextFields.data["Last Name"]![0]).toUpperCase());
+            } else if (TextFields.data["First Name"]!.isNotEmpty && widget.onchange != null) {
+              widget.onchange!.setName((TextFields.data["First Name"]![0]).toUpperCase());
+            }
           },
           validator: (value) {
             String title = widget.title;
@@ -151,7 +149,6 @@ class _TextFieldsState extends State<TextFields> {
 
   @override
   void dispose() {
-    updateLoginProvider.dispose();
     super.dispose();
   }
 }
