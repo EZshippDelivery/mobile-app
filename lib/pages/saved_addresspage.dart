@@ -16,7 +16,7 @@ class SavedAddressPage extends StatefulWidget {
 class _SavedAddressPageState extends State<SavedAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
-  
+
   late GetAddressesProvider getAddressesProvider;
   List<bool> addresstypesC = [false, false, false];
   List<String> addresstypes = ["Home", "Office", "Others"];
@@ -33,7 +33,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
     return Scaffold(
       appBar: Variables.app(actions: [
         TextButton(
-            onPressed: () => SavedAddressPage.delete = !SavedAddressPage.delete,
+            onPressed: () => setState(() => SavedAddressPage.delete = !SavedAddressPage.delete),
             child: Text(SavedAddressPage.delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
       ]),
       body: Consumer<GetAddressesProvider>(builder: (context, reference, child) {

@@ -52,7 +52,7 @@ class UpdateLoginProvider extends ChangeNotifier {
   }
 
   store() async {
-    await Variables.pref.write(key: "islogin", value: true.toString());
+    await Variables.write(key: "islogin", value: true.toString());
     notifyListeners();
   }
 

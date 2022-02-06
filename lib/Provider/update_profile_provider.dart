@@ -43,7 +43,7 @@ class UpdateProfileProvider extends ChangeNotifier {
   }
 
   getcolor(bool isdriver, {driverid = 18}) async {
-    final colorIndex = await Variables.pref.read(key: "color_index");
+    final colorIndex = await Variables.read(key: "color_index");
     index = colorIndex == null ? Random().nextInt(Colors.primaries.length) : int.parse(colorIndex);
     if (isdriver) {
       await getprofile("/biker/profile/$driverid");
@@ -94,7 +94,7 @@ class UpdateProfileProvider extends ChangeNotifier {
   }
 
   getColor() async {
-    final colorIndex = await Variables.pref.read(key: "color_index");
+    final colorIndex = await Variables.read(key: "color_index");
     index = colorIndex != null ? int.parse(colorIndex) : Random().nextInt(Colors.primaries.length);
     notifyListeners();
   }

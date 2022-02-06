@@ -4,6 +4,7 @@ import 'package:ezshipp/pages/customer_profilepage.dart';
 import 'package:ezshipp/pages/saved_addresspage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../Provider/update_profile_provider.dart';
 import '../utils/themes.dart';
@@ -79,7 +80,10 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                           ),
                         ),
                         title: Text("Customer Care", style: Variables.font(fontSize: 15)),
-                        onTap: () {}),
+                        onTap: () async {
+                          var url = "tel:04049674477";
+                          await canLaunch(url) ? launch(url) : Variables.showtoast("Unable to open Phone App");
+                        }),
                   ]))
                 : Container()));
   }

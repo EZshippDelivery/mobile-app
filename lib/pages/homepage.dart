@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   setonline() async {
-    final value = await Variables.pref.read(key: "isOnline");
+    final value = await Variables.read(key: "isOnline");
     mapsProvider.online(value != null ? value.toLowerCase() == "true" : true, Variables.driverId, fromhomepage: true);
   }
 

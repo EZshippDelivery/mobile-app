@@ -30,23 +30,23 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   late UpdateLoginProvider updateLoginProvider;
   List types = ["Delivery Person", "Customer"];
   settimer() async {
-    await Variables.pref.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString());
-    await Variables.pref.write(key: "username1", value: "9652638197");
-    await Variables.pref.write(key: "password1", value: "Pradeep@2765");
-    await Variables.pref.write(key: "usertype1", value: "driver");
-    await Variables.pref.write(key: "username2", value: "8885858583");
-    await Variables.pref.write(key: "password2", value: "Hitesh&6999");
-    await Variables.pref.write(key: "usertype2", value: "customer");
-    final login = await Variables.pref.read(key: "islogin");
+    await Variables.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString());
+    await Variables.write(key: "username1", value: "9652638197");
+    await Variables.write(key: "password1", value: "Pradeep@2765");
+    await Variables.write(key: "usertype1", value: "driver");
+    await Variables.write(key: "username2", value: "8885858583");
+    await Variables.write(key: "password2", value: "Hitesh&6999");
+    await Variables.write(key: "usertype2", value: "customer");
+    final login = await Variables.read(key: "islogin");
     bool islogin = login != null ? login.toLowerCase() == "true" : false;
     String userType = "";
     if (islogin) {
-      final username = await Variables.pref.read(key: "username");
-      final password = await Variables.pref.read(key: "password");
+      final username = await Variables.read(key: "username");
+      final password = await Variables.read(key: "password");
       updateLoginProvider.login(jsonEncode({"password": password, "username": username}));
-      final list = await Variables.pref.read(key: "usertype");
+      final list = await Variables.read(key: "usertype");
       List type = List.from(list == null ? ["driver"] : jsonDecode(list));
-      final index = await Variables.pref.read(key: "type-index");
+      final index = await Variables.read(key: "type-index");
       userType = type.isNotEmpty ? type[index == null ? 0 : int.parse(index)] : "driver";
     }
     Timer(
@@ -138,7 +138,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   Future<void> setlogin() async {
-    await Variables.pref.write(key: "islogin", value: false.toString());
+    await Variables.write(key: "islogin", value: false.toString());
   }
 
   @override

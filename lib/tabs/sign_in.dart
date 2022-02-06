@@ -21,7 +21,7 @@ class _SignInState extends State<SignIn> {
   String code = "";
 
   store() async {
-    var islogin = Variables.pref.write(key: "password", value: TextFields.data["Password"].toString());
+    var islogin = Variables.write(key: "password", value: TextFields.data["Password"].toString());
     return islogin;
   }
 
@@ -76,7 +76,7 @@ class _SignInState extends State<SignIn> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                TextFields(title: "Username", icon: const Icon(Icons.phone_rounded), type: TextInputType.phone),
+                TextFields(title: "Username", icon: const Icon(Icons.phone_rounded), type: TextInputType.emailAddress),
                 TextFields(
                     title: "Password",
                     icon: const Icon(Icons.lock_outline),

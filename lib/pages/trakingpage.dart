@@ -157,7 +157,7 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                         head: "Biker Phone: ", value: widget.order.bikerPhone.toString(), vpadding: 4),
                                     FloatingActionButton.small(
                                         onPressed: () async {
-                                          var url = "telto:${widget.order.bikerPhone}";
+                                          var url = "tel:${widget.order.bikerPhone}";
                                           await canLaunch(url)
                                               ? launch(url)
                                               : Variables.showtoast("Unable to open Phone App");

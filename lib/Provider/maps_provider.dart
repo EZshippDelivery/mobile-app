@@ -272,7 +272,7 @@ class MapsProvider extends ChangeNotifier {
       Variables.showtoast("You are in offline mode ");
     }
 
-    await Variables.pref.write(key: "isOnline", value: value.toString());
+    await Variables.write(key: "isOnline", value: value.toString());
     isOnline = value;
     if (!fromhomepage) notifyListeners();
   }

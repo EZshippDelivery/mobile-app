@@ -42,255 +42,261 @@ class _SetLocationPageState extends State<SetLocationPage> {
     Size size = MediaQuery.of(context).size;
     final devicePixelRatio = Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
     return Consumer<MapsProvider>(builder: (context, reference, child) {
-      return Scaffold(
-          appBar: Variables.app(),
-          body: Stack(
-            children: [
-              reference.latitude > 0 && reference.longitude > 0
-                  ? GoogleMap(
-                      markers: {
-                        if (reference.pickmark != null) reference.pickmark!,
-                        if (reference.dropmark != null) reference.dropmark!
-                      },
-                      onCameraIdle: () async {
-                        screenCoordinates = await mapController.getLatLng(ScreenCoordinate(
-                          x: (size.width * devicePixelRatio) ~/ 2.0,
-                          y: (size.height * devicePixelRatio) ~/ 2.0,
-                        ));
-                      },
-                      onMapCreated: ((controller) => mapController = controller),
-                      polylines: {
-                        if (reference.info.isNotEmpty)
-                          Polyline(
-                              endCap: Cap.roundCap,
-                              startCap: Cap.roundCap,
-                              polylineId: const PolylineId("direction"),
-                              points: reference.info,
-                              width: 3)
-                      },
-                      initialCameraPosition:
-                          CameraPosition(target: LatLng(reference.latitude, reference.longitude), zoom: 14),
-                      myLocationEnabled: true,
-                      zoomControlsEnabled: false,
-                    )
-                  : const Center(child: CircularProgressIndicator.adaptive()),
-              if (reference.isorigin && SetLocationPage.slider == 0)
-                Positioned(
-                  bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                      ? size.height * 0.1
-                      : (size.height - (size.height * 0.2)) / 2.0,
-                  left: (size.width - 30) / 2.0,
-                  child: Image.asset("assets/icon/pickmarker.png"),
-                  height: 45,
-                ),
-              if (reference.isorigin && SetLocationPage.slider == 1)
-                Positioned(
-                  bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                      ? size.height * 0.1
-                      : (size.height - (size.height * 0.2)) / 2.0,
-                  left: (size.width - 30) / 2.0,
-                  child: Image.asset("assets/icon/dropmarker.png"),
-                  height: 45,
-                ),
-              Column(
-                children: [
-                  Card(
-                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                    child: Row(children: [
-                      SizedBox(
-                        height: size.height * 0.15,
-                        child: RotatedBox(
-                          quarterTurns: 1,
-                          child: SliderTheme(
-                              data: SliderThemeData(
-                                  trackHeight: 1.0,
-                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-                                  disabledThumbColor: Palette.kOrange[50],
-                                  disabledActiveTrackColor: Palette.kOrange),
-                              child: Slider(value: SetLocationPage.slider, min: 0, max: 1, onChanged: null)),
-                        ),
-                      ),
-                      Expanded(
-                          child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // textfields(0, "Pickup Location", SetLocationPage.pickup),
-                          // textfields(1, "Delivery Location", SetLocationPage.delivery)
-                          FocusScope(
-                              child: Focus(
-                                  onFocusChange: (value) => reference.setfocus(0, value),
-                                  child: textfields(0, "Pickup Location", SetLocationPage.pickup))),
-                          FocusScope(
-                              child: Focus(
-                                  onFocusChange: (value) => reference.setfocus(1, value),
-                                  child: textfields(1, "Delivery Location", SetLocationPage.delivery)))
-                        ],
-                      ))
-                    ]),
+      return WillPopScope(
+        onWillPop: () {
+          Variables.pop(context);
+          return Future.value(true);
+        },
+        child: Scaffold(
+            appBar: Variables.app(),
+            body: Stack(
+              children: [
+                reference.latitude > 0 && reference.longitude > 0
+                    ? GoogleMap(
+                        markers: {
+                          if (reference.pickmark != null) reference.pickmark!,
+                          if (reference.dropmark != null) reference.dropmark!
+                        },
+                        onCameraIdle: () async {
+                          screenCoordinates = await mapController.getLatLng(ScreenCoordinate(
+                            x: (size.width * devicePixelRatio) ~/ 2.0,
+                            y: (size.height * devicePixelRatio) ~/ 2.0,
+                          ));
+                        },
+                        onMapCreated: ((controller) => mapController = controller),
+                        polylines: {
+                          if (reference.info.isNotEmpty)
+                            Polyline(
+                                endCap: Cap.roundCap,
+                                startCap: Cap.roundCap,
+                                polylineId: const PolylineId("direction"),
+                                points: reference.info,
+                                width: 3)
+                        },
+                        initialCameraPosition:
+                            CameraPosition(target: LatLng(reference.latitude, reference.longitude), zoom: 14),
+                        myLocationEnabled: true,
+                        zoomControlsEnabled: false,
+                      )
+                    : const Center(child: CircularProgressIndicator.adaptive()),
+                if (reference.isorigin && SetLocationPage.slider == 0)
+                  Positioned(
+                    bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                        ? size.height * 0.1
+                        : (size.height - (size.height * 0.2)) / 2.0,
+                    left: (size.width - 30) / 2.0,
+                    child: Image.asset("assets/icon/pickmarker.png"),
+                    height: 45,
                   ),
-                ],
-              ),
-              if (reference.placesList.isNotEmpty && reference.focus[SetLocationPage.slider.toInt()])
-                Container(
-                    margin: EdgeInsets.only(
-                        top: SetLocationPage.slider == 0 ? 70 : 140,
-                        left: 15,
-                        right: 10,
-                        bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 0 : 15),
-                    child: Material(
-                        type: MaterialType.card,
-                        elevation: 5,
-                        child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          Expanded(
-                              child: ListView.separated(
-                                  shrinkWrap: true,
-                                  itemCount: reference.placesList.length,
-                                  separatorBuilder: (BuildContext context, int index) => const Divider(),
-                                  itemBuilder: (context, index) {
-                                    String addressType2 = recentAddress.isNotEmpty && index < recentAddress.length
-                                        ? recentAddress[index].addressType
-                                        : "OTHER";
-                                    return InkWell(
-                                        onTap: () {
-                                          if (recentAddress.isNotEmpty && index < recentAddress.length) {
-                                            if (SetLocationPage.slider == 0) {
-                                              SetLocationPage.pickup.text = recentAddress[index].address1;
-                                              screenCoordinates =
-                                                  LatLng(recentAddress[index].latitude, recentAddress[index].longitude);
-                                              mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                  CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                            } else {
-                                              SetLocationPage.delivery.text = recentAddress[index].address1;
-                                              screenCoordinates =
-                                                  LatLng(recentAddress[index].latitude, recentAddress[index].longitude);
-                                              mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                  CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                            }
-                                          } else {
-                                            if (SetLocationPage.slider == 0) {
-                                              SetLocationPage.pickup.text = reference.placesList[index].description;
-                                              reference
-                                                  .getPlaceDetails(reference.placesList[index].place_id)
-                                                  .then((value) {
-                                                var location = reference.placesDetails.result.geometry.location;
-                                                screenCoordinates = LatLng(location.lat, location.lng);
+                if (reference.isorigin && SetLocationPage.slider == 1)
+                  Positioned(
+                    bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                        ? size.height * 0.1
+                        : (size.height - (size.height * 0.2)) / 2.0,
+                    left: (size.width - 30) / 2.0,
+                    child: Image.asset("assets/icon/dropmarker.png"),
+                    height: 45,
+                  ),
+                Column(
+                  children: [
+                    Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                      child: Row(children: [
+                        SizedBox(
+                          height: size.height * 0.15,
+                          child: RotatedBox(
+                            quarterTurns: 1,
+                            child: SliderTheme(
+                                data: SliderThemeData(
+                                    trackHeight: 1.0,
+                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                                    disabledThumbColor: Palette.kOrange[50],
+                                    disabledActiveTrackColor: Palette.kOrange),
+                                child: Slider(value: SetLocationPage.slider, min: 0, max: 1, onChanged: null)),
+                          ),
+                        ),
+                        Expanded(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // textfields(0, "Pickup Location", SetLocationPage.pickup),
+                            // textfields(1, "Delivery Location", SetLocationPage.delivery)
+                            FocusScope(
+                                child: Focus(
+                                    onFocusChange: (value) => reference.setfocus(0, value),
+                                    child: textfields(0, "Pickup Location", SetLocationPage.pickup))),
+                            FocusScope(
+                                child: Focus(
+                                    onFocusChange: (value) => reference.setfocus(1, value),
+                                    child: textfields(1, "Delivery Location", SetLocationPage.delivery)))
+                          ],
+                        ))
+                      ]),
+                    ),
+                  ],
+                ),
+                if (reference.placesList.isNotEmpty && reference.focus[SetLocationPage.slider.toInt()])
+                  Container(
+                      margin: EdgeInsets.only(
+                          top: SetLocationPage.slider == 0 ? 70 : 140,
+                          left: 15,
+                          right: 10,
+                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 0 : 15),
+                      child: Material(
+                          type: MaterialType.card,
+                          elevation: 5,
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            Expanded(
+                                child: ListView.separated(
+                                    shrinkWrap: true,
+                                    itemCount: reference.placesList.length,
+                                    separatorBuilder: (BuildContext context, int index) => const Divider(),
+                                    itemBuilder: (context, index) {
+                                      String addressType2 = recentAddress.isNotEmpty && index < recentAddress.length
+                                          ? recentAddress[index].addressType
+                                          : "OTHER";
+                                      return InkWell(
+                                          onTap: () {
+                                            if (recentAddress.isNotEmpty && index < recentAddress.length) {
+                                              if (SetLocationPage.slider == 0) {
+                                                SetLocationPage.pickup.text = recentAddress[index].address1;
+                                                screenCoordinates = LatLng(
+                                                    recentAddress[index].latitude, recentAddress[index].longitude);
                                                 mapController.animateCamera(CameraUpdate.newCameraPosition(
                                                     CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                              });
-                                            } else {
-                                              SetLocationPage.delivery.text = reference.placesList[index].description;
-                                              reference
-                                                  .getPlaceDetails(reference.placesList[index].place_id)
-                                                  .then((value) {
-                                                var location = reference.placesDetails.result.geometry.location;
-                                                screenCoordinates = LatLng(location.lat, location.lng);
+                                              } else {
+                                                SetLocationPage.delivery.text = recentAddress[index].address1;
+                                                screenCoordinates = LatLng(
+                                                    recentAddress[index].latitude, recentAddress[index].longitude);
                                                 mapController.animateCamera(CameraUpdate.newCameraPosition(
                                                     CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                              });
+                                              }
+                                            } else {
+                                              if (SetLocationPage.slider == 0) {
+                                                SetLocationPage.pickup.text = reference.placesList[index].description;
+                                                reference
+                                                    .getPlaceDetails(reference.placesList[index].place_id)
+                                                    .then((value) {
+                                                  var location = reference.placesDetails.result.geometry.location;
+                                                  screenCoordinates = LatLng(location.lat, location.lng);
+                                                  mapController.animateCamera(CameraUpdate.newCameraPosition(
+                                                      CameraPosition(target: screenCoordinates!, zoom: 17)));
+                                                });
+                                              } else {
+                                                SetLocationPage.delivery.text = reference.placesList[index].description;
+                                                reference
+                                                    .getPlaceDetails(reference.placesList[index].place_id)
+                                                    .then((value) {
+                                                  var location = reference.placesDetails.result.geometry.location;
+                                                  screenCoordinates = LatLng(location.lat, location.lng);
+                                                  mapController.animateCamera(CameraUpdate.newCameraPosition(
+                                                      CameraPosition(target: screenCoordinates!, zoom: 17)));
+                                                });
+                                              }
                                             }
-                                          }
-                                          reference.clear(value: true);
-                                          reference.setfocus(SetLocationPage.slider.toInt(), false);
-                                          SetLocationPage.listIndex = index;
-                                        },
-                                        child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Row(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: index < recentAddress.length
-                                                      ? recentAddress[index].addressType == "CURRENT"
-                                                          ? Icon(Icons.location_searching_rounded,
-                                                              color: Colors.blue.shade300)
-                                                          : recentAddress[index].addressType == "HOME"
-                                                              ? Icon(Icons.home, color: Colors.grey.shade600)
-                                                              : recentAddress[index].addressType == "OFFICE"
-                                                                  ? Icon(Icons.work, color: Colors.grey.shade600)
-                                                                  : Icon(Icons.history_sharp,
-                                                                      color: Colors.grey.shade600)
-                                                      : Icon(Icons.location_pin, color: Colors.grey.shade600),
-                                                ),
-                                                const SizedBox(width: 15),
-                                                Expanded(
-                                                  child: Text(
-                                                      index < recentAddress.length
-                                                          ? recentAddress[index].addressType == "CURRENT"
-                                                              ? "My Current Location"
-                                                              : recentAddress[index].addressType == "OTHER"
-                                                                  ? recentAddress[index].address1
-                                                                  : addressType2[0] +
-                                                                      addressType2.substring(1).toLowerCase()
-                                                          : reference.placesList[index].description,
-                                                      style: Variables.font()),
-                                                )
-                                              ],
-                                            )));
-                                  }))
-                        ])))
-            ],
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: reference.isorigin
-              ? FloatingActionButton.extended(
-                  onPressed: () {
-                    String state = "", city = "", pincode = "";
-                    if (SetLocationPage.listIndex >= recentAddress.length) {
-                      state = reference.placesDetails.result.addressComponents
-                          .where((element) => element.types.contains("administrative_area_level_1"))
-                          .first
-                          .longName;
-                      city = reference.placesDetails.result.addressComponents
-                          .where((element) => element.types.contains("administrative_area_level_2"))
-                          .first
-                          .longName;
-                      pincode = reference.placesDetails.result.addressComponents
-                              .where((element) => element.types.contains("postal_code"))
-                              .isNotEmpty
-                          ? reference.placesDetails.result.addressComponents
-                              .where((element) => element.types.contains("postal_code"))
-                              .first
-                              .longName
-                          : "0";
-                    } else {
-                      state = recentAddress[SetLocationPage.listIndex].state;
-                      city = recentAddress[SetLocationPage.listIndex].city;
-                      pincode = recentAddress[SetLocationPage.listIndex].pincode.toString();
-                    }
-                    Map<String, dynamic> address = {
-                      'address1':
-                          SetLocationPage.slider == 0 ? SetLocationPage.pickup.text : SetLocationPage.delivery.text,
-                      'city': city,
-                      'customerId': Variables.driverId,
-                      'latitude': screenCoordinates!.latitude,
-                      'longitude': screenCoordinates!.longitude,
-                      'pincode': int.parse(pincode),
-                      'state': state,
-                      'type': "OTHER",
-                    };
-                    if (SetLocationPage.slider == 0) {
-                      reference.setMarkers(mapController, pickup: screenCoordinates);
-                      getAddressesProvider!.setAddress(address, isdelivery: false);
-                      reference.clear(value: false);
-                    } else {
-                      getAddressesProvider!.setAddress(address, isdelivery: true);
-                      reference.setMarkers(mapController, delivery: screenCoordinates);
-                      reference.clear(value: false);
-                    }
-                  },
-                  label: Text(
-                    "Cofirm Location",
-                    style: Variables.font(color: null, fontSize: 15),
-                  ))
-              : reference.pickmark != null && reference.dropmark != null
-                  ? FloatingActionButton(
-                      onPressed: () {
-                        Variables.push(context, const ConfirmAddressPage());
-                      },
-                      child: const Icon(Icons.keyboard_arrow_right_rounded),
-                    )
-                  : null);
+                                            reference.clear(value: true);
+                                            reference.setfocus(SetLocationPage.slider.toInt(), false);
+                                            SetLocationPage.listIndex = index;
+                                          },
+                                          child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: index < recentAddress.length
+                                                        ? recentAddress[index].addressType == "CURRENT"
+                                                            ? Icon(Icons.location_searching_rounded,
+                                                                color: Colors.blue.shade300)
+                                                            : recentAddress[index].addressType == "HOME"
+                                                                ? Icon(Icons.home, color: Colors.grey.shade600)
+                                                                : recentAddress[index].addressType == "OFFICE"
+                                                                    ? Icon(Icons.work, color: Colors.grey.shade600)
+                                                                    : Icon(Icons.history_sharp,
+                                                                        color: Colors.grey.shade600)
+                                                        : Icon(Icons.location_pin, color: Colors.grey.shade600),
+                                                  ),
+                                                  const SizedBox(width: 15),
+                                                  Expanded(
+                                                    child: Text(
+                                                        index < recentAddress.length
+                                                            ? recentAddress[index].addressType == "CURRENT"
+                                                                ? "My Current Location"
+                                                                : recentAddress[index].addressType == "OTHER"
+                                                                    ? recentAddress[index].address1
+                                                                    : addressType2[0] +
+                                                                        addressType2.substring(1).toLowerCase()
+                                                            : reference.placesList[index].description,
+                                                        style: Variables.font()),
+                                                  )
+                                                ],
+                                              )));
+                                    }))
+                          ])))
+              ],
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: reference.isorigin
+                ? FloatingActionButton.extended(
+                    onPressed: () {
+                      String state = "", city = "", pincode = "";
+                      if (SetLocationPage.listIndex >= recentAddress.length) {
+                        state = reference.placesDetails.result.addressComponents
+                            .where((element) => element.types.contains("administrative_area_level_1"))
+                            .first
+                            .longName;
+                        city = reference.placesDetails.result.addressComponents
+                            .where((element) => element.types.contains("administrative_area_level_2"))
+                            .first
+                            .longName;
+                        pincode = reference.placesDetails.result.addressComponents
+                                .where((element) => element.types.contains("postal_code"))
+                                .isNotEmpty
+                            ? reference.placesDetails.result.addressComponents
+                                .where((element) => element.types.contains("postal_code"))
+                                .first
+                                .longName
+                            : "0";
+                      } else {
+                        state = recentAddress[SetLocationPage.listIndex].state;
+                        city = recentAddress[SetLocationPage.listIndex].city;
+                        pincode = recentAddress[SetLocationPage.listIndex].pincode.toString();
+                      }
+                      Map<String, dynamic> address = {
+                        'address1':
+                            SetLocationPage.slider == 0 ? SetLocationPage.pickup.text : SetLocationPage.delivery.text,
+                        'city': city,
+                        'customerId': Variables.driverId,
+                        'latitude': screenCoordinates!.latitude,
+                        'longitude': screenCoordinates!.longitude,
+                        'pincode': int.parse(pincode),
+                        'state': state,
+                        'type': "OTHER",
+                      };
+                      if (SetLocationPage.slider == 0) {
+                        reference.setMarkers(mapController, pickup: screenCoordinates);
+                        getAddressesProvider!.setAddress(address, isdelivery: false);
+                        reference.clear(value: false);
+                      } else {
+                        getAddressesProvider!.setAddress(address, isdelivery: true);
+                        reference.setMarkers(mapController, delivery: screenCoordinates);
+                        reference.clear(value: false);
+                      }
+                    },
+                    label: Text(
+                      "Cofirm Location",
+                      style: Variables.font(color: null, fontSize: 15),
+                    ))
+                : reference.pickmark != null && reference.dropmark != null
+                    ? FloatingActionButton(
+                        onPressed: () {
+                          Variables.push(context, const ConfirmAddressPage());
+                        },
+                        child: const Icon(Icons.keyboard_arrow_right_rounded),
+                      )
+                    : null),
+      );
     });
   }
 

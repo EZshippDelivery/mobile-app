@@ -1,5 +1,4 @@
 import 'package:ezshipp/Provider/update_profile_provider.dart';
-import 'package:ezshipp/pages/profilepage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -120,5 +119,30 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         );
       }),
     );
+  }
+}
+
+class Clipper extends CustomClipper<Path> {
+  int _cut = 0;
+  int _curve = 0;
+  Clipper({required int cut, int curve = 0}) {
+    _cut = cut;
+    _curve = curve;
+  }
+
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - _cut);
+    var controlpoint = Offset(size.width / 2, size.height + 10 + _curve);
+    var endpoint = Offset(size.width, size.height - _cut);
+    path.quadraticBezierTo(controlpoint.dx, controlpoint.dy, endpoint.dx, endpoint.dy);
+    path.lineTo(size.width, 0);
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    return true;
   }
 }

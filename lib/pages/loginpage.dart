@@ -198,58 +198,58 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       );
 
   setdetails() async {
-    await Variables.pref.write(key: "username", value: TextFields.data["Email id"].toString());
-    await Variables.pref.write(key: "password", value: TextFields.data["Password"].toString());
-    final list = await Variables.pref.read(key: "usertype");
+    await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
+    await Variables.write(key: "password", value: TextFields.data["Password"].toString());
+    final list = await Variables.read(key: "usertype");
     final data = list == null ? [] : List.from(jsonDecode(list));
     if (data.isEmpty) {
-      await Variables.pref.write(key: "usertype", value: jsonEncode([updateLoginProvider.userType]));
+      await Variables.write(key: "usertype", value: jsonEncode([updateLoginProvider.userType]));
       await settype(0, Variables.pref);
     } else {
       var data1 = data.toSet();
       data1.add(updateLoginProvider.userType);
-      await Variables.pref.write(key: "usertype", value: jsonEncode(data1.toList()));
+      await Variables.write(key: "usertype", value: jsonEncode(data1.toList()));
       if (data1.length == 1) {
         await settype(0, Variables.pref);
       } else {
         await settype(1, Variables.pref);
       }
     }
-    await Variables.pref.write(key: "mobileSignUp", value: true.toString());
+    await Variables.write(key: "mobileSignUp", value: true.toString());
     if (updateLoginProvider.userType == "driver") {
-      await Variables.pref.write(key: "enterKYC", value: true.toString());
+      await Variables.write(key: "enterKYC", value: true.toString());
     } else {
-      await Variables.pref.write(key: "enterKYC", value: false.toString());
+      await Variables.write(key: "enterKYC", value: false.toString());
     }
   }
 
   settype(int index, FlutterSecureStorage pref) async {
-    await Variables.pref.write(key: "type-index", value: index.toString());
+    await Variables.write(key: "type-index", value: index.toString());
     return index;
   }
 
   getdetails() async {
-    Variables.pref.write(key: "islogin", value: true.toString());
+    Variables.write(key: "islogin", value: true.toString());
     try {
-      bool username = (await Variables.pref.read(key: "username")) == TextFields.data["Phone number"];
-      bool username1 = (await Variables.pref.read(key: "username1")) == TextFields.data["Phone number"];
-      bool username2 = (await Variables.pref.read(key: "username2")) == TextFields.data["Phone number"];
-      bool password = (await Variables.pref.read(key: "password")) == TextFields.data["Password"];
-      bool password1 = (await Variables.pref.read(key: "password1")) == TextFields.data["Password"];
-      bool password2 = (await Variables.pref.read(key: "password2")) == TextFields.data["Password"];
-      final kyc = await Variables.pref.read(key: "enterKYC");
-      final index = await Variables.pref.read(key: "type-index");
+      bool username = (await Variables.read(key: "username")) == TextFields.data["Phone number"];
+      bool username1 = (await Variables.read(key: "username1")) == TextFields.data["Phone number"];
+      bool username2 = (await Variables.read(key: "username2")) == TextFields.data["Phone number"];
+      bool password = (await Variables.read(key: "password")) == TextFields.data["Password"];
+      bool password1 = (await Variables.read(key: "password1")) == TextFields.data["Password"];
+      bool password2 = (await Variables.read(key: "password2")) == TextFields.data["Password"];
+      final kyc = await Variables.read(key: "enterKYC");
+      final index = await Variables.read(key: "type-index");
       enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
       typeIndex = index == null ? 0 : int.parse(index);
 
       if (username && password) {
-        final list = await Variables.pref.read(key: "usertype");
+        final list = await Variables.read(key: "usertype");
         userType = list != null ? List.from(jsonDecode(list)) : ["driver"];
       } else if (username1 && password1) {
-        final string = await Variables.pref.read(key: "usertype1");
+        final string = await Variables.read(key: "usertype1");
         userType = [string ?? "driver"];
       } else if (username2 && password2) {
-        final string = await Variables.pref.read(key: "usertype2");
+        final string = await Variables.read(key: "usertype2");
         userType = [string ?? "customer"];
       } else {
         updateLoginProvider

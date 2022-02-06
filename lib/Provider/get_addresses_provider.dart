@@ -23,7 +23,7 @@ class GetAddressesProvider extends ChangeNotifier {
 
   getAllAddresses() async {
     try {
-      final string = await Variables.pref.read(key: "savedAddress");
+      final string = await Variables.read(key: "savedAddress");
       final list = string != null ? jsonDecode(string) : [];
       if (list.isEmpty) {
         final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
@@ -32,7 +32,7 @@ class GetAddressesProvider extends ChangeNotifier {
           getallAdresses = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
           getallAdresses.sort((a, b) => a.addressType.compareTo(b.addressType));
           var value = getallAdresses.map((e) => e.toJson()).toList();
-          Variables.pref.write(key: "savedAddress", value: jsonEncode(value));
+          Variables.write(key: "savedAddress", value: jsonEncode(value));
         }
       } else {
         getallAdresses = list.map<GetAllAddresses>((e) => GetAllAddresses.fromJson(e)).toList();

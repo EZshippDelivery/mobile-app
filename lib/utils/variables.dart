@@ -28,7 +28,10 @@ class Variables {
   static Map<String, String?> locations = {};
   static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
   static int driverId = 18;
-  static const pref = FlutterSecureStorage(aOptions: AndroidOptions(encryptedSharedPreferences: true));
+  static final pref = FlutterSecureStorage(aOptions: _getAndroidOptions());
+  static AndroidOptions _getAndroidOptions() => const AndroidOptions(
+        encryptedSharedPreferences: true,
+      );
 
   static String referalCode = "";
   static String subject = "EZShipp - A Fastest Delivery App";
@@ -81,7 +84,9 @@ class Variables {
   static InternetConnectionStatus internetStatus = InternetConnectionStatus.disconnected;
 
   static List device = ["ANDROID", "IOS", "WEB"];
-
+  static read({String key = ''}) async => await pref.read(key: key, aOptions: _getAndroidOptions());
+  static write({String key = "", String value = ""}) async =>
+      await pref.write(key: key, value: value, aOptions: _getAndroidOptions());
   static push(BuildContext context, Widget route) => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => route,
       ));
