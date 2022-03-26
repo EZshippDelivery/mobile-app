@@ -1,4 +1,3 @@
-import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
@@ -9,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../Provider/update_profile_provider.dart';
+import '../Provider/update_screenprovider.dart';
 
 // ignore: must_be_immutable
 class SignUp extends StatefulWidget {
@@ -21,8 +21,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-
-  
   @override
   void initState() {
     super.initState();
@@ -51,14 +49,11 @@ class _SignUpState extends State<SignUp> {
                   ]);
                 }),
                 TextFields(title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress),
-                Consumer<UpdateLoginProvider>(builder: (context, reference, child) {
-                  return TextFields(
-                    title: "Phone number",
-                    icon: const Icon(Icons.phone_enabled_rounded),
-                    type: TextInputType.number,
-                    verify: reference.userType != "driver",
-                  );
-                }),
+                TextFields(
+                  title: "Phone number",
+                  icon: const Icon(Icons.phone_enabled_rounded),
+                  type: TextInputType.number,
+                ),
                 TextFields(
                     title: "Password",
                     icon: const Icon(Icons.lock_outline),
@@ -69,31 +64,36 @@ class _SignUpState extends State<SignUp> {
                     icon: const Icon(Icons.lock_outline),
                     type: TextInputType.visiblePassword,
                     hidepass: true),
-                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  Checkbox(
-                    value: SignUp.check,
-                    onChanged: (value) => SignUp.check = value!,
-                    activeColor: Palette.kOrange,
-                  ),
-                  Expanded(
-                      child: RichText(
-                          text: TextSpan(
-                              text: "I accept ",
-                              style: Variables.font(color: Palette.deepgrey, fontSize: 15),
-                              children: [
-                        TextSpan(
-                            text: "Terms & Conditions",
-                            style: Variables.font(color: Palette.kOrange, fontSize: 15),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () => _launchURL("https://www.ezshipp.com/terms-conditions/")),
-                        const TextSpan(text: " and "),
-                        TextSpan(
-                            text: "Package & Delivery Policies",
-                            style: Variables.font(color: Palette.kOrange, fontSize: 15),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () => _launchURL("https://www.ezshipp.com/package-delivery-policy/"))
-                      ])))
-                ]),
+                Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
+                  return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Checkbox(
+                      value: SignUp.check,
+                      onChanged: (value) {
+                        SignUp.check = value!;
+                        reference.updateScreen();
+                      },
+                      activeColor: Palette.kOrange,
+                    ),
+                    Expanded(
+                        child: RichText(
+                            text: TextSpan(
+                                text: "I accept ",
+                                style: Variables.font(color: Palette.deepgrey, fontSize: 15),
+                                children: [
+                          TextSpan(
+                              text: "Terms & Conditions",
+                              style: Variables.font(color: Palette.kOrange, fontSize: 15),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => _launchURL("https://www.ezshipp.com/terms-conditions/")),
+                          const TextSpan(text: " and "),
+                          TextSpan(
+                              text: "Package & Delivery Policies",
+                              style: Variables.font(color: Palette.kOrange, fontSize: 15),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => _launchURL("https://www.ezshipp.com/package-delivery-policy/"))
+                        ])))
+                  ]);
+                }),
                 const SizedBox(
                   height: 50,
                 )

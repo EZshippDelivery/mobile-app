@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../Provider/get_addresses_provider.dart';
 
 class AddAddressPage extends StatefulWidget {
+  static String routeName = "/add-address";
   static List<bool> addresstypesC = [false, false, true];
   static int temp = 2;
   static Object? selectedradio;
@@ -44,7 +45,12 @@ class _AddAddressPageState extends State<AddAddressPage> {
               child: TextButton(
                 onPressed: () {
                   if (formkey.currentState!.validate()) {
-                    getAddressesProvider.addAddresses(getAddressesProvider.addAddress.toJson());
+                    getAddressesProvider.addAddresses(context, getAddressesProvider.addAddress.toJson());
+                    Variables.showtoast(context, "Address Saved",Icons.check);
+                    AddAddressPage.controller.clear();
+                    getAddressesProvider.getAllAddresses(
+                      context
+                    );
                     Variables.pop(context);
                   }
                 },
@@ -117,7 +123,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
         keyboardType: TextInputType.streetAddress,
         onTap: ontap
             ? () {
-                Variables.push(context, const SetAddressPage());
+                Variables.push(context, SetAddressPage.routeName);
               }
             : null,
         onChanged: (value) {

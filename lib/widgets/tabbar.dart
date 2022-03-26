@@ -60,7 +60,17 @@ class TabBars {
                 height: 45,
               ),
               if (count > 0)
-                const Positioned(top: 0, right: 0, child: CircleAvatar(backgroundColor: Palette.deepgrey, radius: 10))
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      backgroundColor: Palette.deepgrey,
+                      radius: 10,
+                      child: Text(
+                        count.toString(),
+                        style: Variables.font(color: Colors.white, fontSize: 10),
+                      ),
+                    ))
             ],
           ),
         )

@@ -21,7 +21,7 @@ class _MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
-    updateOrderProvider.accepted(1, false);
+    updateOrderProvider.accepted(context, 1, false);
     tabController = TabController(length: 2, vsync: this);
   }
 

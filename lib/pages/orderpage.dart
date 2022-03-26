@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // ignore: must_be_immutable
 class Order extends StatefulWidget {
+  static String routeName = "/order-tracking";
   int index;
   bool accepted;
   Order({
@@ -54,7 +55,7 @@ class _OrderState extends State<Order> {
               IconButton(
                   onPressed: () async {
                     Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
-                    Variables.updateOrder(reference, widget.index, 8);
+                    Variables.updateOrder(context, reference, widget.index, 8);
                     if (timer != null) timer!.cancel();
                     Variables.pop(context);
                   },
@@ -72,7 +73,7 @@ class _OrderState extends State<Order> {
                   if (reference1.dropmark != null) reference1.dropmark!
                 },
                 onMapCreated: (controller) {
-                  reference1.directions(controller, list);
+                  reference1.directions(context, controller, list);
                 },
                 polylines: {Polyline(polylineId: const PolylineId("origin"), points: reference1.info, width: 3)},
               );
@@ -99,7 +100,7 @@ class _OrderState extends State<Order> {
                                       ),
                                       if (list.statusId > 5 && list.statusId < 12)
                                         TextButton(
-                                            onPressed: () => Variables.push(context, const ZonedPage()),
+                                            onPressed: () => Variables.push(context, ZonedPage.routeName),
                                             child: Text(
                                               "Zone At Hub",
                                               style: Variables.font(fontSize: 15, color: null),
@@ -113,8 +114,10 @@ class _OrderState extends State<Order> {
                                     children: [
                                       Variables.text(head: "Status: ", value: list.status, valueColor: Palette.kOrange),
                                       TextButton(
-                                          onPressed: () =>
-                                              Variables.push(context, DeliveredPage(reference: list, isdetails: true)),
+                                          onPressed: () {
+                                            Variables.list = list;
+                                            Variables.push(context, DeliveredPage.routeName);
+                                          },
                                           child: Text(
                                             "View more",
                                             style: Variables.font(color: null),
@@ -144,7 +147,8 @@ class _OrderState extends State<Order> {
                                                 var url = "tel:${list.receiverPhone}";
                                                 await canLaunch(url)
                                                     ? launch(url)
-                                                    : Variables.showtoast("Unable to open Phone App");
+                                                    : Variables.showtoast(
+                                                        context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   primary: Colors.green,
@@ -207,7 +211,8 @@ class _OrderState extends State<Order> {
                                                 var url = "tel:${list.receiverPhone}";
                                                 await canLaunch(url)
                                                     ? launch(url)
-                                                    : Variables.showtoast("Unable to open Phone App");
+                                                    : Variables.showtoast(
+                                                        context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   primary: Colors.green,
@@ -269,7 +274,8 @@ class _OrderState extends State<Order> {
                                                                     Variables.cancelReasons[index][1];
                                                                 Variables.updateOrderMap.cancelReasonId =
                                                                     Variables.cancelReasons[index][0];
-                                                                Variables.updateOrder(reference, widget.index, 14);
+                                                                Variables.updateOrder(
+                                                                    context, reference, widget.index, 14);
                                                                 Variables.pop(context,
                                                                     value: Variables.cancelReasons[index][3] == 1
                                                                         ? true
@@ -330,13 +336,14 @@ class _OrderState extends State<Order> {
                                             void launchApps(urlString) async {
                                               await canLaunch(urlString)
                                                   ? launch(urlString)
-                                                  : Variables.showtoast("Can't open Google Maps");
+                                                  : Variables.showtoast(
+                                                      context, "Can't open Google Maps", Icons.cancel_outlined);
                                             }
 
                                             await getLiveLocation();
 
                                             if (list.statusId < 5) {
-                                              await mapsProvider.directions(null, null, places: [
+                                              await mapsProvider.directions(context, null, null, places: [
                                                 LatLng(Variables.updateOrderMap.latitude,
                                                     Variables.updateOrderMap.longitude),
                                                 LatLng(list.pickLatitude, list.pickLongitude)
@@ -347,68 +354,70 @@ class _OrderState extends State<Order> {
                                               });
                                               int temp = mapsProvider.directioDetails[0]["value"];
                                               Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(null, null, places: [
+                                                await mapsProvider.directions(context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(reference, widget.index, 4);
+                                                  Variables.updateOrder(context, reference, widget.index, 4);
                                                 }
                                                 timer.cancel();
                                               });
                                               Timer.periodic(
                                                   Duration(seconds: mapsProvider.directioDetails[1]["value"]),
                                                   (timer) async {
-                                                await mapsProvider.directions(null, null, places: [
+                                                await mapsProvider.directions(context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(reference, widget.index, 5);
+                                                  Variables.updateOrder(context, reference, widget.index, 5);
                                                 }
                                                 timer.cancel();
                                               });
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
-                                              Variables.updateOrder(reference, widget.index, 6);
-                                              await mapsProvider.directions(null, null, places: [
+                                              Variables.updateOrder(context, reference, widget.index, 6);
+                                              await mapsProvider.directions(context, null, null, places: [
                                                 LatLng(Variables.updateOrderMap.latitude,
                                                     Variables.updateOrderMap.longitude),
                                                 LatLng(list.dropLatitude, list.dropLongitude)
                                               ]);
                                               int temp = mapsProvider.directioDetails[0]["value"];
                                               Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(null, null, places: [
+                                                await mapsProvider.directions(context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(reference, widget.index, 9);
+                                                  Variables.updateOrder(context, reference, widget.index, 9);
                                                 }
                                                 timer.cancel();
                                               });
                                               timer = Timer.periodic(
                                                   Duration(seconds: mapsProvider.directioDetails[1]["value"]),
                                                   (timer) async {
-                                                await mapsProvider.directions(null, null, places: [
+                                                await mapsProvider.directions(context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(reference, widget.index, 11);
+                                                  Variables.updateOrder(context, reference, widget.index, 11);
                                                 }
                                                 timer.cancel();
                                               });
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                             } else if (list.statusId == 11) {
+                                              Variables.list1 = list;
+                                              Variables.index2 = widget.index;
                                               Variables.push(
-                                                  context, DeliveredPage(reference: list, index: widget.index));
+                                                  context, DeliveredPage.routeName);
                                             }
                                           },
                                           style: ElevatedButton.styleFrom(

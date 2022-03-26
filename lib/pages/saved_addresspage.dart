@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../utils/variables.dart';
 
 class SavedAddressPage extends StatefulWidget {
+  static String routeName = "/saved-addresses";
   static bool delete = false;
   const SavedAddressPage({Key? key}) : super(key: key);
 
@@ -26,6 +27,12 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
   void initState() {
     super.initState();
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    constructor();
+  }
+
+  void constructor() async {
+    await getAddressesProvider.getAllAddresses(
+      context);
   }
 
   @override
@@ -60,7 +67,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                     trailing: SavedAddressPage.delete
                         ? IconButton(
                             icon: const Icon(Icons.delete_forever_rounded),
-                            onPressed: () => reference.deleteAddress(reference.getallAdresses[index]),
+                            onPressed: () => reference.deleteAddress(context, reference.getallAdresses[index]),
                             padding: EdgeInsets.zero,
                             splashRadius: 20)
                         : null,
@@ -124,7 +131,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                                     Text("Cancel", style: Variables.font(color: null, fontSize: 16))),
                                             ElevatedButton(
                                                 onPressed: () {
-                                                  reference.deleteAddress(reference.getallAdresses[index]);
+                                                  reference.deleteAddress(context, reference.getallAdresses[index]);
                                                   Variables.pop(context);
                                                 },
                                                 child: Text("Delete", style: Variables.font(color: null, fontSize: 16)))
@@ -157,7 +164,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Variables.push(context, const AddAddressPage());
+          Variables.push(context, AddAddressPage.routeName);
         },
         label: Text("Add Address", style: Variables.font(color: null, fontSize: 15)),
         icon: const Icon(Icons.add_location_alt_rounded),

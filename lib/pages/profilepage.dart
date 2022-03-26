@@ -1,12 +1,13 @@
 import 'package:ezshipp/Provider/update_profile_provider.dart';
+import 'package:ezshipp/pages/editprofilepage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/variables.dart';
-import 'editprofilepage.dart';
 
 class ProfilePage extends StatefulWidget {
+  static String routeName = "/profile";
   const ProfilePage({Key? key}) : super(key: key);
 
   @override
@@ -123,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Align(
                 alignment: Alignment.topCenter,
                 child: FloatingActionButton.extended(
-                    onPressed: () => Variables.push(context, const EditProfilePage()),
+                    onPressed: () => Variables.push(context, EditProfilePage.routeName),
                     icon: const Icon(Icons.edit_outlined),
                     label: Text(
                       "Edit",

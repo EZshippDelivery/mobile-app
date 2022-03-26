@@ -27,7 +27,7 @@ class _AcceptedState extends State<Accepted> {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!updateOrderProvider.islastpageloaded1) {
           pageNumber += 1;
-          updateOrderProvider.accepted(pageNumber, false);
+          updateOrderProvider.accepted(context, pageNumber, false);
         }
       }
     });
@@ -64,7 +64,10 @@ class _AcceptedState extends State<Accepted> {
                       padding: const EdgeInsets.all(2.0),
                       child: ListTile(
                         tileColor: Colors.white,
-                        onTap: () => Variables.push(context, Order(index: index, accepted: true)),
+                        onTap: () {
+                          Variables.index1 = index;
+                          Variables.push(context,"/${reference.acceptedList[index].id}/true" +Order.routeName);
+                        },
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [

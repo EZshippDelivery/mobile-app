@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../APIs/get_top_addresses.dart';
 import '../APIs/places/place_search.dart';
@@ -27,7 +26,7 @@ class MapsProvider extends ChangeNotifier {
   double latitude = 0, longitude = 0;
   late PlaceDetails placesDetails;
   late PlaceAddress placeAddress;
-  bool isorigin = false, currentLocation = false, isOnline = false;
+  bool isclicked = false, currentLocation = false, isOnline = false;
   List boundsMap = [], directioDetails = [];
   Timer? timer, timer1;
 
@@ -37,7 +36,8 @@ class MapsProvider extends ChangeNotifier {
     getMarkers();
   }
 
-  dynamic _returnResponse(NewOrderList? reference, GoogleMapController? controller, dio.Response response) {
+  dynamic _returnResponse(
+      BuildContext context, NewOrderList? reference, GoogleMapController? controller, dio.Response response) {
     switch (response.statusCode) {
       case 200:
         var data = response.data;
@@ -63,24 +63,26 @@ class MapsProvider extends ChangeNotifier {
               infoWindow: InfoWindow(title: "Delivery Address", snippet: reference.dropAddress));
         }
         info = PolylinePoints().decodePolyline(encodedString).map((e) => LatLng(e.latitude, e.longitude)).toList();
-        Variables.showtoast("Status updated");
+        //Variables.showtoast("Status updated");
 
         break;
       case 400:
-        Variables.showtoast(response.data.toString());
+        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
         break;
       case 401:
       case 403:
-        Variables.showtoast(response.data.toString());
+        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
         break;
       case 500:
       default:
-        Variables.showtoast('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
+        Variables.showtoast(
+            context, 'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            Icons.warning_rounded);
         break;
     }
   }
 
-  dynamic returnResponse(dio.Response response, int details) {
+  dynamic returnResponse(BuildContext context, dio.Response response, int details) {
     switch (response.statusCode) {
       case 200:
         if (details == 0) {
@@ -93,20 +95,22 @@ class MapsProvider extends ChangeNotifier {
         }
         break;
       case 400:
-        Variables.showtoast(response.data.toString());
+        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
         break;
       case 401:
       case 403:
-        Variables.showtoast(response.data.toString());
+        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
         break;
       case 500:
       default:
-        Variables.showtoast('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
+        Variables.showtoast(
+            context, 'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            Icons.warning_rounded);
         break;
     }
   }
 
-  Future<void> directions(GoogleMapController? controller, NewOrderList? reference, {List<LatLng>? places}) async {
+  Future<void> directions(BuildContext context, GoogleMapController? controller, NewOrderList? reference, {List<LatLng>? places}) async {
     try {
       if (reference != null) {
         final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/directions/json?", queryParameters: {
@@ -114,7 +118,7 @@ class MapsProvider extends ChangeNotifier {
           "destination": "${reference.dropLatitude},${reference.dropLongitude}",
           "key": Variables.key
         });
-        _returnResponse(reference, controller, response);
+        _returnResponse(context, reference, controller, response);
       } else {
         if (places != null) {
           final response =
@@ -123,11 +127,11 @@ class MapsProvider extends ChangeNotifier {
             "destination": "${places[1].latitude},${places[1].longitude}",
             "key": Variables.key
           });
-          _returnResponse(null, controller, response);
+          _returnResponse(context, null, controller, response);
         }
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
@@ -141,7 +145,7 @@ class MapsProvider extends ChangeNotifier {
         await BitmapDescriptor.fromAssetImage(const ImageConfiguration(size: Size(10, 10)), "assets/icon/ic_rider.png");
   }
 
-  getAutoComplete(String value) async {
+  getAutoComplete(BuildContext context, String value) async {
     try {
       if (value.isNotEmpty) {
         final response =
@@ -154,17 +158,17 @@ class MapsProvider extends ChangeNotifier {
           "key": Variables.key,
           "components": "country:in"
         });
-        returnResponse(response, 0);
+        returnResponse(context, response, 0);
       } else {
         placesList.clear();
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  Future<void> getPlaceDetails(String value) async {
+  Future<void> getPlaceDetails(BuildContext context, String value) async {
     try {
       if (value.isNotEmpty) {
         final response =
@@ -172,18 +176,18 @@ class MapsProvider extends ChangeNotifier {
           "place_id": value,
           "key": Variables.key,
         });
-        returnResponse(response, 1);
+        returnResponse(context, response, 1);
       } else {
         placesList.clear();
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
   clear({bool? value}) {
-    isorigin = value ?? isorigin;
+    isclicked = value ?? isclicked;
     placesList.clear();
     notifyListeners();
   }
@@ -200,7 +204,7 @@ class MapsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  setMarkers(GoogleMapController controller, {pickup, delivery}) {
+  setMarkers(BuildContext context, GoogleMapController controller, {pickup, delivery}) {
     if (pickup != null) {
       pickmark = Marker(
           onTap: () =>
@@ -220,7 +224,7 @@ class MapsProvider extends ChangeNotifier {
           infoWindow: const InfoWindow(title: "Delivery Address"));
     }
     if (pickmark != null && dropmark != null) {
-      directions(controller, null, places: [pickmark!.position, dropmark!.position]).then((value) {
+      directions(context, controller, null, places: [pickmark!.position, dropmark!.position]).then((value) {
         var latLngBounds = LatLngBounds(southwest: boundsMap[1], northeast: boundsMap[0]);
         controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
       });
@@ -228,48 +232,39 @@ class MapsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  getTopAddresses(customerId) async {
+  getTopAddresses(BuildContext context, customerId) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         savedAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
         savedAddress.sort((a, b) => a.addressType.compareTo(b.addressType));
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
-    await setCurrentLocation(customerId);
+    await setCurrentLocation(context, customerId);
     notifyListeners();
   }
 
-  online(bool value, int bikerId, {bool fromhomepage = false}) async {
-    Directory dir;
-    dir = (await getExternalStorageDirectory())!;
-    File file = File("${dir.path}/location.json");
-    fileExists = file.existsSync();
+  online(BuildContext context, bool value, int bikerId, {bool fromhomepage = false}) async {
+    
     if (value) {
       timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
         await getCurrentlocations();
         final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
             jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-        writeToJsonFile(dir, file, {
-          "timestamp:": DateTime.now().toIso8601String(),
-          "driverId": bikerId,
-          "latitude": latitude,
-          "longitude": longitude,
-          "onlineMode": value
-        });
-        Variables.returnResponse(response, onlinemode: true);
+        
+        Variables.returnResponse(context, response, onlinemode: true);
       });
-      Variables.showtoast("You are in online mode ");
+      Variables.showtoast(context, "You are in online mode ",Icons.info_outline_rounded);
     } else {
       if (timer != null) timer!.cancel();
       await getCurrentlocations();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
           jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-      Variables.returnResponse(response, onlinemode: true);
-      Variables.showtoast("You are in offline mode ");
+      Variables.returnResponse(context, response, onlinemode: true);
+      Variables.showtoast(context, "You are in offline mode ",Icons.info_outline_rounded);
     }
 
     await Variables.write(key: "isOnline", value: value.toString());
@@ -277,14 +272,14 @@ class MapsProvider extends ChangeNotifier {
     if (!fromhomepage) notifyListeners();
   }
 
-  Future<void> setCurrentLocation(customerId) async {
+  Future<void> setCurrentLocation(BuildContext context, customerId) async {
     try {
       await getCurrentlocations();
       final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
         "latlng": "$latitude,$longitude",
         "key": Variables.key,
       });
-      returnResponse(response, 2);
+      returnResponse(context, response, 2);
       placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
           i.addressComponents.first.types.contains("premise")));
       placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
@@ -309,7 +304,7 @@ class MapsProvider extends ChangeNotifier {
       };
       savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
@@ -334,11 +329,11 @@ class MapsProvider extends ChangeNotifier {
     }
   }
 
-  livebikerTracking(int driverId, int orderId) {
+  livebikerTracking(BuildContext context, int driverId, int orderId) {
     timer1 = Timer.periodic(const Duration(seconds: 5), (time) async {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
-      Map<String, dynamic>? map = Variables.returnResponse(response);
+      Map<String, dynamic>? map = Variables.returnResponse(context, response);
       if (map != null) {
         driver = Marker(
             markerId: const MarkerId("origin"),

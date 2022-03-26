@@ -10,40 +10,30 @@ import 'package:ezshipp/utils/http_requests.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 
 class GetAddressesProvider extends ChangeNotifier {
   List<GetAllAddresses> getallAdresses = [];
-  int customerId = 18;
   AddAddress addAddress = AddAddress.fromMap({}), addAddress1 = AddAddress.fromMap({});
   int? pickAddressId, dropAddressId;
   CreateOrder createOrder = CreateOrder.fromMap({});
 
   int delivery = 0;
 
-  getAllAddresses() async {
+  getAllAddresses(BuildContext context) async {
     try {
-      final string = await Variables.read(key: "savedAddress");
-      final list = string != null ? jsonDecode(string) : [];
-      if (list.isEmpty) {
-        final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
-        var responseJson = Variables.returnResponse(response);
-        if (responseJson != null) {
-          getallAdresses = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
-          getallAdresses.sort((a, b) => a.addressType.compareTo(b.addressType));
-          var value = getallAdresses.map((e) => e.toJson()).toList();
-          Variables.write(key: "savedAddress", value: jsonEncode(value));
-        }
-      } else {
-        getallAdresses = list.map<GetAllAddresses>((e) => GetAllAddresses.fromJson(e)).toList();
+      final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/address"));
+      var responseJson = Variables.returnResponse(context, response);
+      if (responseJson != null) {
+        getallAdresses = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
+        getallAdresses.sort((a, b) => a.addressType.compareTo(b.addressType));
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  saveAllAddresses(AddAddress something, int index) async {
+  saveAllAddresses(BuildContext context, AddAddress something, int index) async {
     var check = getallAdresses
         .where((element) =>
             something.address1 == element.address1 &&
@@ -53,7 +43,7 @@ class GetAddressesProvider extends ChangeNotifier {
             something.landmark == element.landmark)
         .toList();
     if (check.isEmpty) {
-      final response = await addAddresses(something.toJson());
+      final response = await addAddresses(context, something.toJson());
       if (response != null) {
         if (index == 0) {
           createOrder.pickAddressId = response;
@@ -68,10 +58,10 @@ class GetAddressesProvider extends ChangeNotifier {
         createOrder.deliveryAddressId = check.first.addressId;
       }
     }
-    if (createOrder.deliveryAddressId > 0 && createOrder.pickAddressId > 0) getOrderCost();
+    if (createOrder.deliveryAddressId > 0 && createOrder.pickAddressId > 0) getOrderCost(context);
   }
 
-  getOrderCost() async {
+  getOrderCost(BuildContext context) async {
     Map<String, dynamic> map = {
       "bookingType": "SAMEDAY",
       "customerId": Variables.driverId,
@@ -80,35 +70,36 @@ class GetAddressesProvider extends ChangeNotifier {
     };
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/cost"), jsonEncode(map));
-      createOrder.deliveryCharge = Variables.returnResponse(response) ?? 0;
+      createOrder.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  addAddresses(body) async {
+  addAddresses(BuildContext context, String body) async {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/address/add"), body);
-      return Variables.returnResponse(response);
+      return Variables.returnResponse(context, response);
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  void deleteAddress(getAddress) async {
+  void deleteAddress(BuildContext context, getAddress) async {
     var removedAddress = getallAdresses.removeAt(getallAdresses.indexOf(getAddress));
-    Variables.showtoast("Address ID is ${removedAddress.addressId}");
+    Variables.showtoast(context, "Address ID is ${removedAddress.addressId}", Icons.info_outline_rounded);
     try {
-      final response = await delete(Variables.uri(path: "/customer/$customerId/address/${removedAddress.addressId}"));
-      var responseJson = Variables.returnResponse(response);
+      final response =
+          await delete(Variables.uri(path: "/customer/${Variables.driverId}/address/${removedAddress.addressId}"));
+      var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         getallAdresses = responseJson.map((e) => GetAllAddresses.fromMap(e)).toList();
         getallAdresses.sort((a, b) => a.addressType.compareTo(b.addressType));
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
@@ -131,15 +122,17 @@ class GetAddressesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void createOrderPost(BuildContext context) async {
+  createOrderPost(BuildContext context, UpdateOrderProvider update) async {
     try {
       final response =
           await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/create"), createOrder.toJson());
-      UpdateOrderProvider update = Provider.of(context, listen: false);
-      update.customerOrders.insert(0, NewOrderList.fromMap(Variables.returnResponse(response)));
-      Variables.showtoast("Order creted successfully");
+      final responseJson = Variables.returnResponse(context, response);
+      if (responseJson != null) {
+        update.customerOrders.insert(0, NewOrderList.fromMap(responseJson));
+        Variables.showtoast(context, "Order creted successfully", Icons.check);
+      }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }

@@ -1,6 +1,6 @@
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
-import 'package:ezshipp/utils/routes.dart';
+import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +41,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                       const SizedBox(width: 10),
                       InkWell(
-                        onTap: () => Variables.push(context, const ProfilePage()),
+                        onTap: () => Variables.push(context, ProfilePage.routeName),
                         child: Hero(
                           tag: "Driver Profile",
                           child: reference.getProfileImage(size: size.width / 3.7, canEdit: true),
@@ -64,21 +64,21 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   child: Text(reference1.isOnline ? "Online" : "Offline", style: Variables.font(fontSize: 15)),
                 ),
                 trailing: Switch.adaptive(
-                    value: reference1.isOnline, onChanged: (value) => reference1.online(value, Variables.driverId)),
+                    value: reference1.isOnline, onChanged: (value) => reference1.online(context, value, Variables.driverId)),
               );
             }),
             ...ListTile.divideTiles(context: context, tiles: [
               ListTile(
                   onTap: () {
                     Variables.pop(context);
-                    Variables.push(context, const ContactPage());
+                    Variables.push(context, ContactPage.routeName);
                   },
                   leading: Image.asset("assets/icon/icons8-online-support-150.png"),
                   title: Text("Contact us", style: Variables.font(fontSize: 15))),
               ListTile(
                   onTap: () {
                     Variables.pop(context);
-                    Variables.push(context, const AboutPage());
+                    Variables.push(context, AboutPage.routeName);
                   },
                   leading: Image.asset("assets/icon/icons8-about-100.png"),
                   title: Text("About", style: Variables.font(fontSize: 15))),
@@ -102,7 +102,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                 ),
                                 ElevatedButton(
                                     onPressed: () {
-                                      Navigator.of(context).popAndPushNamed(MyRoutes.loginpage);
+                                      Navigator.of(context).popAndPushNamed(LoginPage.routeName);
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),

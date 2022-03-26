@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 class SetLocationPage extends StatefulWidget {
+  static String routeName = "/set-location";
   static TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
   static double slider = 0;
   static int listIndex = 0;
@@ -21,6 +22,7 @@ class SetLocationPage extends StatefulWidget {
 }
 
 class _SetLocationPageState extends State<SetLocationPage> {
+  
   late MapsProvider mapsProvider;
 
   late GoogleMapController mapController;
@@ -33,7 +35,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     mapsProvider.getCurrentlocations();
-    mapsProvider.getTopAddresses(Variables.driverId);
+    mapsProvider.getTopAddresses(context, Variables.driverId);
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
   }
 
@@ -52,6 +54,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
             body: Stack(
               children: [
                 reference.latitude > 0 && reference.longitude > 0
+                    //Google Maps
                     ? GoogleMap(
                         markers: {
                           if (reference.pickmark != null) reference.pickmark!,
@@ -79,7 +82,8 @@ class _SetLocationPageState extends State<SetLocationPage> {
                         zoomControlsEnabled: false,
                       )
                     : const Center(child: CircularProgressIndicator.adaptive()),
-                if (reference.isorigin && SetLocationPage.slider == 0)
+                // Pickup loctioan pin on screen when slider equals to 1 and pickup textfield is tapped
+                if (reference.isclicked && SetLocationPage.slider == 0) //
                   Positioned(
                     bottom: MediaQuery.of(context).viewInsets.bottom > 0
                         ? size.height * 0.1
@@ -88,7 +92,8 @@ class _SetLocationPageState extends State<SetLocationPage> {
                     child: Image.asset("assets/icon/pickmarker.png"),
                     height: 45,
                   ),
-                if (reference.isorigin && SetLocationPage.slider == 1)
+                //Delivery location pin on screen when slider equals to 1 and delivery textfield is tapped
+                if (reference.isclicked && SetLocationPage.slider == 1)
                   Positioned(
                     bottom: MediaQuery.of(context).viewInsets.bottom > 0
                         ? size.height * 0.1
@@ -97,15 +102,16 @@ class _SetLocationPageState extends State<SetLocationPage> {
                     child: Image.asset("assets/icon/dropmarker.png"),
                     height: 45,
                   ),
-                Column(
-                  children: [
-                    Card(
+                // Card for textfields(Pickup address and delivery address)
+                Column(children: [
+                  Card(
                       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
                       child: Row(children: [
                         SizedBox(
                           height: size.height * 0.15,
                           child: RotatedBox(
                             quarterTurns: 1,
+                            // Vertical Slider at left side of textfields
                             child: SliderTheme(
                                 data: SliderThemeData(
                                     trackHeight: 1.0,
@@ -117,25 +123,21 @@ class _SetLocationPageState extends State<SetLocationPage> {
                         ),
                         Expanded(
                             child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // textfields(0, "Pickup Location", SetLocationPage.pickup),
-                            // textfields(1, "Delivery Location", SetLocationPage.delivery)
-                            FocusScope(
-                                child: Focus(
-                                    onFocusChange: (value) => reference.setfocus(0, value),
-                                    child: textfields(0, "Pickup Location", SetLocationPage.pickup))),
-                            FocusScope(
-                                child: Focus(
-                                    onFocusChange: (value) => reference.setfocus(1, value),
-                                    child: textfields(1, "Delivery Location", SetLocationPage.delivery)))
-                          ],
-                        ))
-                      ]),
-                    ),
-                  ],
-                ),
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              FocusScope(
+                                  child: Focus(
+                                      onFocusChange: (value) => reference.setfocus(0, value),
+                                      child: textfields(0, "Pickup Location", SetLocationPage.pickup))),
+                              FocusScope(
+                                  child: Focus(
+                                      onFocusChange: (value) => reference.setfocus(1, value),
+                                      child: textfields(1, "Delivery Location", SetLocationPage.delivery)))
+                            ]))
+                      ])),
+                ]),
+                // popup container with list of suggestion
                 if (reference.placesList.isNotEmpty && reference.focus[SetLocationPage.slider.toInt()])
                   Container(
                       margin: EdgeInsets.only(
@@ -176,7 +178,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                               if (SetLocationPage.slider == 0) {
                                                 SetLocationPage.pickup.text = reference.placesList[index].description;
                                                 reference
-                                                    .getPlaceDetails(reference.placesList[index].place_id)
+                                                    .getPlaceDetails(context, reference.placesList[index].place_id)
                                                     .then((value) {
                                                   var location = reference.placesDetails.result.geometry.location;
                                                   screenCoordinates = LatLng(location.lat, location.lng);
@@ -186,7 +188,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                               } else {
                                                 SetLocationPage.delivery.text = reference.placesList[index].description;
                                                 reference
-                                                    .getPlaceDetails(reference.placesList[index].place_id)
+                                                    .getPlaceDetails(context, reference.placesList[index].place_id)
                                                     .then((value) {
                                                   var location = reference.placesDetails.result.geometry.location;
                                                   screenCoordinates = LatLng(location.lat, location.lng);
@@ -198,6 +200,11 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                             reference.clear(value: true);
                                             reference.setfocus(SetLocationPage.slider.toInt(), false);
                                             SetLocationPage.listIndex = index;
+                                            Variables.showtoast(
+                                                context,
+                                                "Please Confirm the ${SetLocationPage.slider.toInt() == 0 ? "Pickup" : "Delivery"} location",
+                                                Icons.warning_rounded,
+                                                true);
                                           },
                                           child: Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -237,7 +244,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
               ],
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-            floatingActionButton: reference.isorigin
+            floatingActionButton: reference.isclicked
                 ? FloatingActionButton.extended(
                     onPressed: () {
                       String state = "", city = "", pincode = "";
@@ -275,12 +282,12 @@ class _SetLocationPageState extends State<SetLocationPage> {
                         'type': "OTHER",
                       };
                       if (SetLocationPage.slider == 0) {
-                        reference.setMarkers(mapController, pickup: screenCoordinates);
+                        reference.setMarkers(context, mapController, pickup: screenCoordinates);
                         getAddressesProvider!.setAddress(address, isdelivery: false);
                         reference.clear(value: false);
                       } else {
                         getAddressesProvider!.setAddress(address, isdelivery: true);
-                        reference.setMarkers(mapController, delivery: screenCoordinates);
+                        reference.setMarkers(context, mapController, delivery: screenCoordinates);
                         reference.clear(value: false);
                       }
                     },
@@ -288,10 +295,12 @@ class _SetLocationPageState extends State<SetLocationPage> {
                       "Cofirm Location",
                       style: Variables.font(color: null, fontSize: 15),
                     ))
-                : reference.pickmark != null && reference.dropmark != null
+                : reference.dropmark != null
                     ? FloatingActionButton(
                         onPressed: () {
-                          Variables.push(context, const ConfirmAddressPage());
+                          reference.pickmark != null && reference.dropmark != null
+                              ? Variables.push(context, ConfirmAddressPage.routeName)
+                              : Variables.showtoast(context, "Please Confirm the locations", Icons.warning_rounded);
                         },
                         child: const Icon(Icons.keyboard_arrow_right_rounded),
                       )
@@ -320,7 +329,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
                   .where((element) => element.address1.toLowerCase().startsWith(value.toLowerCase()))
                   .toList();
               Variables.locations[labelText] = value;
-              if (mapsProvider.focus[sliderValue.toInt()]) await mapsProvider.getAutoComplete(value);
+              if (mapsProvider.focus[sliderValue.toInt()]) await mapsProvider.getAutoComplete(context, value);
               mapsProvider.placesList.insertAll(0, recentAddress);
             },
             decoration: InputDecoration(

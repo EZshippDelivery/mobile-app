@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 class SetAddressPage extends StatefulWidget {
+  static String routeName = "/set-address";
   static TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
   static int listIndex = 0;
   const SetAddressPage({Key? key}) : super(key: key);
@@ -31,7 +32,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     mapsProvider.getCurrentlocations();
-    mapsProvider.getTopAddresses(Variables.driverId);
+    mapsProvider.getTopAddresses(context, Variables.driverId);
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
   }
 
@@ -59,7 +60,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                       zoomControlsEnabled: false,
                     )
                   : const Center(child: CircularProgressIndicator.adaptive()),
-              if (reference.isorigin)
+              if (reference.isclicked)
                 Positioned(
                   bottom: MediaQuery.of(context).viewInsets.bottom > 0
                       ? size.height * 0.1
@@ -112,7 +113,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                                             SetAddressPage.pickup.text = reference.placesList[index].description;
                                             AddAddressPage.controller.text = reference.placesList[index].description;
                                             reference
-                                                .getPlaceDetails(reference.placesList[index].place_id)
+                                                .getPlaceDetails(context, reference.placesList[index].place_id)
                                                 .then((value) {
                                               var location = reference.placesDetails.result.geometry.location;
                                               screenCoordinates = LatLng(location.lat, location.lng);
@@ -161,7 +162,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
             ],
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: reference.isorigin
+          floatingActionButton: reference.isclicked
               ? FloatingActionButton.extended(
                   onPressed: () {
                     String state = "", city = "", pincode = "";
@@ -226,7 +227,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                   .where((element) => element.address1.toLowerCase().startsWith(value.toLowerCase()))
                   .toList();
               Variables.locations[labelText] = value;
-              await mapsProvider.getAutoComplete(value);
+              await mapsProvider.getAutoComplete(context, value);
               mapsProvider.placesList.insertAll(0, recentAddress);
             },
             decoration: InputDecoration(

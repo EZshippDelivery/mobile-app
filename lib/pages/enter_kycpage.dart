@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ezshipp/utils/routes.dart';
+import 'package:ezshipp/pages/homepage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
@@ -70,10 +70,11 @@ class _EnterKYCState extends State<EnterKYC> {
                                 )
                               ])).then((value) {
                     timer.cancel();
-                    Navigator.pushNamed(context, MyRoutes.homepage);
+                    Navigator.pushNamed(context, HomePage.routeName);
                   });
                 } else {
-                  Variables.showtoast("Your KYC is not verified Properly.\nMake sure every image is verified");
+                  Variables.showtoast(context, "Your KYC is not verified Properly.\nMake sure every image is verified",
+                      Icons.warning_rounded);
                 }
               } else {
                 setState(() => currentStep += 1);

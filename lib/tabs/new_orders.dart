@@ -16,6 +16,21 @@ class NewOrders extends StatefulWidget {
 
 class _NewOrdersState extends State<NewOrders> {
   int length = 1;
+  late UpdateOrderProvider updateOrderProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
+    constructor();
+  }
+
+  constructor() async {
+    await updateOrderProvider.newOrders(
+      context
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,6 +110,7 @@ class _NewOrdersState extends State<NewOrders> {
                           timer = null;
                         });
                       }
+
                       return Future.value(false);
                     } else if (direction == DismissDirection.startToEnd) {
                       return Future.value(true);
@@ -118,6 +134,8 @@ class _NewOrdersState extends State<NewOrders> {
                         color: Colors.white,
                       )),
                   onDismissed: (direction) async {
+                    await Variables.updateOrder(
+                        context, reference, index, direction == DismissDirection.startToEnd ? 3 : 14);
                     if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                       reference.newOrderList.removeAt(index);
                     }
@@ -151,7 +169,6 @@ class _NewOrdersState extends State<NewOrders> {
                         timer?.cancel();
                         timer = null;
                       });
-                      await Variables.updateOrder(reference, index, direction == DismissDirection.startToEnd ? 3 : 14);
                     }
                   },
                   child: Card(
@@ -207,7 +224,7 @@ class _NewOrdersState extends State<NewOrders> {
                                             "https://www.google.com/maps/dir/?api=1&origin=${reference.newOrderList[index].pickLatitude},${reference.newOrderList[index].pickLongitude} &destination=${reference.newOrderList[index].dropLatitude},${reference.newOrderList[index].dropLongitude}";
                                         await canLaunch(urlString)
                                             ? launch(urlString)
-                                            : Variables.showtoast("Can't open Google Maps App");
+                                            : Variables.showtoast(context,"Can't open Google Maps App",Icons.cancel_outlined);
                                       },
                                       icon: Image.asset("assets/icon/icons8-google-maps-64.png"))
                                 ],

@@ -1,9 +1,9 @@
 import 'package:ezshipp/Provider/update_profile_provider.dart';
+import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../pages/set_locationpage.dart';
-import '../utils/routes.dart';
 import '../utils/themes.dart';
 import '../utils/variables.dart';
 import '../widgets/customer_drawer.dart';
@@ -52,7 +52,7 @@ class _HomeTabState extends State<HomeTab> {
                               ),
                               ElevatedButton(
                                   onPressed: () {
-                                    Navigator.of(context).popAndPushNamed(MyRoutes.loginpage);
+                                    Navigator.of(context).popAndPushNamed(LoginPage.routeName);
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -127,9 +127,7 @@ class _HomeTabState extends State<HomeTab> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
           elevation: 5,
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const SetLocationPage(),
-          )),
+          onPressed: () => Variables.push(context, SetLocationPage.routeName),
           child: const Icon(Icons.keyboard_arrow_right_rounded),
         ));
   }

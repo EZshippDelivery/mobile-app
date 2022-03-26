@@ -14,6 +14,7 @@ import '../utils/themes.dart';
 
 // ignore: must_be_immutable
 class TrackingPage extends StatefulWidget {
+  static String routeName = "/tracking";
   NewOrderList order;
   static double rating = 0;
 
@@ -160,7 +161,7 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                           var url = "tel:${widget.order.bikerPhone}";
                                           await canLaunch(url)
                                               ? launch(url)
-                                              : Variables.showtoast("Unable to open Phone App");
+                                              : Variables.showtoast(context,"Unable to open Phone App",Icons.cancel_outlined);
                                         },
                                         child: const Icon(Icons.phone, size: 17),
                                         elevation: 3),
@@ -185,7 +186,8 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                   onRatingUpdate: (value) {
                                     TrackingPage.rating = value;
                                     updateScreen.updateScreen();
-                                    updateScreen.bikerRating(widget.order.bikerId, widget.order.id, value.ceil());
+                                    updateScreen.bikerRating(
+                                        context, widget.order.bikerId, widget.order.id, value.ceil());
                                   })
                             ])))))
           ],

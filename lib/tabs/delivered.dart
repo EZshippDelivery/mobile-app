@@ -24,12 +24,14 @@ class _DeliveredState extends State<Delivered> {
     super.initState();
     updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
     updateOrderProvider.delivered(
+        context,
         18, pageNumber, updateOrderProvider.start.toString(), updateOrderProvider.end.toString());
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!updateOrderProvider.islastpageloaded) {
           pageNumber += 1;
           updateOrderProvider.delivered(
+              context,
               18, pageNumber, updateOrderProvider.start.toString(), updateOrderProvider.end.toString());
         }
       }
@@ -51,7 +53,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.start,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now().subtract(const Duration(days: 1)))
-                      .then((value) => reference.setTime(value, false, pageNumber)),
+                      .then((value) => reference.setTime(context, value, false, pageNumber)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.start),
                   )),
@@ -62,7 +64,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.end,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now())
-                      .then((value) => reference.setTime(value, false, pageNumber)),
+                      .then((value) => reference.setTime(context, value, false, pageNumber)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.end),
                   ))

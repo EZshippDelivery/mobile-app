@@ -2,6 +2,7 @@ import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 
 class ContactPage extends StatelessWidget {
+  static String routeName = "/contact";
   const ContactPage({Key? key}) : super(key: key);
 
   @override

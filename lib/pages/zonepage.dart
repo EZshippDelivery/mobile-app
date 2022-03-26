@@ -3,6 +3,7 @@ import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 
 class ZonedPage extends StatefulWidget {
+  static String routeName = "/set-zone";
   const ZonedPage({Key? key}) : super(key: key);
 
   @override

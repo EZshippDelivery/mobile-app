@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../utils/themes.dart';
 import '../utils/variables.dart';
-import 'editprofilepage.dart';
+import 'customer_editprofilepage.dart';
 
 class CustomerProfilePage extends StatefulWidget {
+  static String routeName = "/cprofile";
   const CustomerProfilePage({Key? key}) : super(key: key);
 
   @override
@@ -106,7 +107,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: FloatingActionButton.extended(
-                      onPressed: () => Variables.push(context, const EditProfilePage()),
+                      onPressed: () => Variables.push(context, CustomerEditProfilePage.routeName),
                       icon: const Icon(Icons.edit_outlined),
                       label: Text(
                         "Edit",

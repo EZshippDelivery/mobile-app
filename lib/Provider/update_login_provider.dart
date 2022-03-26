@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,43 +11,44 @@ class UpdateLoginProvider extends ChangeNotifier {
   String userType = "driver";
   Map? profile;
 
-  httpost(context, body) async {
+  httpost(BuildContext context, body) async {
     try {
       Response? response;
       var uri = Variables.uri(path: '/register/${Variables.deviceInfo['userType']!.toLowerCase()}');
       if (Variables.deviceInfo['userType'] != null) {
-        response = await HTTPRequest.postRequest(uri, body);
+        response = await HTTPRequest.postRequest(uri, body, true);
       }
       if (response != null) {
-        profile = Variables.returnResponse(response);
+        profile = Variables.returnResponse(context, response);
       } else {
-        Variables.showtoast("Sign Up is not successfull");
+        Variables.showtoast(context, "Sign Up is not successfull", Icons.cancel_outlined);
       }
-    } on SocketException {
-      Variables.showtoast('No Internet connection');
+    } on SocketException catch (e) {
+      Variables.showtoast(context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
     if (profile != null) return profile;
   }
 
-  getOTP(body) async {
+  getOTP(BuildContext context, String body) async {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/otp/generate"), body);
-      var responseJson = Variables.returnResponse(response);
-      if (responseJson != null) Variables.showtoast("OTP send");
-    } on SocketException {
-      Variables.showtoast('No Internet connection');
+      var responseJson = Variables.returnResponse(context, response);
+      if (responseJson != null) Variables.showtoast(context, "OTP send", Icons.check);
+    } on SocketException catch (e) {
+      Variables.showtoast(
+          context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
   }
 
-  verifyOTP(body) async {
+  verifyOTP(BuildContext context, body) async {
     Map? responseJson;
     try {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/customer/otp/validate", queryParameters: body as Map<String, dynamic>));
-      responseJson = Variables.returnResponse(response);
+      responseJson = Variables.returnResponse(context, response);
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     return responseJson;
   }
@@ -61,17 +63,30 @@ class UpdateLoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  login(String body) async {
+  login(BuildContext context, Map<String, dynamic> body) async {
     try {
-      final response = await HTTPRequest.postRequest(Variables.uri(path: "/register/signin"), body);
-      Map<String, dynamic>? map = Variables.returnResponse(response);
+      body.addAll({
+        "appVersion": "V1",
+        "authType": "EMAIL",
+        "loginSource": "MOBILE",
+      });
+      final response = await HTTPRequest.postRequest(Variables.uri(path: "/register/signin"), jsonEncode(body));
+      Map<String, dynamic>? map = Variables.returnResponse(context, response);
       if (map != null) {
         Variables.token = map["accessToken"];
-        Variables.driverId = map["userId"];
         userType = map["userType"];
+        if (userType.toLowerCase() == "driver") {
+          Variables.driverId = map["bikerId"];
+        } else {
+          Variables.driverId = map["customerId"];
+        }
+      } else {
+        Variables.token = '';
+        Variables.driverId = -1;
+        userType = "";
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }

@@ -8,6 +8,7 @@ import 'package:signature/signature.dart';
 
 // ignore: must_be_immutable
 class DeliveredPage extends StatefulWidget {
+  static String routeName = "/delivered";
   static bool addsignature = false;
   NewOrderList reference;
   int? index;
@@ -251,7 +252,7 @@ class _DeliveredPageState extends State<DeliveredPage> {
                                                                 .toString();
                                                             Variables.pop(context, value: value);
                                                           } else {
-                                                            Variables.showtoast("Write a Signature");
+                                                            Variables.showtoast(context, "Write a Signature", Icons.warning_rounded);
                                                           }
                                                         },
                                                         child: const Icon(
@@ -280,9 +281,10 @@ class _DeliveredPageState extends State<DeliveredPage> {
                     elevation: 4,
                     onPressed: () {
                       if (DeliveredPage.addsignature == false) {
-                        Variables.showtoast("Add a Signature");
+                        Variables.showtoast(context, "Add a Signature", Icons.warning_rounded);
                       } else {
                         Variables.updateOrder(
+                            context,
                             Provider.of<UpdateOrderProvider>(context, listen: false), widget.index!, 12);
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       }

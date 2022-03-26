@@ -2,9 +2,6 @@ import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
 
 class MyRoutes {
-  static var homepage = "/home";
-  static var loginpage = "/login";
-  static var intro = "/";
 
   static routelogin() {
     return PageRouteBuilder(

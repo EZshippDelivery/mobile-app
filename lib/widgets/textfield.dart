@@ -1,6 +1,7 @@
 import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -19,7 +20,6 @@ class TextFields extends StatefulWidget {
   bool hidepass;
   double radius;
   UpdateProfileProvider? onchange;
-  bool verify;
   TextEditingController? controller;
   TextFields(
       {Key? key,
@@ -29,7 +29,6 @@ class TextFields extends StatefulWidget {
       this.hidepass = false,
       this.radius = 8,
       this.onchange,
-      this.verify = false,
       this.controller})
       : super(key: key);
 
@@ -54,7 +53,7 @@ class _TextFieldsState extends State<TextFields> {
   Widget build(BuildContext context) {
     String title = widget.title;
     if (widget.title == "Username") {
-      title = "Phone number";
+      title = "Email id";
     } else if (widget.title == "New Password") {
       title = "Password";
     }
@@ -62,6 +61,7 @@ class _TextFieldsState extends State<TextFields> {
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
           controller: widget.controller,
+          inputFormatters: [FilteringTextInputFormatter(RegExp(r'[\S]'), allow: true)],
           obscureText: widget.hidepass && hidepass2,
           keyboardType: widget.type,
           onChanged: (value) {
@@ -70,9 +70,11 @@ class _TextFieldsState extends State<TextFields> {
                 TextFields.data["Last Name"]!.isNotEmpty &&
                 widget.onchange != null) {
               widget.onchange!
-                  .setName((TextFields.data["First Name"]![0] + TextFields.data["Last Name"]![0]).toUpperCase());
+                  .setName((TextFields.data["First Name"]! + " " + TextFields.data["Last Name"]!).toUpperCase());
             } else if (TextFields.data["First Name"]!.isNotEmpty && widget.onchange != null) {
-              widget.onchange!.setName((TextFields.data["First Name"]![0]).toUpperCase());
+              widget.onchange!.setName(TextFields.data["First Name"]!.toUpperCase());
+            } else if (widget.onchange != null) {
+              widget.onchange!.setName(null);
             }
           },
           validator: (value) {
@@ -114,12 +116,12 @@ class _TextFieldsState extends State<TextFields> {
                     return "Password isn't matched";
                   }
                   break;
+                case "Username":
                 case "Email id":
                   if (value.contains(RegExp(r"\s")) || !value.contains(RegExp("@"))) {
                     return "Enter valid Email id";
                   }
                   break;
-                case "Username":
                 case "Phone number":
                   if (value.length != 10) {
                     return "Enter valid Phone number";

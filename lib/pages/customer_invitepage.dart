@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // ignore: must_be_immutable
 class CustomerInvitePage extends StatelessWidget {
+  static String routeName = "/invite";
   String referCode;
   CustomerInvitePage({
     Key? key,
@@ -32,7 +33,7 @@ class CustomerInvitePage extends StatelessWidget {
           GestureDetector(
               onLongPress: () {
                 Clipboard.setData(ClipboardData(text: referCode));
-                Variables.showtoast("Copied to Clipboard");
+                Variables.showtoast(context, "Copied to Clipboard", Icons.check);
               },
               child: Text(referCode, style: TextStyle(fontSize: 37, color: Colors.grey[600], letterSpacing: 3))),
           Padding(
@@ -44,7 +45,7 @@ class CustomerInvitePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               for (String links in Variables.share.keys)
-                apps(Variables.share[links][1], Variables.share[links][0], links)
+                apps(Variables.share[links][1], Variables.share[links][0], links,context)
             ],
           ),
         ],
@@ -52,23 +53,23 @@ class CustomerInvitePage extends StatelessWidget {
     );
   }
 
-  void launchApps(urlString, app) async {
-    await canLaunch(urlString) ? launch(urlString) : Variables.showtoast("Can't open $app App");
+  void launchApps(BuildContext context,urlString, app) async {
+    await canLaunch(urlString) ? launch(urlString) : Variables.showtoast(context, "Can't open $app App", Icons.cancel_outlined);
   }
 
-  apps(String path, String urlString, String app) {
+  apps(String path, String urlString, String app,BuildContext context) {
     try {
       return FloatingActionButton(
           heroTag: app,
           elevation: 3,
           mini: true,
-          onPressed: () => launchApps(urlString, app),
+          onPressed: () => launchApps(context,urlString, app),
           child: Image.asset(
             path,
             fit: BoxFit.cover,
           ));
     } catch (e) {
-      Variables.showtoast("Unable to locate $e");
+      Variables.showtoast(context, "Unable to locate $e", Icons.cancel_outlined);
     }
     return IconButton(onPressed: () {}, icon: const Icon(Icons.ac_unit));
   }

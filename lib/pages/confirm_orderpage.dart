@@ -1,6 +1,10 @@
 import 'package:ezshipp/APIs/create_order.dart';
 import 'package:ezshipp/Provider/get_addresses_provider.dart';
+import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/book_orderpage.dart';
+import 'package:ezshipp/pages/confirm_addresspage.dart';
+import 'package:ezshipp/pages/customer_homepage.dart';
 import 'package:ezshipp/pages/set_locationpage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/gestures.dart';
@@ -8,9 +12,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../Provider/update_order_povider.dart';
 import '../utils/themes.dart';
 
 class ConfirmOrderPage extends StatefulWidget {
+  static String routeName = "/confirm";
   static bool check = false;
   const ConfirmOrderPage({Key? key}) : super(key: key);
 
@@ -20,10 +26,12 @@ class ConfirmOrderPage extends StatefulWidget {
 
 class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   late GetAddressesProvider getAddressesProvider;
+  late MapsProvider mapsProvider;
 
   @override
   Widget build(BuildContext context) {
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     CreateOrder co = getAddressesProvider.createOrder;
     return Scaffold(
         appBar: Variables.app(),
@@ -107,14 +115,29 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
+          onPressed: () async {
             if (!ConfirmOrderPage.check) {
-              Variables.showtoast("Accept the Package & Delivery Policies");
+              Variables.showtoast(context, "Accept the Package & Delivery Policies", Icons.warning_rounded);
             } else {
-              getAddressesProvider.createOrderPost(context);
-              UpdateScreenProvider updateScreenProvider = Provider.of(context, listen: false);
+              await getAddressesProvider.createOrderPost(
+                  context, Provider.of<UpdateOrderProvider>(context, listen: false));
+              UpdateScreenProvider updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
+              ConfirmAddressPage.selectedradio = [null, null];
+              ConfirmAddressPage.toggle = [false, false];
+              ConfirmAddressPage.temp = [2, 2];
               if (updateScreenProvider.timer != null) updateScreenProvider.settimer(context);
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              SetLocationPage.pickup.clear();
+              SetLocationPage.delivery.clear();
+              mapsProvider.pickmark = null;
+              mapsProvider.dropmark = null;
+              mapsProvider.info.clear();
+              ConfirmOrderPage.check = false;
+              BookOrderPage.selectedradio = [1, 1, 2];
+              updateScreenProvider.getInProgressOrderCount(
+                context
+              );
+              Navigator.of(context).pushNamedAndRemoveUntil(CustomerHomePage.routeName, (Route<dynamic> route) => false);
+
             }
           },
           label: Text("Confirm", style: Variables.font(color: null)),

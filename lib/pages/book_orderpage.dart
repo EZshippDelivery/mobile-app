@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:contacts_service/contacts_service.dart';
@@ -10,12 +9,11 @@ import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class BookOrderPage extends StatefulWidget {
+  static String routeName = "/book-order";
   static List<int?> selectedradio = [1, 1, 2];
   const BookOrderPage({Key? key}) : super(key: key);
 
@@ -31,7 +29,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
       receiverPhone = TextEditingController();
   late void Function(AnimationStatus) _statusListener;
   late AnimationController _animationController;
-  late SuggestionsBoxController _suggestionsBoxController;
+ late SuggestionsBoxController _suggestionsBoxController;
   late GetAddressesProvider getAddressesProvider;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   ValueNotifier<int> cod = ValueNotifier<int>(0);
@@ -42,10 +40,10 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
     super.initState();
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
     _animationController = AnimationController(vsync: this);
-    _suggestionsBoxController = SuggestionsBoxController();
+   _suggestionsBoxController = SuggestionsBoxController();
     _statusListener = (AnimationStatus status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        _suggestionsBoxController.resize();
+       _suggestionsBoxController.resize();
       }
     };
     _animationController.addStatusListener(_statusListener);
@@ -120,34 +118,21 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                       style: Variables.font(fontSize: 18),
                                     ),
                                     radio(true, "CASH", "ONLINE", 0, reference1, cashonly: true),
+                                  ])));
+                        }),
+                        Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
+                          return Card(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text(
+                                      "Item Details",
+                                      style: Variables.font(fontSize: 18),
+                                    ),
                                     radio(BookOrderPage.selectedradio[0] == 1, "Collect At PickUp",
                                         "Collect At Delivery", 1, reference1),
                                     textboxes("Item Description", null),
                                     textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
-                                        child: Row(children: [
-                                          Text("Take a Photo of your Item", style: Variables.font()),
-                                          const SizedBox(width: 20),
-                                          FloatingActionButton.small(
-                                            elevation: 3,
-                                            heroTag: "capture",
-                                            onPressed: () async {
-                                              XFile? image;
-                                              try {
-                                                image = await ImagePicker().pickImage(source: ImageSource.camera);
-                                              } catch (e) {
-                                                Variables.showtoast("Invlalid Image");
-                                              } finally {
-                                                if (image != null) {
-                                                  List<int> bytes = await File(image.path).readAsBytes();
-                                                  reference.createOrder.itemImageUrl = base64Encode(bytes) ;
-                                                }
-                                              }
-                                            },
-                                            child: const Icon(LineIcons.retroCamera),
-                                          )
-                                        ])),
                                     Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
                                         child: Row(children: [
@@ -164,7 +149,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                         const SizedBox(height: 15),
                         Variables.text1(
                             head: "Delivery Charge",
-                            value: "₹ ${reference.delivery}",
+                            value: "₹ ${reference.createOrder.deliveryCharge}",
                             vpadding: 3,
                             valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16)),
                         ValueListenableBuilder(
@@ -179,7 +164,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                             valueListenable: cod,
                             builder: (context, int value, widget) => Variables.text1(
                                 head: "Total",
-                                value: "₹ ${reference.delivery + value}",
+                                value: "₹ ${reference.createOrder.deliveryCharge + value}",
                                 valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16))),
                         Padding(
                           padding: const EdgeInsets.only(top: 15.0, bottom: 10),
@@ -190,6 +175,8 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                   reference.createOrder.bookingType = "SAMEDAY";
                                   reference.createOrder.collectAtPickUp = BookOrderPage.selectedradio[1] == 1;
                                   reference.createOrder.customerId = Variables.driverId;
+                                  reference.createOrder.createdBy = Variables.driverId;
+                                  reference.createOrder.lastModifiedBy = Variables.driverId;
                                   reference.createOrder.payType = pay;
                                   reference.createOrder.paymentId = "";
                                   reference.createOrder.senderName = senderName.text;
@@ -202,7 +189,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                       : Platform.isIOS
                                           ? 1
                                           : 2];
-                                  Variables.push(context, const ConfirmOrderPage());
+                                  Variables.push(context, ConfirmOrderPage.routeName);
                                 }
                               },
                               label: Text("Book Order", style: Variables.font(color: null))),
@@ -242,7 +229,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                     activeColor: Palette.kOrange,
                     onChanged: (value) {
                       if (cashonly) {
-                        Variables.showtoast("Online Payment Gateway is not yet Ready");
+                        Variables.showtoast(context, "Online Payment Gateway is not yet Ready", Icons.warning_rounded);
                       } else {
                         BookOrderPage.selectedradio[index] = value;
                       }
@@ -333,7 +320,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                 getAddressesProvider.createOrder.codAmount = int.parse(value);
               }
               getAddressesProvider.createOrder.amount =
-                  getAddressesProvider.delivery + getAddressesProvider.createOrder.codAmount;
+                  getAddressesProvider.createOrder.deliveryCharge + getAddressesProvider.createOrder.codAmount;
             } else if (labelText.contains("Description")) {
               if (value.isEmpty) {
                 getAddressesProvider.createOrder.itemDescription = "";

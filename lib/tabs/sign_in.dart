@@ -1,9 +1,5 @@
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:otp/otp.dart';
-import 'package:sms_advanced/sms_advanced.dart';
-import 'package:sms_autofill/sms_autofill.dart';
 
 import '../utils/variables.dart';
 
@@ -33,12 +29,12 @@ class _SignInState extends State<SignIn> {
             Padding(
               padding: const EdgeInsets.all(3.0),
               child: Text(
-                "Enter your phone number below to receive OTP",
-                style: Variables.font(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.grey[600]),
+                "Enter your registered email address to reset your password",
+                style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
               ),
             ),
             TextFields(
-                title: "Phone number", icon: const Icon(Icons.phone_rounded), type: TextInputType.phone, radius: 4),
+                title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.phone, radius: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -48,13 +44,11 @@ class _SignInState extends State<SignIn> {
                     child: const Text("Cancel")),
                 ElevatedButton(
                     onPressed: () async {
-                      if (TextFields.data["Phone number"]!.length == 10) {
-                        if (await showdialog(context, TextFields.data["Phone number"].toString())) {
-                          await resetPassword(context);
-                        }
+                      if (TextFields.data["Email id"]!.contains(RegExp(r"\s")) || TextFields.data["Email id"]!.contains(RegExp("@"))) {
+                        await resetPassword(context);
                         Navigator.of(context).pop();
                       } else {
-                        Variables.showtoast("Enter valid phone number");
+                        Variables.showtoast(context,"Enter valid Email id",Icons.warning_rounded);
                       }
                     },
                     child: const Text("Send")),
@@ -76,7 +70,7 @@ class _SignInState extends State<SignIn> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                TextFields(title: "Username", icon: const Icon(Icons.phone_rounded), type: TextInputType.emailAddress),
+                TextFields(title: "Username", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress),
                 TextFields(
                     title: "Password",
                     icon: const Icon(Icons.lock_outline),
@@ -99,66 +93,7 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  showdialog(BuildContext context, String phonenumber) async {
-    final code = OTP.generateTOTPCodeString('JBSWY3DPEHPK3PXP', DateTime.now().millisecondsSinceEpoch,
-        interval: 20, algorithm: Algorithm.SHA512);
-    Future.delayed(const Duration(seconds: 2), () async {
-      await SmsAutoFill().listenForCode();
-      SmsSender()
-          .sendSms(SmsMessage(phonenumber, 'ezShipp: Your code is $code.\n${await SmsAutoFill().getAppSignature}'));
-    });
-    return await showDialog(
-        context: context,
-        builder: (context) {
-          return SimpleDialog(
-            contentPadding: const EdgeInsets.all(17),
-            alignment: Alignment.center,
-            children: [
-              SvgPicture.asset("assets/images/otp & two-factor.svg"),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Text("Enter OTP",
-                    textAlign: TextAlign.center,
-                    style: Variables.font(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w400,
-                    )),
-              ),
-              Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Text(
-                    "Enter OTP code to verify your phone number",
-                    textAlign: TextAlign.center,
-                    style: Variables.font(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.grey[600]),
-                  )),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                child: Align(
-                    alignment: Alignment.center,
-                    child: PinFieldAutoFill(
-                        codeLength: 6,
-                        keyboardType: TextInputType.number,
-                        onCodeChanged: (p0) => this.code = p0!,
-                        onCodeSubmitted: (p0) => this.code = p0)),
-              ),
-              ElevatedButton(
-                  style: ButtonStyle(
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
-                  onPressed: () {
-                    if (this.code == code) {
-                      Variables.showtoast("Your Phone number is verified");
-                      Navigator.of(context).pop(true);
-                    } else {
-                      Variables.showtoast("OTP is incorrect ${this.code}");
-                      Navigator.of(context).pop(false);
-                    }
-                  },
-                  child: const Text("Verify"))
-            ],
-          );
-        });
-  }
+  
 
   Future<void> resetPassword(context) async {
     await showDialog(

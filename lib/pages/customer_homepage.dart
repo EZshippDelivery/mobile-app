@@ -1,6 +1,7 @@
 import 'package:ezshipp/Provider/get_addresses_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/tabs/old_orders.dart';
+import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import '../Provider/update_profile_provider.dart';
 import '../tabs/home.dart';
 
 class CustomerHomePage extends StatefulWidget {
+  static String routeName = "/customer";
   const CustomerHomePage({Key? key}) : super(key: key);
 
   @override
@@ -28,9 +30,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> with TickerProvider
     updateCustomerProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
-    updateCustomerProfileProvider.getcolor(false);
-    getAddressesProvider.getAllAddresses();
-    updateScreenProvider.getInProgressOrderCount();
+    constructor();
+  }
+
+  void constructor() async {
+    if (Variables.driverId > 0) await updateCustomerProfileProvider.getcolor(context, false, driverid: Variables.driverId);
+    await getAddressesProvider.getAllAddresses(
+      context
+    );
+    updateScreenProvider.getInProgressOrderCount(
+      context
+    );
   }
 
   @override

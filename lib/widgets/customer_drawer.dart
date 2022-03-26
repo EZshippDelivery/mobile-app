@@ -36,7 +36,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                             child: Row(children: [
                               const SizedBox(width: 10),
                               InkWell(
-                                onTap: () => Variables.push(context, const CustomerProfilePage()),
+                                onTap: () => Variables.push(context, CustomerProfilePage.routeName),
                                 child: Hero(
                                   tag: "Customer Profile",
                                   child: reference.getProfileImage(size: size.width / 3.6, canEdit: true),
@@ -45,8 +45,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                               const SizedBox(width: 10),
                               Expanded(
                                   child: TextButton(
-                                      onPressed: () => Navigator.of(context)
-                                          .push(MaterialPageRoute(builder: (context) => const CustomerProfilePage())),
+                                      onPressed: () => Variables.push(context, CustomerProfilePage.routeName),
                                       child: Text(
                                         reference.profile.name,
                                         style: Variables.font(fontSize: 24, color: Colors.white),
@@ -55,12 +54,12 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                     ListTile(
                       leading: Image.asset("assets/icon/icons8-address-100.png"),
                       title: Text("Saved Address", style: Variables.font(fontSize: 15)),
-                      onTap: () => Variables.push(context, const SavedAddressPage()),
+                      onTap: () => Variables.push(context, SavedAddressPage.routeName),
                     ),
                     ListTile(
                       leading: Image.asset("assets/icon/icons8-about-100.png"),
                       title: Text("About", style: Variables.font(fontSize: 15)),
-                      onTap: () => Variables.push(context, const AboutPage()),
+                      onTap: () => Variables.push(context, AboutPage.routeName),
                     ),
                     ListTile(
                       leading: Padding(
@@ -69,7 +68,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                       ),
                       title: Text("Invite", style: Variables.font(fontSize: 15)),
                       onTap: () =>
-                          Variables.push(context, CustomerInvitePage(referCode: reference.profile.referralCode)),
+                          Variables.push(context, CustomerInvitePage.routeName),
                     ),
                     ListTile(
                         leading: Padding(
@@ -82,7 +81,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                         title: Text("Customer Care", style: Variables.font(fontSize: 15)),
                         onTap: () async {
                           var url = "tel:04049674477";
-                          await canLaunch(url) ? launch(url) : Variables.showtoast("Unable to open Phone App");
+                          await canLaunch(url) ? launch(url) : Variables.showtoast(context,"Unable to open Phone App", Icons.cancel_outlined);
                         }),
                   ]))
                 : Container()));

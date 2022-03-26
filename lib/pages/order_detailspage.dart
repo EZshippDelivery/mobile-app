@@ -9,6 +9,7 @@ import '../utils/themes.dart';
 
 // ignore: must_be_immutable
 class OrderDetailsPage extends StatefulWidget {
+  static String routeName = "/order-details";
   NewOrderList order;
   OrderDetailsPage(this.order, {Key? key}) : super(key: key);
 
@@ -171,8 +172,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 13 && widget.order.statusId != 10
           ? FloatingActionButton.extended(
               onPressed: () {
-                mapsProvider.livebikerTracking(widget.order.bikerId, widget.order.id);
-                Variables.push(context, TrackingPage(widget.order));
+                mapsProvider.livebikerTracking(context, widget.order.bikerId, widget.order.id);
+                Variables.list2 = widget.order;
+                Variables.push(context, TrackingPage.routeName);
               },
               label: Text("Track Your Order", style: Variables.font(color: null)),
               icon: const Icon(Icons.location_on_sharp))

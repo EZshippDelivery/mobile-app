@@ -10,7 +10,7 @@ import '../utils/variables.dart';
 
 class UpdateOrderProvider extends ChangeNotifier {
   List<NewOrderList> newOrderList = [], customerOrders = [];
-  List deliveredList = [], acceptedList = [];
+  List<NewOrderList> deliveredList = [], acceptedList = [];
   bool loading = true, loading2 = true, loading3 = true, loading4 = true;
   late MyOrderList myorders;
   bool islastpageloaded = false, islastpageloaded1 = false;
@@ -18,67 +18,71 @@ class UpdateOrderProvider extends ChangeNotifier {
   
   
 
-  Future<dynamic> gethttp(String url) async {}
+  Future<dynamic> gethttp(BuildContext context, String url) async {}
 
-  newOrders() async {
+  newOrders(
+    BuildContext context,
+  ) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/true"));
-      List? responseJson = Variables.returnResponse(response);
+      List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         newOrderList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
         newOrderList = newOrderList.reversed.toList();
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading = false;
     notifyListeners();
   }
 
-  update(body, orderid) async {
+  update(BuildContext context, String body,int orderid) async {
     loading = true;
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"),body);
-      Variables.returnResponse(response);
+      Variables.returnResponse(context, response);
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading = false;
     notifyListeners();
   }
 
-  findOrderbyBarcode(String value, int statusId) async {
+  findOrderbyBarcode(BuildContext context, String value, int statusId) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/order/find/barcode/$value"));
       if (response.statusCode == 500) {
-        Variables.showtoast("Invalid Barcode");
+        Variables.showtoast(context, "Invalid Barcode", Icons.cancel_outlined);
       } else if (response.statusCode == 200) {
         var body = NewOrderList.fromJson(response.body);
         Variables.updateOrderMap.driverId = body.bikerId;
         Variables.updateOrderMap.newDriverId = Variables.driverId;
         Variables.updateOrderMap.barcode = value;
         Variables.getLiveLocation(statusId: statusId);
-        Variables.updateOrderMap.distance = (await getDistance(jsonEncode({
+        Variables.updateOrderMap.distance = (await getDistance(
+            context,
+            jsonEncode({
           "latitude": Variables.updateOrderMap.latitude,
           "longitude": Variables.updateOrderMap.longitude,
           "orderId": body.id
         })))!;
         Variables.updateOrderMap.zoneId = Variables.centers.indexWhere((element) => element.indexOf(body.zonedAt));
         Variables.updateOrderMap.collectAt = body.collectAt;
-        update(Variables.updateOrderMap.toJson(), body.id);
+        update(context, Variables.updateOrderMap.toJson(), body.id);
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  delivered(driverid, int pagenumber, String startdate, String enddate) async {
+  delivered(BuildContext context, driverid, int pagenumber, String startdate, String enddate) async {
     try {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/completed/$driverid"),
           body.toJson());
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
           deliveredList.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
@@ -88,18 +92,18 @@ class UpdateOrderProvider extends ChangeNotifier {
         }
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading3 = false;
     notifyListeners();
   }
 
-  accepted(int pagenumber, bool iscustomer) async {
+  accepted(BuildContext context, int pagenumber, bool iscustomer) async {
     try {
       final response = iscustomer
           ? await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/myorders/$pagenumber/20"))
           : await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
           if (iscustomer && pagenumber == 1) {
@@ -116,44 +120,46 @@ class UpdateOrderProvider extends ChangeNotifier {
         }
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
     notifyListeners();
   }
 
-  setTime(DateTime? value, bool end, int pageNumber) async {
+  setTime(BuildContext context, DateTime? value, bool end, int pageNumber) async {
     if (end) {
       this.end = value ?? this.end;
     } else {
       start = value ?? start;
     }
-    await delivered(Variables.driverId, pageNumber, start.toString(), this.end.toString());
+    await delivered(context, Variables.driverId, pageNumber, start.toString(), this.end.toString());
   }
 
-  Future<double?> getDistance(body) async {
+  Future<double?> getDistance(BuildContext context, String body) async {
     try {
       final response =
           await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/distance"), body);
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         return responseJson[0]["distance"];
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     return null;
   }
 
-  getRecentOrders() async {
+  getRecentOrders(
+    BuildContext context,
+  ) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/orders"));
-      List? responseJson = Variables.returnResponse(response);
+      List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         customerOrders = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading4 = false;
     notifyListeners();

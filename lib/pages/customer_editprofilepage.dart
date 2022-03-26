@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/textfield.dart';
 
-class EditProfilePage extends StatefulWidget {
-  static String routeName = "/edit";
+class CustomerEditProfilePage extends StatefulWidget {
+  static String routeName = "/cedit";
   static GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
-  const EditProfilePage({Key? key}) : super(key: key);
+  const CustomerEditProfilePage({Key? key}) : super(key: key);
 
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  _CustomerEditProfilePageState createState() => _CustomerEditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
   DecorationImage? decorationImage;
   String userType = "Driver";
   ValueNotifier<String> name = ValueNotifier<String>("");
@@ -50,7 +50,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           child: Stack(
             children: [
               Form(
-                key: EditProfilePage.formkey3,
+                key: CustomerEditProfilePage.formkey3,
                 child: Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -89,7 +89,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: FloatingActionButton.extended(
                       heroTag: "save_@",
                       onPressed: () {
-                        if (EditProfilePage.formkey3.currentState!.validate()) {
+                        if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
                           updateProfileProvider.updateProfile(context, TextFields.data, Variables.driverId);
                           Navigator.of(context).pop();
                         }

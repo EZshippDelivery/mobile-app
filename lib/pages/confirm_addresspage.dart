@@ -9,6 +9,7 @@ import '../Provider/get_addresses_provider.dart';
 import 'book_orderpage.dart';
 
 class ConfirmAddressPage extends StatefulWidget {
+  static String routeName = "/confirm-address";
   static List<List<bool>> addresstypesC = [
     [false, false, true],
     [false, false, true]
@@ -31,7 +32,10 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
 
   List<GlobalKey<FormState>> formkey = [GlobalKey<FormState>(), GlobalKey<FormState>()];
 
-  TextEditingController controller = TextEditingController(), controller1 = TextEditingController();
+  TextEditingController landmark = TextEditingController(), landmark1 = TextEditingController();
+  TextEditingController houseNumber = TextEditingController(), houseNumber1 = TextEditingController();
+  TextEditingController flatNumber = TextEditingController(), flatNumber1 = TextEditingController();
+  TextEditingController appartment = TextEditingController(), appartment1 = TextEditingController();
 
   @override
   void initState() {
@@ -50,9 +54,9 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
                   bool form = formkey[1].currentState!.validate();
                   bool form1 = formkey[0].currentState!.validate();
                   if (form && form1) {
-                    await getAddressesProvider.saveAllAddresses(getAddressesProvider.addAddress, 0);
-                    await getAddressesProvider.saveAllAddresses(getAddressesProvider.addAddress1, 1);
-                    Variables.push(context, const BookOrderPage());
+                    await getAddressesProvider.saveAllAddresses(context, getAddressesProvider.addAddress, 0);
+                    await getAddressesProvider.saveAllAddresses(context, getAddressesProvider.addAddress1, 1);
+                    Variables.push(context, BookOrderPage.routeName);
                   }
                 },
                 child: Text("Save", style: Variables.font(fontSize: 16, color: null)),
@@ -67,15 +71,17 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
                   child: Text("CONFIRM ADDRESSES",
                       style: Variables.font(color: Palette.kOrange, fontWeight: FontWeight.bold, fontSize: 19)),
                 ),
-                addressCard("PickUp Address", reference.addAddress.type, 0, SetLocationPage.pickup, false),
-                addressCard("Delivery Address", reference.addAddress1.type, 1, SetLocationPage.delivery, true),
+                addressCard("PickUp Address", reference.addAddress.type, 0,
+                    [SetLocationPage.pickup, landmark, houseNumber, flatNumber, appartment], false),
+                addressCard("Delivery Address", reference.addAddress1.type, 1,
+                    [SetLocationPage.delivery, landmark1, houseNumber1, flatNumber1, appartment1], true),
               ],
             ),
           );
         }));
   }
 
-  Card addressCard(String address, String type, int index, TextEditingController controller, bool isDelivery) {
+  Card addressCard(String address, String type, int index, List<TextEditingController> controller, bool isDelivery) {
     return Card(
       child: Container(
         padding: EdgeInsets.only(left: padding, top: padding, right: padding, bottom: padding),
@@ -98,14 +104,14 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
                             Text(address, style: Variables.font(fontSize: 18, fontWeight: FontWeight.w500)),
                           ],
                         ),
-                        IconButton(
-                            iconSize: 18,
-                            onPressed: () {
-                              ConfirmAddressPage.toggle[index] = !ConfirmAddressPage.toggle[index];
-                            },
-                            icon: ConfirmAddressPage.toggle[index]
-                                ? const Icon(Icons.favorite, color: Colors.red)
-                                : const Icon(Icons.favorite_border_rounded))
+                        // IconButton(
+                        //     iconSize: 18,
+                        //     onPressed: () {
+                        //       ConfirmAddressPage.toggle[index] = !ConfirmAddressPage.toggle[index];
+                        //     },
+                        //     icon: ConfirmAddressPage.toggle[index]
+                        //         ? const Icon(Icons.favorite, color: Colors.red)
+                        //         : const Icon(Icons.favorite_border_rounded))
                       ],
                     ),
                     if (type.isNotEmpty)
@@ -141,12 +147,13 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
                       return Column(children: [
                         Radio(index, reference),
                         if (ConfirmAddressPage.selectedradio[index] == 1) ...[
-                          textfields("Appartment/Complex Name", index),
-                          textfields("Flat Number", index)
+                          textfields("Appartment/Complex Name", index, controller: controller[4]),
+                          textfields("Flat Number", index, controller: controller[3])
                         ],
-                        if (ConfirmAddressPage.selectedradio[index] == 2) textfields("House number", index),
-                        textfields("Street/Locality Address", index, controller: controller),
-                        textfields("Landmark", index)
+                        if (ConfirmAddressPage.selectedradio[index] == 2)
+                          textfields("House number", index, controller: controller[2]),
+                        textfields("Street/Locality Address", index, controller: controller[0]),
+                        textfields("Landmark", index, controller: controller[1])
                       ]);
                     })
                   ],

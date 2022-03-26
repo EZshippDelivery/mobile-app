@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -29,32 +28,27 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   FirebaseMessaging fcm = FirebaseMessaging.instance;
   late UpdateLoginProvider updateLoginProvider;
   List types = ["Delivery Person", "Customer"];
+
   settimer() async {
-    await Variables.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString());
-    await Variables.write(key: "username1", value: "9652638197");
-    await Variables.write(key: "password1", value: "Pradeep@2765");
-    await Variables.write(key: "usertype1", value: "driver");
-    await Variables.write(key: "username2", value: "8885858583");
-    await Variables.write(key: "password2", value: "Hitesh&6999");
-    await Variables.write(key: "usertype2", value: "customer");
+    await Variables.read(key: "color_index") == null
+        ? Variables.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString())
+        : null;
+
     final login = await Variables.read(key: "islogin");
     bool islogin = login != null ? login.toLowerCase() == "true" : false;
     String userType = "";
     if (islogin) {
       final username = await Variables.read(key: "username");
       final password = await Variables.read(key: "password");
-      updateLoginProvider.login(jsonEncode({"password": password, "username": username}));
-      final list = await Variables.read(key: "usertype");
-      List type = List.from(list == null ? ["driver"] : jsonDecode(list));
-      final index = await Variables.read(key: "type-index");
-      userType = type.isNotEmpty ? type[index == null ? 0 : int.parse(index)] : "driver";
+      await updateLoginProvider.login(context,{"password": password, "username": username});
+      userType = await Variables.read(key: "usertype")?? "";
     }
     Timer(
         const Duration(seconds: 3),
         () => Navigator.pushReplacement(
             context,
             islogin
-                ? userType != "driver"
+                ? userType.toLowerCase() == "driver"
                     ? MaterialPageRoute(builder: (context) => const HomePage())
                     : MaterialPageRoute(builder: (context) => const CustomerHomePage())
                 : MyRoutes.routelogin()));
@@ -69,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     CurvedAnimation(curve: Curves.fastOutSlowIn, parent: animcontroller);
     animcontroller.forward();
     initPlatformState();
-    setlogin();
+    // setlogin();
     settimer();
     Variables.getLiveLocation();
   }

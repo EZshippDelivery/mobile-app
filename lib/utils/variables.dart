@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,13 @@ class Variables {
   static bool showdialog = true;
   static Map<String, String?> locations = {};
   static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
-  static int driverId = 18;
+  static int driverId = -1;
   static final pref = FlutterSecureStorage(aOptions: _getAndroidOptions());
+
+  static int index = 0, index1 = 0, index2 = 0;
+
+  static late NewOrderList list, list1, list2;
+
   static AndroidOptions _getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
       );
@@ -87,15 +93,14 @@ class Variables {
   static read({String key = ''}) async => await pref.read(key: key, aOptions: _getAndroidOptions());
   static write({String key = "", String value = ""}) async =>
       await pref.write(key: key, value: value, aOptions: _getAndroidOptions());
-  static push(BuildContext context, Widget route) => Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => route,
-      ));
+  static push(BuildContext context, String routeName) => Navigator.of(context).pushNamed(routeName);
   static pop(BuildContext context, {var value}) => Navigator.of(context).pop(value);
   static TextStyle font(
           {double fontSize = 14, FontWeight fontWeight = FontWeight.normal, Color? color = Palette.deepgrey}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight);
   static Uri uri({required String path, queryParameters}) =>
-      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
+   //   Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
+   Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
 
   static text(
           {String head = "Order ID:",
@@ -143,13 +148,31 @@ class Variables {
       ),
       centerTitle: true);
 
-  static void showtoast(String message, {int time = 1}) {
-    Fluttertoast.showToast(
-        msg: message,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: time,
-        textColor: Colors.white,
-        backgroundColor: Colors.black54);
+  static void showtoast(BuildContext context, String message, IconData icon, [bool shouldup = false]) {
+    FToast fToast = FToast();
+    fToast.init(context);
+    Widget toast = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25.0),
+          color: Colors.greenAccent,
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon),
+          const SizedBox(
+            width: 10.0,
+          ),
+          Expanded(
+            child: Text(
+              message,
+              style: font(color: null),
+            ),
+          )
+        ]));
+    fToast.showToast(
+      child: toast,
+      toastDuration: const Duration(seconds: 2),
+    );
   }
 
   static String datetime(value, {bool timeNeed = false}) {
@@ -186,7 +209,7 @@ class Variables {
       }
     } catch (e) {
       controller.clear();
-      Variables.showtoast("No BarCode Captured");
+      Variables.showtoast(context, "No BarCode Captured", Icons.cancel_outlined);
       return await showDialog(
               context: context,
               barrierDismissible: false,
@@ -263,7 +286,7 @@ class Variables {
     if (statusId != null) Variables.updateOrderMap.statusId = statusId;
   }
 
-  static Future<void> updateOrder(UpdateOrderProvider value, int index, statusId) async {
+  static Future<void> updateOrder(BuildContext context, UpdateOrderProvider value, int index, statusId) async {
     await Variables.getLiveLocation(statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
@@ -273,30 +296,33 @@ class Variables {
     // print(jsonEncode(body));
     // var temp = value.newOrderList[index];
     // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
-    var result = await value.getDistance(jsonEncode(body));
+    var result = await value.getDistance(context, jsonEncode(body));
     if (result != null) {
       Variables.updateOrderMap.distance = result;
       Variables.updateOrderMap.driverId = driverId;
       Variables.updateOrderMap.newDriverId = driverId;
-      value.update(Variables.updateOrderMap.toJson(), value.newOrderList[index].id);
+      await value.update(context, Variables.updateOrderMap.toJson(), value.newOrderList[index].id);
     }
   }
 
-  static returnResponse(Response response, {onlinemode = false}) {
+  static returnResponse(BuildContext context, Response response, {onlinemode = false}) {
     switch (response.statusCode) {
       case 200:
         var responseJson = onlinemode ? response.body : json.decode(response.body);
         return responseJson;
       case 400:
-        Variables.showtoast(response.body.toString());
+        Variables.showtoast(context, response.body.toString(), Icons.warning_rounded);
         break;
       case 401:
       case 403:
-        Variables.showtoast(response.body.toString());
+        Variables.showtoast(context, response.body.toString(), Icons.warning_rounded);
         break;
       case 500:
       default:
-        Variables.showtoast('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
+        Variables.showtoast(
+            context,
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            Icons.warning_rounded);
         break;
     }
   }

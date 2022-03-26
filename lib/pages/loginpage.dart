@@ -6,23 +6,22 @@ import 'dart:convert';
 import 'package:ezshipp/APIs/register.dart';
 import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/pages/customer_homepage.dart';
+import 'package:ezshipp/pages/homepage.dart';
 import 'package:ezshipp/tabs/sign_in.dart';
 import 'package:ezshipp/tabs/sign_up.dart';
-import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
-import 'package:sms_autofill/sms_autofill.dart';
 
 import 'enter_kycpage.dart';
 
 class LoginPage extends StatefulWidget {
+  static String routeName = "/login";
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -36,7 +35,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   List types = ["Delivery Person", "Customer"];
   bool enterKYC = false;
   String? value;
-  List<String>? userType;
+  String userType = "";
   Map<String, dynamic>? profile;
   late UpdateLoginProvider updateLoginProvider;
   int typeIndex = 0;
@@ -140,32 +139,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           if (await InternetConnectionChecker().hasConnection) {
             if (tabController.index == 0) {
               if (SignIn.formkey1.currentState!.validate()) {
+                await getdetails();
                 updateLoginProvider.store();
-                bool value = await getdetails();
-                String type = "";
-                if (value) {
-                  if (userType!.length == 2) {
-                    typeIndex = await settype(userType!.indexOf(await show(context)), const FlutterSecureStorage());
-                    type = userType![typeIndex];
-                  } else if (userType!.length == 1) {
-                    type = userType![typeIndex];
-                  } else {
-                    type = "driver";
-                  }
-                }
-                if (value && enterKYC && type == "driver") {
+                if (enterKYC && userType.toLowerCase() == "driver") {
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
-                } else if (value && !enterKYC && type == "driver") {
-                  Navigator.pushReplacementNamed(context, MyRoutes.homepage);
-                } else if (value && !enterKYC && type != "driver") {
+                } else if (!enterKYC && userType.toLowerCase() == "driver") {
+                  Navigator.pushReplacementNamed(context, HomePage.routeName);
+                } else if (!enterKYC && userType.toLowerCase() != "driver") {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const CustomerHomePage(),
                       ));
+                } else {
+                  Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
                 }
               } else {
-                Variables.showtoast("Sign In is failed");
+                Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
               }
             } else if (tabController.index == 1) {
               if (SignUp.formkey2.currentState!.validate() && SignUp.check) {
@@ -175,19 +165,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   Variables.deviceInfo["userType"] = "DRIVER";
                 }
                 await setdetails();
-                var response = await updateLoginProvider.httpost(
+                Map? response = await updateLoginProvider.httpost(
                     context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
                 if (updateLoginProvider.userType == "Customer") {
                   if (await showdialog(
-                      context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
+                      context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response!["id"])) {
                     animController2.reverse();
                     tabController.index = 0;
                   }
+                } else {
+                  animController2.reverse();
+                  tabController.index = 0;
                 }
               } else if (!SignUp.check) {
-                Variables.showtoast("Accept Terms & Conditions");
+                Variables.showtoast(context, "Accept Terms & Conditions", Icons.warning_rounded);
               } else {
-                Variables.showtoast("Something went wrong. Please Try Again");
+                Variables.showtoast(context, "Something went wrong. Please Try Again", Icons.warning_rounded);
               }
             }
           } else {
@@ -200,21 +193,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   setdetails() async {
     await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
     await Variables.write(key: "password", value: TextFields.data["Password"].toString());
-    final list = await Variables.read(key: "usertype");
-    final data = list == null ? [] : List.from(jsonDecode(list));
-    if (data.isEmpty) {
-      await Variables.write(key: "usertype", value: jsonEncode([updateLoginProvider.userType]));
-      await settype(0, Variables.pref);
-    } else {
-      var data1 = data.toSet();
-      data1.add(updateLoginProvider.userType);
-      await Variables.write(key: "usertype", value: jsonEncode(data1.toList()));
-      if (data1.length == 1) {
-        await settype(0, Variables.pref);
-      } else {
-        await settype(1, Variables.pref);
-      }
-    }
+    await Variables.write(key: "usertype", value: updateLoginProvider.userType);
     await Variables.write(key: "mobileSignUp", value: true.toString());
     if (updateLoginProvider.userType == "driver") {
       await Variables.write(key: "enterKYC", value: true.toString());
@@ -223,48 +202,28 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  settype(int index, FlutterSecureStorage pref) async {
-    await Variables.write(key: "type-index", value: index.toString());
-    return index;
-  }
-
   getdetails() async {
-    Variables.write(key: "islogin", value: true.toString());
     try {
       bool username = (await Variables.read(key: "username")) == TextFields.data["Phone number"];
-      bool username1 = (await Variables.read(key: "username1")) == TextFields.data["Phone number"];
-      bool username2 = (await Variables.read(key: "username2")) == TextFields.data["Phone number"];
       bool password = (await Variables.read(key: "password")) == TextFields.data["Password"];
-      bool password1 = (await Variables.read(key: "password1")) == TextFields.data["Password"];
-      bool password2 = (await Variables.read(key: "password2")) == TextFields.data["Password"];
       final kyc = await Variables.read(key: "enterKYC");
-      final index = await Variables.read(key: "type-index");
       enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
-      typeIndex = index == null ? 0 : int.parse(index);
 
       if (username && password) {
-        final list = await Variables.read(key: "usertype");
-        userType = list != null ? List.from(jsonDecode(list)) : ["driver"];
-      } else if (username1 && password1) {
-        final string = await Variables.read(key: "usertype1");
-        userType = [string ?? "driver"];
-      } else if (username2 && password2) {
-        final string = await Variables.read(key: "usertype2");
-        userType = [string ?? "customer"];
+        userType = await Variables.read(key: "usertype") ?? "";
       } else {
-        updateLoginProvider
-            .login(jsonEncode({"password": TextFields.data["Password"], "username": TextFields.data["Email id"]}));
+        await updateLoginProvider
+            .login(context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
+        if (Variables.driverId == -1 && updateLoginProvider.userType == "") return false;
         setdetails();
-        userType = [updateLoginProvider.userType];
+        userType = updateLoginProvider.userType;
       }
-      return true;
     } catch (e) {
-      Variables.showtoast("Sign In is not successfull");
-      return false;
+      Variables.showtoast(context, "Sign In is not successfull", Icons.cancel_outlined);
     }
   }
 
-  show(context) => showDialog(
+  show(context, [bool text = false]) => showDialog(
         barrierDismissible: false,
         context: context,
         builder: (context) => SimpleDialog(
@@ -273,7 +232,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             contentPadding: const EdgeInsets.all(20),
             children: [
               Text(
-                "Before you fill the details, choose the type of user you like to be",
+                (text ? "C" : "Before you fill the details, c") + "hoose the type of user you like to be",
                 style: TextStyle(fontSize: 17, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 10),
@@ -290,10 +249,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   showdialog(BuildContext context, String phonenumber, String email, int id) async {
     var code;
+    resend(id, email, phonenumber);
     return await showDialog(
         context: context,
         builder: (context) {
-          resend(id, email, phonenumber);
           return SimpleDialog(
             contentPadding: const EdgeInsets.all(17),
             alignment: MediaQuery.of(context).viewInsets.bottom > 0 ? Alignment.topCenter : Alignment.center,
@@ -301,30 +260,36 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               SvgPicture.asset("assets/images/otp & two-factor.svg"),
               Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: Text("Enter OTP",
+                child: Text("OTP Verification",
                     textAlign: TextAlign.center,
                     style: Variables.font(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w400,
                     )),
               ),
               Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Text(
-                    "Enter OTP code to verify your phone number",
+                    "We have send verification code to \n +91 ${TextFields.data["Phone number"]}",
                     textAlign: TextAlign.center,
-                    style: Variables.font(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.grey[600]),
+                    style: Variables.font(fontWeight: FontWeight.w300, fontSize: 16, color: Colors.grey[600]),
                   )),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Align(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Align(
                     alignment: Alignment.center,
-                    child: PinFieldAutoFill(
-                        codeLength: 6,
-                        keyboardType: TextInputType.number,
-                        onCodeChanged: (p0) => code = p0!,
-                        onCodeSubmitted: (p0) => code = p0)),
-              ),
+                    child: TextField(
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      style: Variables.font(fontSize: 19, fontWeight: FontWeight.bold),
+                      onChanged: (value) {
+                        code = value;
+                      },
+                      decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.only(left: 5),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))),
+                    ),
+                  )),
               Column(
                 children: [
                   Text(
@@ -357,13 +322,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
                   onPressed: () async {
-                    var validate = await updateLoginProvider.verifyOTP({"otp": code, "phoneNumber": phonenumber});
+                    var validate =
+                        await updateLoginProvider.verifyOTP(context, {"otp": code, "phoneNumber": phonenumber});
                     if (validate != null) {
                       if (validate["otpVerified"]) {
-                        Variables.showtoast("Your Phone number is verified");
+                        Variables.showtoast(context, "Your Phone number is verified", Icons.check);
                         Variables.pop(context, value: true);
                       } else {
-                        Variables.showtoast("OTP is incorrect. Please try again");
+                        Variables.showtoast(context, "OTP is incorrect. Please try again", Icons.warning_rounded);
                         Variables.pop(context, value: false);
                       }
                     }
@@ -378,7 +344,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   void resend(id, email, phonenumber) {
-    updateLoginProvider.getOTP(jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));
+    updateLoginProvider.getOTP(
+        context, jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));
     isResend.value = true;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (count.value == 0) {

@@ -24,12 +24,12 @@ class _OldOrdersState extends State<OldOrders> {
     super.initState();
     updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
-    updateOrderProvider.getRecentOrders();
+    updateOrderProvider.getRecentOrders(context);
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!updateOrderProvider.islastpageloaded1) {
           updateScreenProvider.pageNumber += 1;
-          updateOrderProvider.accepted(updateScreenProvider.pageNumber, true);
+          updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true);
         }
       }
     });
@@ -46,13 +46,13 @@ class _OldOrdersState extends State<OldOrders> {
                 itemBuilder: (BuildContext context) => [
                       PopupMenuItem(
                           onTap: () {
-                            updateOrderProvider.getRecentOrders();
+                            updateOrderProvider.getRecentOrders(context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("Recent", style: Variables.font(fontSize: 15))),
                       PopupMenuItem(
                           onTap: () {
-                            updateOrderProvider.accepted(updateScreenProvider.pageNumber, true);
+                            updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("All", style: Variables.font(fontSize: 15)))
@@ -60,7 +60,7 @@ class _OldOrdersState extends State<OldOrders> {
                 child: const Icon(Icons.filter_list_rounded)),
           )
         ]),
-        body: Consumer2<UpdateOrderProvider,UpdateScreenProvider>(builder: (context, reference,reference1, child) {
+        body: Consumer2<UpdateOrderProvider, UpdateScreenProvider>(builder: (context, reference, reference1, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
               return ListView.builder(
@@ -69,7 +69,10 @@ class _OldOrdersState extends State<OldOrders> {
                 itemBuilder: (context, index) => Card(
                     child: ListTile(
                   contentPadding: const EdgeInsets.all(3),
-                  onTap: () => Variables.push(context, OrderDetailsPage(reference.customerOrders[index])),
+                  onTap: () {
+                    Variables.index = index;
+                    Variables.push(context, "/${Variables.index}"+OrderDetailsPage.routeName);
+                  },
                   title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Variables.text(
                         head: "Booking ID: ",

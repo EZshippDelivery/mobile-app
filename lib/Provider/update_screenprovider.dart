@@ -19,16 +19,16 @@ class UpdateScreenProvider extends ChangeNotifier {
 
   bool islastpageloaded1 = false;
 
-  getInProgressOrderCount() async {
+  getInProgressOrderCount(BuildContext context) async {
     try {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/orders/count"));
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context,response);
       if (responseJson != null) {
         inProgresOrderCount = responseJson;
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection',Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
@@ -40,9 +40,9 @@ class UpdateScreenProvider extends ChangeNotifier {
   settimer(BuildContext context) {
     UpdateOrderProvider updateOrderProvider = Provider.of(context, listen: false);
     timer = Timer.periodic(const Duration(seconds: 10), (time) {
-      getInProgressOrderCount();
+      getInProgressOrderCount(context);
       if (inProgresOrderCount > 0) {
-        inProgressOrders();
+        inProgressOrders(context);
         for (int i = 0; i < customerOrders.length; i++) {
           updateOrderProvider.customerOrders[i] = customerOrders[i];
         }
@@ -54,12 +54,12 @@ class UpdateScreenProvider extends ChangeNotifier {
   }
   
 
-  inProgressOrders() async {
+  inProgressOrders(BuildContext context) async {
     try {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/neworders/$pageNumber/20"));
 
-      var responseJson = Variables.returnResponse(response);
+      var responseJson = Variables.returnResponse(context,response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
           if (pageNumber == 1) {
@@ -74,12 +74,12 @@ class UpdateScreenProvider extends ChangeNotifier {
         }
       }
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }
 
-  bikerRating(int driverid, int orderid, int rating) async {
+  bikerRating(BuildContext context,int driverid, int orderid, int rating) async {
     try {
       Map body = {
         "carryingBag": true,
@@ -100,9 +100,9 @@ class UpdateScreenProvider extends ChangeNotifier {
         "wearingTShirt": true
       };
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/rating"), jsonEncode(body));
-      Variables.returnResponse(response);
+      Variables.returnResponse(context, response);
     } on SocketException {
-      Variables.showtoast('No Internet connection');
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }

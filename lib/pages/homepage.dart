@@ -15,6 +15,7 @@ import '../Provider/update_profile_provider.dart';
 import '../widgets/tabbar.dart';
 
 class HomePage extends StatefulWidget {
+  static String routeName = "/driver";
   const HomePage({Key? key}) : super(key: key);
 
   @override
@@ -40,12 +41,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void subscribe() {
-    subscription = InternetConnectionChecker().onStatusChange.listen((event) {
+    subscription = InternetConnectionChecker().onStatusChange.listen((event) async {
       Variables.internetStatus = event;
       if (event == InternetConnectionStatus.connected) {
+        await updateProfileProvider.getcolor(context, true, driverid: Variables.driverId);
         setonline();
-        updateProfileProvider.getcolor(true, driverid: Variables.driverId);
-        updateOrderProvider.newOrders();
+        await updateOrderProvider.newOrders(context);
       } else if (event == InternetConnectionStatus.disconnected) {
         Variables.overlayNotification();
       }
@@ -55,7 +56,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   setonline() async {
     final value = await Variables.read(key: "isOnline");
-    mapsProvider.online(value != null ? value.toLowerCase() == "true" : true, Variables.driverId, fromhomepage: true);
+    mapsProvider.online(context, value != null ? value.toLowerCase() == "true" : true, Variables.driverId,
+        fromhomepage: true);
   }
 
   @override
@@ -73,7 +75,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 IconButton(
                     onPressed: () async {
                       updateOrderProvider.findOrderbyBarcode(
-                          await Variables.scantext(context, controller, fromhomepage: true), 7);
+                          context, await Variables.scantext(context, controller, fromhomepage: true), 7);
                     },
                     icon: const Icon(Icons.qr_code_scanner_rounded))
             ]),
