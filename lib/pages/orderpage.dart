@@ -49,6 +49,10 @@ class _OrderState extends State<Order> {
     return Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
       NewOrderList list =
           widget.accepted ? reference.acceptedList[widget.index] : reference.deliveredList[widget.index];
+      Variables.list = list;
+      Variables.index2 = widget.index;
+      Variables.list1 = list;
+      Variables.index2 = widget.index;
       return Scaffold(
           appBar: Variables.app(actions: [
             if (list.statusId > 5 && list.statusId < 11)
@@ -72,8 +76,13 @@ class _OrderState extends State<Order> {
                   if (reference1.pickmark != null) reference1.pickmark!,
                   if (reference1.dropmark != null) reference1.dropmark!
                 },
-                onMapCreated: (controller) {
-                  reference1.directions(context, controller, list);
+                onMapCreated: (controller) async {
+                  await reference1.directions(context, controller, null,
+                      places: [reference1.pickmark!.position, reference1.dropmark!.position]).then((value) {
+                    var latLngBounds =
+                        LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
+                    controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
+                  });
                 },
                 polylines: {Polyline(polylineId: const PolylineId("origin"), points: reference1.info, width: 3)},
               );
@@ -115,7 +124,7 @@ class _OrderState extends State<Order> {
                                       Variables.text(head: "Status: ", value: list.status, valueColor: Palette.kOrange),
                                       TextButton(
                                           onPressed: () {
-                                            Variables.list = list;
+                                            Variables.isdetail = true;
                                             Variables.push(context, DeliveredPage.routeName);
                                           },
                                           child: Text(
@@ -414,10 +423,8 @@ class _OrderState extends State<Order> {
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                             } else if (list.statusId == 11) {
-                                              Variables.list1 = list;
-                                              Variables.index2 = widget.index;
-                                              Variables.push(
-                                                  context, DeliveredPage.routeName);
+                                              Variables.isdetail = false;
+                                              Variables.push(context, DeliveredPage.routeName);
                                             }
                                           },
                                           style: ElevatedButton.styleFrom(

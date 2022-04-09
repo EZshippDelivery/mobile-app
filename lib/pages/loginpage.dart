@@ -65,6 +65,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     animController.forward();
+    if (ModalRoute.of(context)!.settings.name != null) debugPrint(ModalRoute.of(context)!.settings.name!);
     return Scaffold(
       backgroundColor: Palette.kOrange,
       body: SafeArea(
@@ -140,12 +141,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             if (tabController.index == 0) {
               if (SignIn.formkey1.currentState!.validate()) {
                 await getdetails();
-                updateLoginProvider.store();
+                updateLoginProvider.store(true);
                 if (enterKYC && userType.toLowerCase() == "driver") {
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
                 } else if (!enterKYC && userType.toLowerCase() == "driver") {
                   Navigator.pushReplacementNamed(context, HomePage.routeName);
-                } else if (!enterKYC && userType.toLowerCase() != "driver") {
+                } else if (!enterKYC && userType.toLowerCase() == "customer") {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(

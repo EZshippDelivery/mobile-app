@@ -5,7 +5,7 @@ import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+// import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,7 +25,8 @@ class TrackingPage extends StatefulWidget {
   _TrackingPageState createState() => _TrackingPageState();
 }
 
-class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMixin {
+class _TrackingPageState extends State<TrackingPage>
+    with TickerProviderStateMixin {
   int _stepper = 0;
   bool laststep = false;
   DecorationImage? decorationImage;
@@ -41,18 +42,21 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
     super.initState();
     updateScreen = Provider.of<UpdateScreenProvider>(context, listen: false);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    animation =
-        Tween(end: 0.2, begin: 0.3).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
+    animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    animation = Tween(end: 0.2, begin: 0.3).animate(CurvedAnimation(
+        parent: animationController, curve: Curves.fastOutSlowIn));
     if (widget.order.bikerProfileUrl.isNotEmpty) {
       if (widget.order.bikerProfileUrl.length < 3) {
         index = int.parse(widget.order.bikerProfileUrl);
       } else {
-        decorationImage = DecorationImage(image: MemoryImage(base64Decode(widget.order.bikerProfileUrl)));
+        decorationImage = DecorationImage(
+            image: MemoryImage(base64Decode(widget.order.bikerProfileUrl)));
       }
     }
     if (widget.order.bikerName.contains(RegExp(r'\s'))) {
-      name = widget.order.bikerName[0] + widget.order.bikerName[widget.order.bikerName.indexOf(' ') + 1];
+      name = widget.order.bikerName[0] +
+          widget.order.bikerName[widget.order.bikerName.indexOf(' ') + 1];
     } else {
       name = widget.order.bikerName[0];
     }
@@ -75,7 +79,8 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                 zoomControlsEnabled: false,
                 myLocationButtonEnabled: true,
                 myLocationEnabled: true,
-                initialCameraPosition: const CameraPosition(target: LatLng(17.387140, 78.491684), zoom: 11.0),
+                initialCameraPosition: const CameraPosition(
+                    target: LatLng(17.387140, 78.491684), zoom: 11.0),
                 markers: {
                   if (reference1.driver != null) reference1.driver!,
                 },
@@ -92,10 +97,14 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                             child: Column(children: [
                               Padding(
                                   padding: const EdgeInsets.all(10),
-                                  child: Variables.text(head: "Order Id: ", value: widget.order.orderSeqId)),
-                              Variables.dividerName("Order Status", hpadding: 0, vpadding: 5),
+                                  child: Variables.text(
+                                      head: "Order Id: ",
+                                      value: widget.order.orderSeqId)),
+                              Variables.dividerName("Order Status",
+                                  hpadding: 0, vpadding: 5),
                               const SizedBox(height: 5),
-                              Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
+                              Consumer<UpdateScreenProvider>(
+                                  builder: (context, reference, child) {
                                 if (widget.order.statusId >= 2) {
                                   _stepper = 1;
                                 } else if (widget.order.statusId >= 3) {
@@ -118,20 +127,39 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                     //     _stepper = value;
                                     //   });
                                     // },
-                                    controlsBuilder: (context, controlDetails) => Container(),
+                                    controlsBuilder:
+                                        (context, controlDetails) =>
+                                            Container(),
                                     steps: [
-                                      step("Order Received",
-                                          Variables.datetime(widget.order.orderCreatedTime, timeNeed: true), 0),
-                                      step("Order Accepted",
-                                          Variables.datetime(widget.order.acceptedTime, timeNeed: true), 1),
-                                      step("Order Picked", Variables.datetime(DateTime.now(), timeNeed: true), 2),
-                                      step("Order Delivered",
-                                          Variables.datetime(widget.order.deliveredTime, timeNeed: true), 3),
+                                      step(
+                                          "Order Received",
+                                          Variables.datetime(
+                                              widget.order.orderCreatedTime,
+                                              timeNeed: true),
+                                          0),
+                                      step(
+                                          "Order Accepted",
+                                          Variables.datetime(
+                                              widget.order.acceptedTime,
+                                              timeNeed: true),
+                                          1),
+                                      step(
+                                          "Order Picked",
+                                          Variables.datetime(DateTime.now(),
+                                              timeNeed: true),
+                                          2),
+                                      step(
+                                          "Order Delivered",
+                                          Variables.datetime(
+                                              widget.order.deliveredTime,
+                                              timeNeed: true),
+                                          3),
                                     ],
                                   ),
                                 );
                               }),
-                              Variables.dividerName("Biker Details", hpadding: 0),
+                              Variables.dividerName("Biker Details",
+                                  hpadding: 0),
                               AnimatedBuilder(
                                   animation: animation,
                                   builder: (context, child) {
@@ -145,50 +173,71 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                           value = !value;
                                         },
                                         child: getProfileImage(
-                                            size: MediaQuery.of(context).size.width * animation.value,
+                                            size: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                animation.value,
                                             canEdit: true,
                                             isNotEqual: true));
                                   }),
                               Row(children: [
-                                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  const SizedBox(height: 10),
-                                  Variables.text(head: "Biker Name: ", value: widget.order.bikerName, vpadding: 4),
-                                  Row(children: [
-                                    Variables.text(
-                                        head: "Biker Phone: ", value: widget.order.bikerPhone.toString(), vpadding: 4),
-                                    FloatingActionButton.small(
-                                        onPressed: () async {
-                                          var url = "tel:${widget.order.bikerPhone}";
-                                          await canLaunch(url)
-                                              ? launch(url)
-                                              : Variables.showtoast(context,"Unable to open Phone App",Icons.cancel_outlined);
-                                        },
-                                        child: const Icon(Icons.phone, size: 17),
-                                        elevation: 3),
-                                  ]),
-                                  const SizedBox(height: 15),
-                                  Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                      child: Variables.text(head: "Rate your biker: ", value: "${TrackingPage.rating}"),
-                                    );
-                                  })
-                                ])
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      Variables.text(
+                                          head: "Biker Name: ",
+                                          value: widget.order.bikerName,
+                                          vpadding: 4),
+                                      Row(children: [
+                                        Variables.text(
+                                            head: "Biker Phone: ",
+                                            value: widget.order.bikerPhone
+                                                .toString(),
+                                            vpadding: 4),
+                                        FloatingActionButton.small(
+                                            onPressed: () async {
+                                              var url =
+                                                  "tel:${widget.order.bikerPhone}";
+                                              await canLaunch(url)
+                                                  ? launch(url)
+                                                  : Variables.showtoast(
+                                                      context,
+                                                      "Unable to open Phone App",
+                                                      Icons.cancel_outlined);
+                                            },
+                                            child: const Icon(Icons.phone,
+                                                size: 17),
+                                            elevation: 3),
+                                      ]),
+                                      const SizedBox(height: 15),
+                                      Consumer<UpdateScreenProvider>(
+                                          builder: (context, reference, child) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0),
+                                          child: Variables.text(
+                                              head: "Rate your biker: ",
+                                              value: "${TrackingPage.rating}"),
+                                        );
+                                      })
+                                    ])
                               ]),
-                              RatingBar.builder(
-                                  glow: false,
-                                  updateOnDrag: true,
-                                  itemPadding: const EdgeInsets.symmetric(horizontal: 4),
-                                  itemBuilder: (context, index) => Icon(
-                                        Icons.star,
-                                        color: Colors.amber[700],
-                                      ),
-                                  onRatingUpdate: (value) {
-                                    TrackingPage.rating = value;
-                                    updateScreen.updateScreen();
-                                    updateScreen.bikerRating(
-                                        context, widget.order.bikerId, widget.order.id, value.ceil());
-                                  })
+                              // RatingBar.builder(
+                              //     glow: false,
+                              //     updateOnDrag: true,
+                              //     itemPadding: const EdgeInsets.symmetric(horizontal: 4),
+                              //     itemBuilder: (context, index) => Icon(
+                              //           Icons.star,
+                              //           color: Colors.amber[700],
+                              //         ),
+                              //     onRatingUpdate: (value) {
+                              //       TrackingPage.rating = value;
+                              //       updateScreen.updateScreen();
+                              //       updateScreen.bikerRating(
+                              //           context, widget.order.bikerId, widget.order.id, value.ceil());
+                              //     })
                             ])))))
           ],
         ),
@@ -198,7 +247,9 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
 
   Step step(String title, String subtitle, int index) {
     return Step(
-        title: _stepper == index ? Text(title, style: Variables.font()) : Container(),
+        title: _stepper == index
+            ? Text(title, style: Variables.font())
+            : Container(),
         content: Container(),
         isActive: _stepper > index || TrackingPage.complete,
         state: _stepper > index || TrackingPage.complete
@@ -208,7 +259,8 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                 : StepState.indexed);
   }
 
-  getProfileImage({double size = 150, bool canEdit = false, bool isNotEqual = false}) {
+  getProfileImage(
+      {double size = 150, bool canEdit = false, bool isNotEqual = false}) {
     return Material(
       shape: const CircleBorder(),
       elevation: 2,
@@ -220,20 +272,31 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
           child: Container(
               height: size,
               width: size,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.primaries[index], image: decorationImage),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.primaries[index],
+                  image: decorationImage),
               child: decorationImage == null
                   ? Stack(
                       children: [
-                        Center(child: Text(name, style: Variables.font(fontSize: size / 2.5, color: Colors.white))),
+                        Center(
+                            child: Text(name,
+                                style: Variables.font(
+                                    fontSize: size / 2.5,
+                                    color: Colors.white))),
                         if (canEdit)
                           Align(
                               alignment: Alignment.bottomRight,
                               child: Container(
-                                decoration: const BoxDecoration(shape: BoxShape.circle, color: Palette.deepgrey),
+                                decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Palette.deepgrey),
                                 child: Padding(
                                   padding: EdgeInsets.all(size * 0.05),
-                                  child: Icon(Icons.photo_size_select_small_rounded,
-                                      color: Colors.white, size: size < 130 ? 13 : 25),
+                                  child: Icon(
+                                      Icons.photo_size_select_small_rounded,
+                                      color: Colors.white,
+                                      size: size < 130 ? 13 : 25),
                                 ),
                               ))
                       ],

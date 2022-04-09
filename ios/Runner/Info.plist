@@ -49,5 +49,9 @@
     <string>Needed to access location</string>
 	<key>NSContactsUsageDescription</key>  
 	<string>This app requires contacts access to function properly.</string>  
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+    	<string>UIInterfaceOrientationPortrait</string>
+	</array>
 </dict>
 </plist>

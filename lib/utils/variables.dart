@@ -25,7 +25,7 @@ class Variables {
   static String key = "AIzaSyCuvs8lj4MQgGWE26w3twaifCgxk_Vk8Yw";
   static List menuItems = ["Recipient", "Watchman", "Receptionist", "Neighbours", "Others"];
   static String currentMenuItem = menuItems[0];
-  static bool showdialog = true;
+  static bool showdialog = true, isdetail = false;
   static Map<String, String?> locations = {};
   static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
   static int driverId = -1;
@@ -98,9 +98,13 @@ class Variables {
   static TextStyle font(
           {double fontSize = 14, FontWeight fontWeight = FontWeight.normal, Color? color = Palette.deepgrey}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight);
-  static Uri uri({required String path, queryParameters}) =>
-   //   Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
-   Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
+  static Uri uri({required String path, queryParameters}) => //Uri(
+      // scheme: "http",
+      // host: "65.2.152.100",
+      // port: 2020,
+      // path: "/api/v1" + path,
+      // queryParameters: queryParameters);
+      Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
 
   static text(
           {String head = "Order ID:",
@@ -286,12 +290,17 @@ class Variables {
     if (statusId != null) Variables.updateOrderMap.statusId = statusId;
   }
 
-  static Future<void> updateOrder(BuildContext context, UpdateOrderProvider value, int index, statusId) async {
+  static Future<void> updateOrder(BuildContext context, UpdateOrderProvider value, int index, statusId,
+      [bool iscustomer = false]) async {
     await Variables.getLiveLocation(statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
       "longitude": Variables.updateOrderMap.longitude,
-      "orderId": statusId > 3 && statusId < 13 ? value.acceptedList[index].id : value.newOrderList[index].id
+      "orderId": statusId > 3 && statusId < 13
+          ? value.acceptedList[index].id
+          : iscustomer
+              ? value.customerOrders[index].id
+              : value.newOrderList[index].id
     };
     // print(jsonEncode(body));
     // var temp = value.newOrderList[index];
@@ -301,7 +310,8 @@ class Variables {
       Variables.updateOrderMap.distance = result;
       Variables.updateOrderMap.driverId = driverId;
       Variables.updateOrderMap.newDriverId = driverId;
-      await value.update(context, Variables.updateOrderMap.toJson(), value.newOrderList[index].id);
+      await value.update(context, Variables.updateOrderMap.toJson(),
+          iscustomer ? value.customerOrders[index].id : value.newOrderList[index].id);
     }
   }
 

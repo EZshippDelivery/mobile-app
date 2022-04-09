@@ -90,7 +90,7 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
                       heroTag: "save_@",
                       onPressed: () {
                         if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
-                          updateProfileProvider.updateProfile(context, TextFields.data, Variables.driverId);
+                          updateProfileProvider.updateProfile(context, TextFields.data, Variables.driverId, true);
                           Navigator.of(context).pop();
                         }
                       },

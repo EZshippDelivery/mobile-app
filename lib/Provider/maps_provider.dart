@@ -76,7 +76,8 @@ class MapsProvider extends ChangeNotifier {
       case 500:
       default:
         Variables.showtoast(
-            context, 'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            context,
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
             Icons.warning_rounded);
         break;
     }
@@ -104,13 +105,15 @@ class MapsProvider extends ChangeNotifier {
       case 500:
       default:
         Variables.showtoast(
-            context, 'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            context,
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
             Icons.warning_rounded);
         break;
     }
   }
 
-  Future<void> directions(BuildContext context, GoogleMapController? controller, NewOrderList? reference, {List<LatLng>? places}) async {
+  Future<void> directions(BuildContext context, GoogleMapController? controller, NewOrderList? reference,
+      {List<LatLng>? places}) async {
     try {
       if (reference != null) {
         final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/directions/json?", queryParameters: {
@@ -248,23 +251,22 @@ class MapsProvider extends ChangeNotifier {
   }
 
   online(BuildContext context, bool value, int bikerId, {bool fromhomepage = false}) async {
-    
     if (value) {
       timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
         await getCurrentlocations();
         final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
             jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-        
+
         Variables.returnResponse(context, response, onlinemode: true);
       });
-      Variables.showtoast(context, "You are in online mode ",Icons.info_outline_rounded);
+      Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
     } else {
       if (timer != null) timer!.cancel();
       await getCurrentlocations();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
           jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
       Variables.returnResponse(context, response, onlinemode: true);
-      Variables.showtoast(context, "You are in offline mode ",Icons.info_outline_rounded);
+      Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
     }
 
     await Variables.write(key: "isOnline", value: value.toString());

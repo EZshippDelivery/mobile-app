@@ -16,9 +16,7 @@ class TabBars {
   ];
 
   static List tab2 = [
-    Image.asset(
-      "assets/icon/shiping.png",
-    ),
+    Image.asset("assets/icon/shiping.png"),
     Image.asset(
       "assets/icon/icons8-task-completed-50.png",
       height: 25,
@@ -40,7 +38,7 @@ class TabBars {
             text: controller.index == tab1.indexOf(name) ? name[0] : null,
             icon: Icon(name[1]),
             iconMargin: const EdgeInsets.all(0),
-            height: 45,
+            height: 47,
           )
       ];
 

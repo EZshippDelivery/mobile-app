@@ -1,3 +1,4 @@
+import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,10 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
                               ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    UpdateLoginProvider updateLoginProvider =
+                                        Provider.of<UpdateLoginProvider>(context, listen: false);
+                                    await updateLoginProvider.store(true);
                                     Navigator.of(context).popAndPushNamed(LoginPage.routeName);
                                   },
                                   child: Padding(

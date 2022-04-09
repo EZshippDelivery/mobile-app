@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_order_povider.dart';
+import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/tabs/my_orders.dart';
 import 'package:ezshipp/tabs/new_orders.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -86,11 +87,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             bottomNavigationBar: BottomAppBar(
                 shape: const CircularNotchedRectangle(),
-                child: TabBar(
-                    labelPadding: const EdgeInsets.all(10),
-                    indicatorWeight: 4.0,
-                    controller: tabController,
-                    tabs: TabBars.tabs1(tabController))),
+                child: Consumer<UpdateScreenProvider>(builder: (context, snapshot, child) {
+                  return TabBar(
+                      onTap: (value) => snapshot.updateScreen(),
+                      labelPadding: const EdgeInsets.all(11),
+                      indicatorWeight: 4.0,
+                      controller: tabController,
+                      tabs: TabBars.tabs1(tabController));
+                })),
           )
         : Scaffold(
             appBar: Variables.app(actions: [

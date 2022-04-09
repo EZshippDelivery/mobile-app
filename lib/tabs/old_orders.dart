@@ -63,40 +63,43 @@ class _OldOrdersState extends State<OldOrders> {
         body: Consumer2<UpdateOrderProvider, UpdateScreenProvider>(builder: (context, reference, reference1, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
-              return ListView.builder(
-                controller: scrollController,
-                itemCount: reference.customerOrders.length,
-                itemBuilder: (context, index) => Card(
-                    child: ListTile(
-                  contentPadding: const EdgeInsets.all(3),
-                  onTap: () {
-                    Variables.index = index;
-                    Variables.push(context, "/${Variables.index}"+OrderDetailsPage.routeName);
-                  },
-                  title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Variables.text(
-                        head: "Booking ID: ",
-                        value: reference.customerOrders[index].orderSeqId,
-                        valueColor: Colors.grey),
-                    Variables.text(
-                        head: "",
-                        value: Variables.datetime(reference.customerOrders[index].orderCreatedTime),
-                        valueColor: Colors.grey)
-                  ]),
-                  subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Variables.text(
-                        head: "",
-                        value: reference.customerOrders[index].status,
-                        valueColor: reference.customerOrders[index].statusId < 13 &&
-                                reference.customerOrders[index].statusId != 10
-                            ? Colors.green
-                            : Colors.red),
-                    Variables.text(
-                        head: "",
-                        value: "₹ ${reference.customerOrders[index].totalCharge}",
-                        valueColor: Palette.deepgrey)
-                  ]),
-                )),
+              return RefreshIndicator(
+                onRefresh: () => updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true),
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: reference.customerOrders.length,
+                  itemBuilder: (context, index) => Card(
+                      child: ListTile(
+                    contentPadding: const EdgeInsets.all(3),
+                    onTap: () {
+                      Variables.index = index;
+                      Variables.push(context, OrderDetailsPage.routeName);
+                    },
+                    title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Variables.text(
+                          head: "Booking ID: ",
+                          value: reference.customerOrders[index].orderSeqId,
+                          valueColor: Colors.grey),
+                      Variables.text(
+                          head: "",
+                          value: Variables.datetime(reference.customerOrders[index].orderCreatedTime),
+                          valueColor: Colors.grey)
+                    ]),
+                    subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Variables.text(
+                          head: "",
+                          value: reference.customerOrders[index].status,
+                          valueColor: reference.customerOrders[index].statusId < 13 &&
+                                  reference.customerOrders[index].statusId != 10
+                              ? Colors.green
+                              : Colors.red),
+                      Variables.text(
+                          head: "",
+                          value: "₹ ${reference.customerOrders[index].totalCharge}",
+                          valueColor: Palette.deepgrey)
+                    ]),
+                  )),
+                ),
               );
             } else {
               return Center(child: Text("No orders", style: Variables.font(fontSize: 22)));

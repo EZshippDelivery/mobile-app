@@ -39,50 +39,68 @@ class _AcceptedState extends State<Accepted> {
       return Column(
         children: [
           if (reference.acceptedList.isEmpty)
-            Expanded(
-                child: Center(
-              child: SizedBox.fromSize(
-                size: Size.square(MediaQuery.of(context).size.width * 0.5),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "There is no new orders that are accepted",
-                    style: Variables.font(fontSize: 18, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            )),
-          if (reference.acceptedList.isNotEmpty)
-            Flexible(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: reference.acceptedList.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: ListTile(
-                        tileColor: Colors.white,
-                        onTap: () {
-                          Variables.index1 = index;
-                          Variables.push(context,"/${reference.acceptedList[index].id}/true" +Order.routeName);
-                        },
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Variables.text(head: "Order ID: ", value: reference.acceptedList[index].orderSeqId),
-                            Text(Variables.datetime(reference.acceptedList[index].acceptedTime.isEmpty
-                                ? reference.acceptedList[index].orderCreatedTime
-                                : reference.acceptedList[index].acceptedTime))
-                          ],
-                        ),
-                        subtitle: Variables.text(
-                            head: "Status: ", value: reference.acceptedList[index].status, valueColor: Palette.kOrange),
+            Stack(
+              children: [
+                Center(
+                  child: SizedBox.fromSize(
+                    size: Size.square(MediaQuery.of(context).size.width * 0.5),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "There is no new orders that are accepted",
+                        style: Variables.font(fontSize: 18, color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  );
+                  ),
+                ),
+                // RefreshIndicator(
+                //   child: ListView(),
+                //   onRefresh: () {
+                //     pageNumber = 1;
+                //     return updateOrderProvider.accepted(context, pageNumber, false);
+                //   },
+                // )
+              ],
+            ),
+          if (reference.acceptedList.isNotEmpty)
+            Flexible(
+              child: RefreshIndicator(
+                onRefresh: () {
+                  pageNumber = 1;
+                  return updateOrderProvider.accepted(context, pageNumber, false);
                 },
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: reference.acceptedList.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: ListTile(
+                          tileColor: Colors.white,
+                          onTap: () {
+                            Variables.index1 = index;
+                            Variables.push(context, "/order" + Order.routeName);
+                          },
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Variables.text(head: "Order ID: ", value: reference.acceptedList[index].orderSeqId),
+                              Text(Variables.datetime(reference.acceptedList[index].acceptedTime.isEmpty
+                                  ? reference.acceptedList[index].orderCreatedTime
+                                  : reference.acceptedList[index].acceptedTime))
+                            ],
+                          ),
+                          subtitle: Variables.text(
+                              head: "Status: ",
+                              value: reference.acceptedList[index].status,
+                              valueColor: Palette.kOrange),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
         ],

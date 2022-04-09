@@ -34,13 +34,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> with TickerProvider
   }
 
   void constructor() async {
-    if (Variables.driverId > 0) await updateCustomerProfileProvider.getcolor(context, false, driverid: Variables.driverId);
-    await getAddressesProvider.getAllAddresses(
-      context
-    );
-    updateScreenProvider.getInProgressOrderCount(
-      context
-    );
+    if (Variables.driverId > 0)
+      await updateCustomerProfileProvider.getcolor(context, false, driverid: Variables.driverId);
+    await getAddressesProvider.getAllAddresses(context);
+    updateScreenProvider.getInProgressOrderCount(context);
   }
 
   @override
@@ -55,6 +52,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> with TickerProvider
       bottomNavigationBar: Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
         return BottomAppBar(
           child: TabBar(
+            onTap: (value) => reference.getInProgressOrderCount(context),
             controller: tabController,
             tabs: TabBars.tabs2(reference.inProgresOrderCount),
           ),

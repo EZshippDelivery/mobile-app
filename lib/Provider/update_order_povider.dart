@@ -15,8 +15,6 @@ class UpdateOrderProvider extends ChangeNotifier {
   late MyOrderList myorders;
   bool islastpageloaded = false, islastpageloaded1 = false;
   DateTime start = DateTime.now().subtract(const Duration(days: 7)), end = DateTime.now();
-  
-  
 
   Future<dynamic> gethttp(BuildContext context, String url) async {}
 
@@ -37,10 +35,10 @@ class UpdateOrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  update(BuildContext context, String body,int orderid) async {
+  update(BuildContext context, String body, int orderid) async {
     loading = true;
     try {
-      final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"),body);
+      final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
       Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -63,10 +61,10 @@ class UpdateOrderProvider extends ChangeNotifier {
         Variables.updateOrderMap.distance = (await getDistance(
             context,
             jsonEncode({
-          "latitude": Variables.updateOrderMap.latitude,
-          "longitude": Variables.updateOrderMap.longitude,
-          "orderId": body.id
-        })))!;
+              "latitude": Variables.updateOrderMap.latitude,
+              "longitude": Variables.updateOrderMap.longitude,
+              "orderId": body.id
+            })))!;
         Variables.updateOrderMap.zoneId = Variables.centers.indexWhere((element) => element.indexOf(body.zonedAt));
         Variables.updateOrderMap.collectAt = body.collectAt;
         update(context, Variables.updateOrderMap.toJson(), body.id);
@@ -80,8 +78,8 @@ class UpdateOrderProvider extends ChangeNotifier {
   delivered(BuildContext context, driverid, int pagenumber, String startdate, String enddate) async {
     try {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
-      final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/completed/$driverid"),
-          body.toJson());
+      final response =
+          await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/completed/$driverid"), body.toJson());
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -102,17 +100,21 @@ class UpdateOrderProvider extends ChangeNotifier {
     try {
       final response = iscustomer
           ? await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/myorders/$pagenumber/20"))
-          : await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
+          : await HTTPRequest.getRequest(
+              Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
           if (iscustomer && pagenumber == 1) {
             customerOrders = List.generate(
                 responseJson["data"].length, (index) => NewOrderList.fromMap(responseJson["data"][index]));
+          } else if (!iscustomer && pagenumber == 1) {
+            acceptedList = List.generate(
+                responseJson["data"].length, (index) => NewOrderList.fromMap(responseJson["data"][index]));
           } else if (iscustomer && pagenumber > 1) {
             customerOrders.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
           } else {
-            acceptedList.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
+            acceptedList.addAll(responseJson["data"].map<NewOrderList>((e) => NewOrderList.fromMap(e)).toList());
           }
           islastpageloaded1 = false;
         } else {

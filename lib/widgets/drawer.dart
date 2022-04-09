@@ -1,4 +1,5 @@
 import 'package:ezshipp/Provider/maps_provider.dart';
+import 'package:ezshipp/Provider/update_login_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/utils/themes.dart';
@@ -64,7 +65,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   child: Text(reference1.isOnline ? "Online" : "Offline", style: Variables.font(fontSize: 15)),
                 ),
                 trailing: Switch.adaptive(
-                    value: reference1.isOnline, onChanged: (value) => reference1.online(context, value, Variables.driverId)),
+                    value: reference1.isOnline,
+                    onChanged: (value) => reference1.online(context, value, Variables.driverId)),
               );
             }),
             ...ListTile.divideTiles(context: context, tiles: [
@@ -101,8 +103,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                   ),
                                 ),
                                 ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.of(context).popAndPushNamed(LoginPage.routeName);
+                                    onPressed: () async {
+                                      UpdateLoginProvider updateLoginProvider =
+                                          Provider.of<UpdateLoginProvider>(context, listen: false);
+                                      await updateLoginProvider.store(false);
+                                      bool isNewRouteSameAsCurrent = false;
+
+                                      Navigator.popUntil(context, (route) {
+                                        if (route.settings.name == LoginPage.routeName) {
+                                          isNewRouteSameAsCurrent = true;
+                                        }
+                                        return true;
+                                      });
+
+                                      if (!isNewRouteSameAsCurrent) {
+                                        Navigator.pushNamed(context, LoginPage.routeName);
+                                      }
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),

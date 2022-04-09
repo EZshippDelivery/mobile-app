@@ -88,9 +88,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   alignment: Alignment.bottomCenter,
                   child: FloatingActionButton.extended(
                       heroTag: "save_@",
-                      onPressed: () {
+                      onPressed: () async {
                         if (EditProfilePage.formkey3.currentState!.validate()) {
-                          updateProfileProvider.updateProfile(context, TextFields.data, Variables.driverId);
+                          await updateProfileProvider.updateProfile(
+                              context, TextFields.data, Variables.driverId, false);
                           Navigator.of(context).pop();
                         }
                       },

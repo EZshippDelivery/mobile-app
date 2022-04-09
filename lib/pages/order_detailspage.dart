@@ -1,5 +1,6 @@
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
+import 'package:ezshipp/Provider/update_order_povider.dart';
 import 'package:ezshipp/pages/trakingpage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   void initState() {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
+    Variables.list2 = widget.order;
   }
 
   @override
@@ -48,7 +50,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                     onTap: () {
                                       Variables.updateOrderMap.cancelReason = Variables.cancelReasons[index][1];
                                       Variables.updateOrderMap.cancelReasonId = Variables.cancelReasons[index][0];
-                                      //  Variables.updateOrder(reference, widget.index, 14);
+                                      Variables.updateOrder(
+                                          context,
+                                          Provider.of<UpdateOrderProvider>(context, listen: false),
+                                          Variables.index,
+                                          13,
+                                          true);
                                       Variables.pop(context,
                                           value: Variables.cancelReasons[index][3] == 1 ? true : false);
                                     },
@@ -173,7 +180,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           ? FloatingActionButton.extended(
               onPressed: () {
                 mapsProvider.livebikerTracking(context, widget.order.bikerId, widget.order.id);
-                Variables.list2 = widget.order;
+
                 Variables.push(context, TrackingPage.routeName);
               },
               label: Text("Track Your Order", style: Variables.font(color: null)),

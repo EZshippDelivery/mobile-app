@@ -35,21 +35,21 @@ class _ProfilePageState extends State<ProfilePage> {
               clipper: Clipper(cut: 30),
               child: Container(
                   color: Palette.kOrange,
-                  height: size.height / 3.1,
+                  height: size.height * 0.38,
                   margin: const EdgeInsets.only(bottom: 3),
                   padding: const EdgeInsets.only(bottom: 20),
                   child: ClipPath(
                       clipper: Clipper(cut: 40),
                       child: Container(
                           color: Colors.amber[800],
-                          margin: const EdgeInsets.only(bottom: 5),
+                          margin: const EdgeInsets.only(bottom: 2),
                           padding: const EdgeInsets.only(bottom: 20),
                           child: ClipPath(
                               clipper: Clipper(cut: 55, curve: 16),
                               child: Container(
                                   color: Palette.deepgrey,
                                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                                    const SizedBox(height: 15),
+                                    const SizedBox(height: 20),
                                     Hero(
                                         tag: "Driver Profile",
                                         child: reference.getProfileImage(size: size.width / 3.5, isNotEqual: true)),

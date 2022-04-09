@@ -25,7 +25,7 @@ class UpdateProfileProvider extends ChangeNotifier {
     getColor();
   }
 
-  getprofile(BuildContext context,String path) async {
+  getprofile(BuildContext context, String path) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: path));
       var responseJson = Variables.returnResponse(context, response);
@@ -75,7 +75,7 @@ class UpdateProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  updateProfile(BuildContext context, Map<String, String> update, int driverId) async {
+  updateProfile(BuildContext context, Map<String, String> update, int driverId, bool isCustomer) async {
     try {
       var json = UpdateProfile.fromMap1(profile.toMap(), update).toJson();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/$driverId"), json);
@@ -90,7 +90,7 @@ class UpdateProfileProvider extends ChangeNotifier {
           name = profile.name[0];
         }
         fullName = profile.name;
-        plan = profile.premium ? "Premium" : "Standard";
+        if (isCustomer) plan = profile.premium ? "Premium" : "Standard";
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
