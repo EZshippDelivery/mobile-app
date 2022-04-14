@@ -1,11 +1,11 @@
-import 'package:ezshipp/pages/orderpage.dart';
+import 'package:ezshipp/pages/biker/orderpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../Provider/update_order_povider.dart';
+import '../Provider/order_controller.dart';
 
 class Delivered extends StatefulWidget {
   const Delivered({Key? key}) : super(key: key);
@@ -16,23 +16,19 @@ class Delivered extends StatefulWidget {
 
 class _DeliveredState extends State<Delivered> {
   ScrollController scrollController = ScrollController();
-  late UpdateOrderProvider updateOrderProvider;
-  int pageNumber = 1;
+  late OrderController orderController;
 
   @override
   void initState() {
     super.initState();
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
-    updateOrderProvider.delivered(
-        context,
-        18, pageNumber, updateOrderProvider.start.toString(), updateOrderProvider.end.toString());
+    orderController = Provider.of<OrderController>(context, listen: false);
+    orderController.getAllCompletedOrders(context, orderController.start.toString(), orderController.end.toString());
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
-        if (!updateOrderProvider.islastpageloaded) {
-          pageNumber += 1;
-          updateOrderProvider.delivered(
-              context,
-              18, pageNumber, updateOrderProvider.start.toString(), updateOrderProvider.end.toString());
+        if (!orderController.isLastPage2) {
+          orderController.pagenumber1 += 1;
+          orderController.getAllCompletedOrders(
+              context, orderController.start.toString(), orderController.end.toString());
         }
       }
     });
@@ -40,7 +36,7 @@ class _DeliveredState extends State<Delivered> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
+    return Consumer<OrderController>(builder: (context, reference, child) {
       return Column(
         children: [
           Row(
@@ -53,7 +49,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.start,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now().subtract(const Duration(days: 1)))
-                      .then((value) => reference.setTime(context, value, false, pageNumber)),
+                      .then((value) => reference.setDate(context, value, false)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.start),
                   )),
@@ -64,7 +60,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.end,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now())
-                      .then((value) => reference.setTime(context, value, false, pageNumber)),
+                      .then((value) => reference.setDate(context, value, false)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.end),
                   ))
