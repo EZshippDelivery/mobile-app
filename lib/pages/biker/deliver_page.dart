@@ -2,7 +2,6 @@ import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:signature/signature.dart';
 
 // ignore: must_be_immutable

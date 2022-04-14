@@ -241,20 +241,17 @@ class CustomerController extends BikerController {
   }
 
   calculateOrderCost(BuildContext context) async {
-    if (createNewOrder! != null) {
-      Map<String, dynamic> map = {
-        "bookingType": "SAMEDAY",
-        "customerId": Variables.driverId,
-        "deliveryAddressId": createNewOrder!.deliveryAddressId,
-        "pickAddressId": createNewOrder!.pickAddressId
-      };
-      try {
-        final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/cost"), jsonEncode(map));
-        createNewOrder!.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
-      } on SocketException {
-        Variables.showtoast(
-            context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
-      }
+    Map<String, dynamic> map = {
+      "bookingType": "SAMEDAY",
+      "customerId": Variables.driverId,
+      "deliveryAddressId": createNewOrder!.deliveryAddressId,
+      "pickAddressId": createNewOrder!.pickAddressId
+    };
+    try {
+      final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/cost"), jsonEncode(map));
+      createNewOrder!.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
+    } on SocketException {
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
   }

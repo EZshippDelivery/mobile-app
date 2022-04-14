@@ -11,7 +11,6 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
-import '../../Provider/customer_controller.dart';
 import '../../Provider/order_controller.dart';
 import '../../Provider/update_profile_provider.dart';
 import '../../widgets/tabbar.dart';

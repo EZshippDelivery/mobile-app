@@ -45,7 +45,7 @@ class AuthController extends ChangeNotifier {
         Variables.driverId = -1;
         userType = "";
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();

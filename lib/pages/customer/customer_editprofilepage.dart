@@ -1,4 +1,3 @@
-import 'package:ezshipp/APIs/get_customerprofile.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
