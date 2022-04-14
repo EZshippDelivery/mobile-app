@@ -1,11 +1,12 @@
-import 'package:ezshipp/Provider/update_order_povider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
-import 'package:ezshipp/pages/order_detailspage.dart';
+import 'package:ezshipp/pages/customer/order_detailspage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/customer_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../Provider/customer_controller.dart';
 
 class OldOrders extends StatefulWidget {
   const OldOrders({Key? key}) : super(key: key);
@@ -16,20 +17,20 @@ class OldOrders extends StatefulWidget {
 
 class _OldOrdersState extends State<OldOrders> {
   ScrollController scrollController = ScrollController();
-  late UpdateOrderProvider updateOrderProvider;
+  late CustomerController customerController;
   late UpdateScreenProvider updateScreenProvider;
 
   @override
   void initState() {
     super.initState();
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
+    customerController = Provider.of<CustomerController>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
-    updateOrderProvider.getRecentOrders(context);
+    customerController.getCustomerOrderHistory(context);
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
-        if (!updateOrderProvider.islastpageloaded1) {
-          updateScreenProvider.pageNumber += 1;
-          updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true);
+        if (!customerController.isLastPage) {
+          customerController.pagenumber += 1;
+          customerController.getAcceptedAndinProgressOrders(context);
         }
       }
     });
@@ -46,13 +47,14 @@ class _OldOrdersState extends State<OldOrders> {
                 itemBuilder: (BuildContext context) => [
                       PopupMenuItem(
                           onTap: () {
-                            updateOrderProvider.getRecentOrders(context);
+                            customerController.getCustomerOrderHistory(context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("Recent", style: Variables.font(fontSize: 15))),
                       PopupMenuItem(
                           onTap: () {
-                            updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true);
+                            customerController.pagenumber1 = 1;
+                            customerController.getAcceptedAndinProgressOrders(context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("All", style: Variables.font(fontSize: 15)))
@@ -60,11 +62,14 @@ class _OldOrdersState extends State<OldOrders> {
                 child: const Icon(Icons.filter_list_rounded)),
           )
         ]),
-        body: Consumer2<UpdateOrderProvider, UpdateScreenProvider>(builder: (context, reference, reference1, child) {
+        body: Consumer2<CustomerController, UpdateScreenProvider>(builder: (context, reference, reference1, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
               return RefreshIndicator(
-                onRefresh: () => updateOrderProvider.accepted(context, updateScreenProvider.pageNumber, true),
+                onRefresh: () {
+                  customerController.pagenumber1 = 1;
+                  return customerController.getAcceptedAndinProgressOrders(context);
+                },
                 child: ListView.builder(
                   controller: scrollController,
                   itemCount: reference.customerOrders.length,

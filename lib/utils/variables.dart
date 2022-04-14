@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/update_order.dart';
+import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
@@ -14,8 +15,9 @@ import 'package:http/http.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:provider/provider.dart';
 
-import '../Provider/update_order_povider.dart';
+import '../Provider/update_profile_provider.dart';
 
 class Variables {
   static GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -32,8 +34,8 @@ class Variables {
   static final pref = FlutterSecureStorage(aOptions: _getAndroidOptions());
 
   static int index = 0, index1 = 0, index2 = 0;
-
   static late NewOrderList list, list1, list2;
+  static int orderscount = 0;
 
   static AndroidOptions _getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
@@ -98,13 +100,9 @@ class Variables {
   static TextStyle font(
           {double fontSize = 14, FontWeight fontWeight = FontWeight.normal, Color? color = Palette.deepgrey}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight);
-  static Uri uri({required String path, queryParameters}) => //Uri(
-      // scheme: "http",
-      // host: "65.2.152.100",
-      // port: 2020,
-      // path: "/api/v1" + path,
-      // queryParameters: queryParameters);
-      Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
+  static Uri uri({required String path, queryParameters}) =>
+      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
+  //Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
 
   static text(
           {String head = "Order ID:",
@@ -139,6 +137,20 @@ class Variables {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Text(head, style: headStyle), if (value.isNotEmpty) Text(value, style: valueStyle)],
+        ),
+      );
+  static switchOptions(
+          {String head = "Order ID:",
+          bool value = false,
+          double vpadding = 3.0,
+          double hpadding = 15,
+          TextStyle? headStyle,
+          required void Function(bool) onChanged}) =>
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(head, style: headStyle), Switch(value: value, onChanged: onChanged)],
         ),
       );
 
@@ -290,8 +302,9 @@ class Variables {
     if (statusId != null) Variables.updateOrderMap.statusId = statusId;
   }
 
-  static Future<void> updateOrder(BuildContext context, UpdateOrderProvider value, int index, statusId,
-      [bool iscustomer = false]) async {
+  static Future<void> updateOrder(BuildContext context, int index, statusId, [bool iscustomer = false]) async {
+    UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
+    OrderController value1 = Provider.of<OrderController>(context, listen: false);
     await Variables.getLiveLocation(statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
@@ -310,7 +323,7 @@ class Variables {
       Variables.updateOrderMap.distance = result;
       Variables.updateOrderMap.driverId = driverId;
       Variables.updateOrderMap.newDriverId = driverId;
-      await value.update(context, Variables.updateOrderMap.toJson(),
+      await value1.update(context, Variables.updateOrderMap.toJson(),
           iscustomer ? value.customerOrders[index].id : value.newOrderList[index].id);
     }
   }

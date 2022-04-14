@@ -1,5 +1,5 @@
 import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/Provider/update_login_provider.dart';
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/utils/themes.dart';
@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../pages/aboutpage.dart';
 import '../pages/contact_page.dart';
-import '../pages/profilepage.dart';
+import '../pages/biker/profilepage.dart';
 
 class DrawerWidget extends StatefulWidget {
   const DrawerWidget({Key? key}) : super(key: key);
@@ -60,14 +60,12 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     ]))),
             Consumer<MapsProvider>(builder: (context, reference1, child) {
               return ListTile(
-                title: Padding(
-                  padding: const EdgeInsets.only(left: 15.0),
-                  child: Text(reference1.isOnline ? "Online" : "Offline", style: Variables.font(fontSize: 15)),
-                ),
-                trailing: Switch.adaptive(
-                    value: reference1.isOnline,
-                    onChanged: (value) => reference1.online(context, value, Variables.driverId)),
-              );
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 15.0),
+                    child: Text(reference1.isOnline ? "Online" : "Offline", style: Variables.font(fontSize: 15)),
+                  ),
+                  trailing: Switch.adaptive(
+                      value: reference1.isOnline, onChanged: (value) => reference1.offLineMode(context, value)));
             }),
             ...ListTile.divideTiles(context: context, tiles: [
               ListTile(
@@ -104,9 +102,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                 ),
                                 ElevatedButton(
                                     onPressed: () async {
-                                      UpdateLoginProvider updateLoginProvider =
-                                          Provider.of<UpdateLoginProvider>(context, listen: false);
-                                      await updateLoginProvider.store(false);
+                                      AuthController authController =
+                                          Provider.of<AuthController>(context, listen: false);
+                                      await authController.storeLoginStatus(false);
                                       bool isNewRouteSameAsCurrent = false;
 
                                       Navigator.popUntil(context, (route) {

@@ -1,11 +1,10 @@
+import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
-import 'package:ezshipp/pages/set_addresspage.dart';
+import 'package:ezshipp/pages/customer/set_addresspage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../Provider/get_addresses_provider.dart';
 
 class AddAddressPage extends StatefulWidget {
   static String routeName = "/add-address";
@@ -23,7 +22,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
 
-  late GetAddressesProvider getAddressesProvider;
+  late CustomerController customerController;
 
   List<String> addresstypes = ["Home", "Office", "Others"];
 
@@ -32,8 +31,8 @@ class _AddAddressPageState extends State<AddAddressPage> {
   @override
   void initState() {
     super.initState();
-    getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
-    getAddressesProvider.addAddress.type = "OTHER";
+    customerController = Provider.of<CustomerController>(context, listen: false);
+    customerController.addAddress.type = "OTHER";
   }
 
   @override
@@ -45,12 +44,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
               child: TextButton(
                 onPressed: () {
                   if (formkey.currentState!.validate()) {
-                    getAddressesProvider.addAddresses(context, getAddressesProvider.addAddress.toJson());
-                    Variables.showtoast(context, "Address Saved",Icons.check);
+                    customerController.addCustomerAddress(context, customerController.addAddress.toJson());
+                    Variables.showtoast(context, "Address Saved", Icons.check);
                     AddAddressPage.controller.clear();
-                    getAddressesProvider.getAllAddresses(
-                      context
-                    );
+                    customerController.getFirstTenAddresses(context);
                     Variables.pop(context);
                   }
                 },
@@ -65,7 +62,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 Form(
                     key: formkey,
                     child: Column(children: [
-                      Consumer<GetAddressesProvider>(builder: (context, reference, child) {
+                      Consumer<CustomerController>(builder: (context, reference, child) {
                         return Column(children: [
                           if (reference.addAddress.type.isNotEmpty)
                             CircleAvatar(
@@ -93,7 +90,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
                                   AddAddressPage.addresstypesC[AddAddressPage.temp] = false;
                                   AddAddressPage.temp = index;
                                 }
-                                getAddressesProvider.setAddressType(addresstypes[AddAddressPage.temp].toUpperCase());
+                                customerController.setAddressType(addresstypes[AddAddressPage.temp].toUpperCase());
                                 AddAddressPage.addresstypesC[AddAddressPage.temp] = true;
                               })
                         ]);
@@ -129,17 +126,17 @@ class _AddAddressPageState extends State<AddAddressPage> {
         onChanged: (value) {
           switch (label) {
             case "Appartment/Complex Name":
-              getAddressesProvider.addAddress.complexName = value;
+              customerController.addAddress.complexName = value;
               break;
             case "Flat Number":
-              getAddressesProvider.addAddress.apartment = value;
+              customerController.addAddress.apartment = value;
               break;
             case "House Number":
-              getAddressesProvider.addAddress.address2 = getAddressesProvider.addAddress.address1;
-              getAddressesProvider.addAddress.address1 = value;
+              customerController.addAddress.address2 = customerController.addAddress.address1;
+              customerController.addAddress.address1 = value;
               break;
             case "Landmark":
-              getAddressesProvider.addAddress.landmark = value;
+              customerController.addAddress.landmark = value;
               break;
           }
         },

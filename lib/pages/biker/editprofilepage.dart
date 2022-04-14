@@ -3,18 +3,18 @@ import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../widgets/textfield.dart';
+import '../../widgets/textfield.dart';
 
-class CustomerEditProfilePage extends StatefulWidget {
-  static String routeName = "/cedit";
+class EditProfilePage extends StatefulWidget {
+  static String routeName = "/edit";
   static GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
-  const CustomerEditProfilePage({Key? key}) : super(key: key);
+  const EditProfilePage({Key? key}) : super(key: key);
 
   @override
-  _CustomerEditProfilePageState createState() => _CustomerEditProfilePageState();
+  _EditProfilePageState createState() => _EditProfilePageState();
 }
 
-class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
+class _EditProfilePageState extends State<EditProfilePage> {
   DecorationImage? decorationImage;
   String userType = "Driver";
   ValueNotifier<String> name = ValueNotifier<String>("");
@@ -28,16 +28,11 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
   void initState() {
     super.initState();
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
-    email.text = updateProfileProvider.profile.email;
-    phone.text = updateProfileProvider.profile.phone.toString();
-    if (updateProfileProvider.profile is CustomerDetails) {
-      firstname.text = updateProfileProvider.profile.firstName;
-      lastname.text = updateProfileProvider.profile.lastName;
-    } else {
-      List name = updateProfileProvider.profile.name.split(" ");
-      firstname.text = name[0];
-      lastname.text = name[1];
-    }
+    email.text = updateProfileProvider.riderProfile!.email;
+    phone.text = updateProfileProvider.riderProfile!.phone.toString();
+    List name = updateProfileProvider.riderProfile!.name.split(" ");
+    firstname.text = name[0];
+    lastname.text = name[1];
   }
 
   @override
@@ -50,7 +45,7 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
           child: Stack(
             children: [
               Form(
-                key: CustomerEditProfilePage.formkey3,
+                key: EditProfilePage.formkey3,
                 child: Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -88,9 +83,10 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
                   alignment: Alignment.bottomCenter,
                   child: FloatingActionButton.extended(
                       heroTag: "save_@",
-                      onPressed: () {
-                        if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
-                          updateProfileProvider.updateProfile(context, TextFields.data, Variables.driverId, true);
+                      onPressed: () async {
+                        if (EditProfilePage.formkey3.currentState!.validate()) {
+                          await updateProfileProvider.updateProfile(context);
+                          await updateProfileProvider.getProfile(context);
                           Navigator.of(context).pop();
                         }
                       },
@@ -124,7 +120,6 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
     phone.dispose();
     firstname.dispose();
     lastname.dispose();
-    updateProfileProvider.dispose();
     name.dispose();
     super.dispose();
   }

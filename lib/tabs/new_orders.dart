@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:ezshipp/Provider/update_order_povider.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../Provider/order_controller.dart';
 
 class NewOrders extends StatefulWidget {
   const NewOrders({Key? key}) : super(key: key);
@@ -16,23 +17,23 @@ class NewOrders extends StatefulWidget {
 
 class _NewOrdersState extends State<NewOrders> {
   int length = 1;
-  late UpdateOrderProvider updateOrderProvider;
+  late OrderController orderController;
 
   @override
   void initState() {
     super.initState();
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
+    orderController = Provider.of<OrderController>(context, listen: false);
     constructor();
   }
 
   constructor() async {
-    await updateOrderProvider.newOrders(context);
+    await orderController.getAllOrdersByBikerId(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
+      body: Consumer<OrderController>(builder: (context, reference, child) {
         if (!reference.loading) {
           if (reference.newOrderList.isEmpty) {
             return Stack(
@@ -139,8 +140,7 @@ class _NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      await Variables.updateOrder(
-                          context, reference, index, direction == DismissDirection.startToEnd ? 3 : 14);
+                      await Variables.updateOrder(context, index, direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }

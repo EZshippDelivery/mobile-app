@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ezshipp/pages/homepage.dart';
+import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -36,14 +37,13 @@ class _EnterKYCState extends State<EnterKYC> {
             steps: steps(),
             currentStep: currentStep,
             onStepTapped: (value) => setState(() => currentStep = value),
-            onStepContinue: () {
+            onStepContinue: () async {
               if (currentStep == 0) {
                 if (EnterKYC.formkey4.currentState!.validate()) setState(() => currentStep += 1);
               } else if (currentStep == 2) {
                 if (license! && vehicle!) {
                   Timer timer = Timer.periodic(
                       const Duration(seconds: 3), (time) => Navigator.of(context, rootNavigator: true).pop(true));
-
                   showDialog(
                       context: context,
                       barrierDismissible: false,
@@ -70,8 +70,10 @@ class _EnterKYCState extends State<EnterKYC> {
                                 )
                               ])).then((value) {
                     timer.cancel();
+
                     Navigator.pushNamed(context, HomePage.routeName);
                   });
+                  await Variables.write(key: "enterKYC", value: false.toString());
                 } else {
                   Variables.showtoast(context, "Your KYC is not verified Properly.\nMake sure every image is verified",
                       Icons.warning_rounded);
@@ -97,7 +99,12 @@ class _EnterKYCState extends State<EnterKYC> {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
     try {
       texts = await FlutterMobileVision.read(
-          multiple: true, showText: false, waitTap: true, fps: 5.0, imagePath: "${documentDirectory.path}/$name");
+          multiple: true,
+          showText: false,
+          waitTap: true,
+          forceCloseCameraOnTap: true,
+          fps: 5.0,
+          imagePath: "${documentDirectory.path}/$name");
       for (OcrText ocr in texts) {
         if (ocr.value == value) return true;
       }
@@ -117,7 +124,6 @@ class _EnterKYCState extends State<EnterKYC> {
             key: EnterKYC.formkey4,
             child: Column(
               children: [
-                inputText(title: "Aadhar Number", helperText: "ex: XXXX XXXX XXXX"),
                 inputText(title: "License Number", helperText: "ex: XXXXXXXXXXXXXXX"),
                 inputText(title: "Vehicle Reg. Number", helperText: "ex: TSXXXXXXXX")
               ],
@@ -224,28 +230,18 @@ class _EnterKYCState extends State<EnterKYC> {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: TextFormField(
+        inputFormatters: [FilteringTextInputFormatter(RegExp(r'[\S]'), allow: true)],
         keyboardType: keboardType,
         onChanged: (value) => setState(() => TextFields.data[title] = value),
         validator: (value) {
           switch (title) {
-            case "Aadhar Number":
-              if (TextFields.data[title]!.length < 12 ||
-                  TextFields.data[title]!.length > 12 ||
-                  TextFields.data[title]!.contains(" ")) {
-                return "Enter valid $title";
-              }
-              break;
             case "License Number":
-              if (TextFields.data[title]!.length < 16 ||
-                  TextFields.data[title]!.length > 16 ||
-                  TextFields.data[title]!.contains(" ")) {
+              if (TextFields.data[title]!.length < 16 || TextFields.data[title]!.length > 16) {
                 return "Enter valid $title";
               }
               break;
             case "Vehicle Reg. Number":
-              if (TextFields.data[title]!.length < 10 ||
-                  TextFields.data[title]!.length > 10 ||
-                  TextFields.data[title]!.contains(" ")) {
+              if (TextFields.data[title]!.length < 10 || TextFields.data[title]!.length > 10) {
                 return "Enter valid $title";
               }
               break;
@@ -256,5 +252,4 @@ class _EnterKYCState extends State<EnterKYC> {
       ),
     );
   }
-
 }

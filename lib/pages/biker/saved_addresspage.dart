@@ -1,9 +1,9 @@
-import 'package:ezshipp/Provider/get_addresses_provider.dart';
-import 'package:ezshipp/pages/add_addresspage.dart';
+import 'package:ezshipp/pages/customer/add_addresspage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../utils/variables.dart';
+import '../../Provider/customer_controller.dart';
+import '../../utils/variables.dart';
 
 class SavedAddressPage extends StatefulWidget {
   static String routeName = "/saved-addresses";
@@ -18,7 +18,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
 
-  late GetAddressesProvider getAddressesProvider;
+  late CustomerController customerController;
   List<bool> addresstypesC = [false, false, false];
   List<String> addresstypes = ["Home", "Office", "Others"];
   int temp = -1;
@@ -26,13 +26,12 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
   @override
   void initState() {
     super.initState();
-    getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    customerController = Provider.of<CustomerController>(context, listen: false);
     constructor();
   }
 
   void constructor() async {
-    await getAddressesProvider.getAllAddresses(
-      context);
+    await customerController.getFirstTenAddresses(context);
   }
 
   @override
@@ -43,22 +42,22 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
             onPressed: () => setState(() => SavedAddressPage.delete = !SavedAddressPage.delete),
             child: Text(SavedAddressPage.delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
       ]),
-      body: Consumer<GetAddressesProvider>(builder: (context, reference, child) {
-        if (reference.getallAdresses.isNotEmpty) {
+      body: Consumer<CustomerController>(builder: (context, reference, child) {
+        if (reference.getFirstTenAddress.isNotEmpty) {
           return ListView.separated(
-              itemCount: reference.getallAdresses.length,
+              itemCount: reference.getFirstTenAddress.length,
               separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
-                var addressType2 = reference.getallAdresses[index].addressType;
-                var data = reference.getallAdresses[index].apartment +
-                    (reference.getallAdresses[index].apartment.isNotEmpty
-                        ? "\n${reference.getallAdresses[index].address1}"
-                        : reference.getallAdresses[index].address1);
+                var addressType2 = reference.getFirstTenAddress[index].addressType;
+                var data = reference.getFirstTenAddress[index].apartment +
+                    (reference.getFirstTenAddress[index].apartment.isNotEmpty
+                        ? "\n${reference.getFirstTenAddress[index].address1}"
+                        : reference.getFirstTenAddress[index].address1);
                 return ListTile(
                     contentPadding: const EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 5),
-                    leading: reference.getallAdresses[index].addressType == "HOME"
+                    leading: reference.getFirstTenAddress[index].addressType == "HOME"
                         ? Image.asset("assets/icon/icons8-home-96.png")
-                        : reference.getallAdresses[index].addressType == "OFFICE"
+                        : reference.getFirstTenAddress[index].addressType == "OFFICE"
                             ? Image.asset("assets/icon/icons8-office-96.png")
                             : Image.asset("assets/icon/icons8-location-96.png"),
                     title: Text("${addressType2[0]}${addressType2.substring(1).toLowerCase()}",
@@ -67,7 +66,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                     trailing: SavedAddressPage.delete
                         ? IconButton(
                             icon: const Icon(Icons.delete_forever_rounded),
-                            onPressed: () => reference.deleteAddress(context, reference.getallAdresses[index]),
+                            onPressed: () {},
                             padding: EdgeInsets.zero,
                             splashRadius: 20)
                         : null,
@@ -104,18 +103,18 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                         children: [
                                           Variables.text(
                                               head: "Appartment/House no. :\n",
-                                              value: reference.getallAdresses[index].apartment,
+                                              value: reference.getFirstTenAddress[index].apartment,
                                               valueColor: Colors.grey,
                                               vpadding: 5),
                                           Container(
                                               child: Variables.text(
                                                   head: "Address:\n",
-                                                  value: reference.getallAdresses[index].address1,
+                                                  value: reference.getFirstTenAddress[index].address1,
                                                   valueColor: Colors.grey,
                                                   vpadding: 5)),
                                           Variables.text(
                                               head: "Landmark:\n",
-                                              value: reference.getallAdresses[index].landmark,
+                                              value: reference.getFirstTenAddress[index].landmark,
                                               valueColor: Colors.grey,
                                               vpadding: 5),
                                         ],
@@ -131,7 +130,6 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                                     Text("Cancel", style: Variables.font(color: null, fontSize: 16))),
                                             ElevatedButton(
                                                 onPressed: () {
-                                                  reference.deleteAddress(context, reference.getallAdresses[index]);
                                                   Variables.pop(context);
                                                 },
                                                 child: Text("Delete", style: Variables.font(color: null, fontSize: 16)))
@@ -149,9 +147,9 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                       radius: avatarRadius,
                                       child: ClipRRect(
                                           borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
-                                          child: reference.getallAdresses[index].addressType == "HOME"
+                                          child: reference.getFirstTenAddress[index].addressType == "HOME"
                                               ? Image.asset("assets/icon/icons8-home-96.png")
-                                              : reference.getallAdresses[index].addressType == "OFFICE"
+                                              : reference.getFirstTenAddress[index].addressType == "OFFICE"
                                                   ? Image.asset("assets/icon/icons8-office-96.png")
                                                   : Image.asset("assets/icon/icons8-location-96.png")),
                                     ))

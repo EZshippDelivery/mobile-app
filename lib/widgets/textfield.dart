@@ -1,4 +1,4 @@
-import 'package:ezshipp/Provider/update_login_provider.dart';
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,12 +41,12 @@ class _TextFieldsState extends State<TextFields> {
 
   bool verifyPhone = false;
 
-  late UpdateLoginProvider updateLoginProvider;
+  late AuthController authController;
 
   @override
   void initState() {
     super.initState();
-    updateLoginProvider = Provider.of<UpdateLoginProvider>(context, listen: false);
+    authController = Provider.of<AuthController>(context, listen: false);
   }
 
   @override

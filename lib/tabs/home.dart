@@ -1,10 +1,10 @@
-import 'package:ezshipp/Provider/update_login_provider.dart';
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../pages/set_locationpage.dart';
+import '../pages/customer/set_locationpage.dart';
 import '../utils/themes.dart';
 import '../utils/variables.dart';
 import '../widgets/customer_drawer.dart';
@@ -26,7 +26,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
         drawer: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {
-          return reference.profile != null ? const CustomerDrawer() : Container();
+          return reference.riderProfile != null ? const CustomerDrawer() : Container();
         }),
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white),
@@ -53,9 +53,8 @@ class _HomeTabState extends State<HomeTab> {
                               ),
                               ElevatedButton(
                                   onPressed: () async {
-                                    UpdateLoginProvider updateLoginProvider =
-                                        Provider.of<UpdateLoginProvider>(context, listen: false);
-                                    await updateLoginProvider.store(true);
+                                    AuthController authController = Provider.of<AuthController>(context, listen: false);
+                                    await authController.storeLoginStatus(false);
                                     Navigator.of(context).popAndPushNamed(LoginPage.routeName);
                                   },
                                   child: Padding(

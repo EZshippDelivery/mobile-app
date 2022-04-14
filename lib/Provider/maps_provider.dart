@@ -6,6 +6,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/places/place_address.dart';
 import 'package:ezshipp/APIs/places/place_details.dart';
+import 'package:ezshipp/Provider/biker_controller.dart';
 import 'package:ezshipp/utils/http_requests.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -16,19 +17,15 @@ import '../APIs/get_top_addresses.dart';
 import '../APIs/places/place_search.dart';
 import '../utils/variables.dart';
 
-class MapsProvider extends ChangeNotifier {
+class MapsProvider extends BikerController {
   List<LatLng> info = [];
   List placesList = [];
   List<GetAllAddresses> savedAddress = [];
-  BitmapDescriptor? originMarker, destinationMarker, driverMarker;
-  Marker? pickmark, dropmark, driver;
   List focus = [true, true];
-  double latitude = 0, longitude = 0;
   late PlaceDetails placesDetails;
   late PlaceAddress placeAddress;
-  bool isclicked = false, currentLocation = false, isOnline = false;
+  bool isclicked = false, currentLocation = false;
   List boundsMap = [], directioDetails = [];
-  Timer? timer, timer1;
 
   bool fileExists = false;
 
@@ -200,13 +197,6 @@ class MapsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getCurrentlocations() async {
-    final currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    latitude = currentLocation.latitude;
-    longitude = currentLocation.longitude;
-    notifyListeners();
-  }
-
   setMarkers(BuildContext context, GoogleMapController controller, {pickup, delivery}) {
     if (pickup != null) {
       pickmark = Marker(
@@ -248,30 +238,6 @@ class MapsProvider extends ChangeNotifier {
     }
     await setCurrentLocation(context, customerId);
     notifyListeners();
-  }
-
-  online(BuildContext context, bool value, int bikerId, {bool fromhomepage = false}) async {
-    if (value) {
-      timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        await getCurrentlocations();
-        final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
-            jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-
-        Variables.returnResponse(context, response, onlinemode: true);
-      });
-      Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
-    } else {
-      if (timer != null) timer!.cancel();
-      await getCurrentlocations();
-      final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/onoff/$bikerId"),
-          jsonEncode({"driverId": bikerId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-      Variables.returnResponse(context, response, onlinemode: true);
-      Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
-    }
-
-    await Variables.write(key: "isOnline", value: value.toString());
-    isOnline = value;
-    if (!fromhomepage) notifyListeners();
   }
 
   Future<void> setCurrentLocation(BuildContext context, customerId) async {
@@ -317,33 +283,5 @@ class MapsProvider extends ChangeNotifier {
       savedAddress[0].longitude = longitude;
     });
     notifyListeners();
-  }
-
-  void writeToJsonFile(Directory dir, File file, Map<String, Object> map) {
-    if (fileExists) {
-      List fileContent = jsonDecode(file.readAsStringSync());
-      fileContent.add(map);
-      file.writeAsStringSync(jsonEncode(fileContent));
-    } else {
-      file.createSync();
-      fileExists = true;
-      file.writeAsStringSync(jsonEncode([map]));
-    }
-  }
-
-  livebikerTracking(BuildContext context, int driverId, int orderId) {
-    timer1 = Timer.periodic(const Duration(seconds: 5), (time) async {
-      final response = await HTTPRequest.getRequest(
-          Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
-      Map<String, dynamic>? map = Variables.returnResponse(context, response);
-      if (map != null) {
-        driver = Marker(
-            markerId: const MarkerId("origin"),
-            icon: driverMarker!,
-            position: LatLng(map["lastLatitude"], map["lastLongitude"]),
-            infoWindow: const InfoWindow(title: "Driver Location"));
-      }
-      notifyListeners();
-    });
   }
 }

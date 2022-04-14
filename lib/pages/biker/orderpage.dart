@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/Provider/update_order_povider.dart';
-import 'package:ezshipp/pages/deliver_page.dart';
-import 'package:ezshipp/pages/zonepage.dart';
+import 'package:ezshipp/pages/biker/deliver_page.dart';
+import 'package:ezshipp/pages/biker/zonepage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../Provider/order_controller.dart';
 
 // ignore: must_be_immutable
 class Order extends StatefulWidget {
@@ -32,7 +33,7 @@ class _OrderState extends State<Order> {
   late Animation anim;
 
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
-  late UpdateOrderProvider updateOrderProvider;
+  late OrderController orderController;
   late MapsProvider mapsProvider;
   TextEditingController controller = TextEditingController();
   Timer? timer;
@@ -40,13 +41,13 @@ class _OrderState extends State<Order> {
   @override
   void initState() {
     super.initState();
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
+    orderController = Provider.of<OrderController>(context, listen: false);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
+    return Consumer<OrderController>(builder: (context, reference, child) {
       NewOrderList list =
           widget.accepted ? reference.acceptedList[widget.index] : reference.deliveredList[widget.index];
       Variables.list = list;
@@ -59,7 +60,7 @@ class _OrderState extends State<Order> {
               IconButton(
                   onPressed: () async {
                     Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
-                    Variables.updateOrder(context, reference, widget.index, 8);
+                    Variables.updateOrder(context, widget.index, 8);
                     if (timer != null) timer!.cancel();
                     Variables.pop(context);
                   },
@@ -76,13 +77,13 @@ class _OrderState extends State<Order> {
                   if (reference1.pickmark != null) reference1.pickmark!,
                   if (reference1.dropmark != null) reference1.dropmark!
                 },
-                onMapCreated: (controller) async {
-                  await reference1.directions(context, controller, null,
-                      places: [reference1.pickmark!.position, reference1.dropmark!.position]).then((value) {
-                    var latLngBounds =
-                        LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
-                    controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
-                  });
+                onMapCreated: (controller) {
+                  // await reference1.directions(context, controller, null,
+                  //     places: [reference1.pickmark!.position, reference1.dropmark!.position]).then((value) {
+                  //   var latLngBounds =
+                  //       LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
+                  //   controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
+                  // });
                 },
                 polylines: {Polyline(polylineId: const PolylineId("origin"), points: reference1.info, width: 3)},
               );
@@ -124,7 +125,7 @@ class _OrderState extends State<Order> {
                                       Variables.text(head: "Status: ", value: list.status, valueColor: Palette.kOrange),
                                       TextButton(
                                           onPressed: () {
-                                            Variables.isdetail = true;
+                                            Variables.isdetail = false;
                                             Variables.push(context, DeliveredPage.routeName);
                                           },
                                           child: Text(
@@ -283,8 +284,7 @@ class _OrderState extends State<Order> {
                                                                     Variables.cancelReasons[index][1];
                                                                 Variables.updateOrderMap.cancelReasonId =
                                                                     Variables.cancelReasons[index][0];
-                                                                Variables.updateOrder(
-                                                                    context, reference, widget.index, 14);
+                                                                Variables.updateOrder(context, widget.index, 14);
                                                                 Variables.pop(context,
                                                                     value: Variables.cancelReasons[index][3] == 1
                                                                         ? true
@@ -369,7 +369,7 @@ class _OrderState extends State<Order> {
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, reference, widget.index, 4);
+                                                  Variables.updateOrder(context, widget.index, 4);
                                                 }
                                                 timer.cancel();
                                               });
@@ -382,14 +382,14 @@ class _OrderState extends State<Order> {
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(context, reference, widget.index, 5);
+                                                  Variables.updateOrder(context, widget.index, 5);
                                                 }
                                                 timer.cancel();
                                               });
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
-                                              Variables.updateOrder(context, reference, widget.index, 6);
+                                              Variables.updateOrder(context, widget.index, 6);
                                               await mapsProvider.directions(context, null, null, places: [
                                                 LatLng(Variables.updateOrderMap.latitude,
                                                     Variables.updateOrderMap.longitude),
@@ -403,7 +403,7 @@ class _OrderState extends State<Order> {
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, reference, widget.index, 9);
+                                                  Variables.updateOrder(context, widget.index, 9);
                                                 }
                                                 timer.cancel();
                                               });
@@ -416,7 +416,7 @@ class _OrderState extends State<Order> {
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(context, reference, widget.index, 11);
+                                                  Variables.updateOrder(context, widget.index, 11);
                                                 }
                                                 timer.cancel();
                                               });

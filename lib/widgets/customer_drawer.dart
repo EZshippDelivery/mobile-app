@@ -1,7 +1,7 @@
 import 'package:ezshipp/pages/aboutpage.dart';
-import 'package:ezshipp/pages/customer_invitepage.dart';
-import 'package:ezshipp/pages/customer_profilepage.dart';
-import 'package:ezshipp/pages/saved_addresspage.dart';
+import 'package:ezshipp/pages/customer/customer_invitepage.dart';
+import 'package:ezshipp/pages/customer/customer_profilepage.dart';
+import 'package:ezshipp/pages/biker/saved_addresspage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,7 +25,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
         width: size.width * 0.75,
         color: Colors.grey[100],
         child: Consumer<UpdateProfileProvider>(
-            builder: (context, reference, child) => reference.profile != null
+            builder: (context, reference, child) => reference.riderProfile != null
                 ? Drawer(
                     child: Column(children: [
                     Container(
@@ -47,7 +47,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                                   child: TextButton(
                                       onPressed: () => Variables.push(context, CustomerProfilePage.routeName),
                                       child: Text(
-                                        reference.profile.name,
+                                        reference.customerProfile!.name,
                                         style: Variables.font(fontSize: 24, color: Colors.white),
                                       )))
                             ]))),
@@ -67,8 +67,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                         child: Image.asset("assets/icon/icons8-invite-48.png"),
                       ),
                       title: Text("Invite", style: Variables.font(fontSize: 15)),
-                      onTap: () =>
-                          Variables.push(context, CustomerInvitePage.routeName),
+                      onTap: () => Variables.push(context, CustomerInvitePage.routeName),
                     ),
                     ListTile(
                         leading: Padding(
@@ -81,7 +80,9 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
                         title: Text("Customer Care", style: Variables.font(fontSize: 15)),
                         onTap: () async {
                           var url = "tel:04049674477";
-                          await canLaunch(url) ? launch(url) : Variables.showtoast(context,"Unable to open Phone App", Icons.cancel_outlined);
+                          await canLaunch(url)
+                              ? launch(url)
+                              : Variables.showtoast(context, "Unable to open Phone App", Icons.cancel_outlined);
                         }),
                   ]))
                 : Container()));

@@ -1,10 +1,10 @@
 import 'package:ezshipp/Provider/update_profile_provider.dart';
-import 'package:ezshipp/pages/editprofilepage.dart';
+import 'package:ezshipp/pages/biker/editprofilepage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../utils/variables.dart';
+import '../../utils/variables.dart';
 
 class ProfilePage extends StatefulWidget {
   static String routeName = "/profile";
@@ -58,10 +58,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                       child: Text(reference.fullName,
                                           style: Variables.font(color: Colors.grey[300], fontSize: 16)),
                                     ),
-                                    Text(reference.profile.email, style: Variables.font(color: Colors.grey)),
+                                    Text(reference.riderProfile!.email, style: Variables.font(color: Colors.grey)),
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
-                                      child: Text("+91 " + reference.profile.phone.toString(),
+                                      child: Text("+91 " + reference.riderProfile!.phone.toString(),
                                           style: Variables.font(color: Colors.grey)),
                                     ),
                                     const SizedBox(height: 10),
@@ -74,33 +74,40 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                    profileOrders("Total Orders", reference.profile.totalOrdersDelivered.toString()),
+                    profileOrders("Total Orders", reference.riderProfile!.totalOrdersDelivered.toString()),
                     profileOrders(
                         "Last Bill",
-                        reference.profile.lastOrderAmount == 0
+                        reference.riderProfile!.lastOrderAmount == 0
                             ? "0"
-                            : "₹ " + reference.profile.lastOrderAmount.toString()),
-                    profileOrders("Today Earnings",
-                        reference.profile.todayEarnings == 0 ? "0" : "₹ " + reference.profile.todayEarnings.toString()),
+                            : "₹ " + reference.riderProfile!.lastOrderAmount.toString()),
+                    profileOrders(
+                        "Today Earnings",
+                        reference.riderProfile!.todayEarnings == 0
+                            ? "0"
+                            : "₹ " + reference.riderProfile!.todayEarnings.toString()),
                   ]))),
           const SizedBox(height: 15),
-          Variables.text1(
-              head: "Aadhar Number",
-              value: reference.profile.aadhaarNumber.toString(),
-              hpadding: 30,
-              vpadding: 4,
-              headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
-              valueStyle: Variables.font(fontSize: 16)),
+          // Variables.text1(
+          //     head: "Aadhar Number",
+          //     value: reference.profile.aadhaarNumber.toString(),
+          //     hpadding: 30,
+          //     vpadding: 4,
+          //     headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
+          //     valueStyle: Variables.font(fontSize: 16)),
           Variables.text1(
               head: "License Number",
-              value: reference.profile.licenseNumber.toString(),
+              value: reference.riderProfile!.licenseNumber.toString().isEmpty
+                  ? "Not Registered"
+                  : reference.riderProfile!.licenseNumber.toString(),
               hpadding: 30,
               vpadding: 4,
               headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),
               valueStyle: Variables.font(fontSize: 16)),
           Variables.text1(
               head: "Vehicle Number",
-              value: reference.profile.numberPlate.toString(),
+              value: reference.riderProfile!.numberPlate.toString().isEmpty
+                  ? "Not Registered"
+                  : reference.riderProfile!.numberPlate.toString(),
               hpadding: 30,
               vpadding: 4,
               headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),

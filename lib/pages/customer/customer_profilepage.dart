@@ -2,8 +2,8 @@ import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../utils/themes.dart';
-import '../utils/variables.dart';
+import '../../utils/themes.dart';
+import '../../utils/variables.dart';
 import 'customer_editprofilepage.dart';
 
 class CustomerProfilePage extends StatefulWidget {
@@ -60,11 +60,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                                         child: Text(reference.fullName,
                                             style: Variables.font(color: Colors.grey[300], fontSize: 16)),
                                       ),
-                                      Text(reference.profile.email, style: Variables.font(color: Colors.grey)),
-                                      if (reference.profile.phone != 0)
+                                      Text(reference.riderProfile!.email, style: Variables.font(color: Colors.grey)),
+                                      if (reference.riderProfile!.phone != 0)
                                         Padding(
                                           padding: const EdgeInsets.all(10.0),
-                                          child: Text("+91 " + reference.profile.phone.toString(),
+                                          child: Text("+91 " + reference.riderProfile!.phone.toString(),
                                               style: Variables.font(color: Colors.grey)),
                                         ),
                                       const SizedBox(height: 10),
@@ -83,7 +83,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                 valueStyle: Variables.font(fontSize: 16)),
             Variables.text1(
                 head: "Your Total Orders",
-                value: reference.orderscount.toString(),
+                value: Variables.orderscount.toString(),
                 hpadding: 30,
                 vpadding: 4,
                 headStyle: Variables.font(fontSize: 15, color: Colors.grey[600]),

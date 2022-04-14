@@ -1,19 +1,18 @@
 import 'package:ezshipp/APIs/create_order.dart';
-import 'package:ezshipp/Provider/get_addresses_provider.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
-import 'package:ezshipp/pages/book_orderpage.dart';
-import 'package:ezshipp/pages/confirm_addresspage.dart';
-import 'package:ezshipp/pages/customer_homepage.dart';
-import 'package:ezshipp/pages/set_locationpage.dart';
+import 'package:ezshipp/pages/customer/book_orderpage.dart';
+import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
+import 'package:ezshipp/pages/customer/customer_homepage.dart';
+import 'package:ezshipp/pages/customer/set_locationpage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../Provider/update_order_povider.dart';
-import '../utils/themes.dart';
+import '../../Provider/customer_controller.dart';
+import '../../utils/themes.dart';
 
 class ConfirmOrderPage extends StatefulWidget {
   static String routeName = "/confirm";
@@ -25,14 +24,14 @@ class ConfirmOrderPage extends StatefulWidget {
 }
 
 class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
-  late GetAddressesProvider getAddressesProvider;
+  late CustomerController customerController;
   late MapsProvider mapsProvider;
 
   @override
   Widget build(BuildContext context) {
-    getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    customerController = Provider.of<CustomerController>(context, listen: false);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    CreateOrder co = getAddressesProvider.createOrder;
+    CreateOrder co = customerController.createNewOrder!;
     return Scaffold(
         appBar: Variables.app(),
         body: SingleChildScrollView(
@@ -51,16 +50,16 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
               Variables.text(head: "Name: ", value: co.senderName, vpadding: 4),
               Variables.text(head: "Phone: ", value: co.senderPhone, vpadding: 4),
               Variables.text(head: "Address:\n", value: SetLocationPage.pickup.text, vpadding: 4),
-              if (getAddressesProvider.addAddress.landmark.isNotEmpty)
-                Variables.text(head: "Landmark: ", value: getAddressesProvider.addAddress.landmark, vpadding: 4),
+              if (customerController.addAddress.landmark.isNotEmpty)
+                Variables.text(head: "Landmark: ", value: customerController.addAddress.landmark, vpadding: 4),
               const Divider(),
               Variables.text(head: "", value: "Receiver Details", valueColor: Palette.deepgrey, vpadding: 6),
               const SizedBox(height: 5),
               Variables.text(head: "Name: ", value: co.receiverName, vpadding: 4),
               Variables.text(head: "Phone: ", value: co.receiverPhone, vpadding: 4),
               Variables.text(head: "Address:\n", value: SetLocationPage.delivery.text, vpadding: 4),
-              if (getAddressesProvider.addAddress1.landmark.isNotEmpty)
-                Variables.text(head: "Landmark: ", value: getAddressesProvider.addAddress1.landmark, vpadding: 4),
+              if (customerController.addAddress1.landmark.isNotEmpty)
+                Variables.text(head: "Landmark: ", value: customerController.addAddress1.landmark, vpadding: 4),
               const SizedBox(height: 5),
               Variables.text(head: "Item: ", value: co.itemDescription, vpadding: 4),
               const SizedBox(height: 5),
@@ -119,13 +118,12 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
             if (!ConfirmOrderPage.check) {
               Variables.showtoast(context, "Accept the Package & Delivery Policies", Icons.warning_rounded);
             } else {
-              await getAddressesProvider.createOrderPost(
-                  context, Provider.of<UpdateOrderProvider>(context, listen: false));
-              UpdateScreenProvider updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
+              await customerController.creatOrder(context);
+
               ConfirmAddressPage.selectedradio = [null, null];
               ConfirmAddressPage.toggle = [false, false];
               ConfirmAddressPage.temp = [2, 2];
-              if (updateScreenProvider.timer != null) updateScreenProvider.settimer(context);
+              if (customerController.timer != null) customerController.settimer(context);
               SetLocationPage.pickup.clear();
               SetLocationPage.delivery.clear();
               mapsProvider.pickmark = null;
@@ -133,11 +131,9 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
               mapsProvider.info.clear();
               ConfirmOrderPage.check = false;
               BookOrderPage.selectedradio = [1, 1, 2];
-              updateScreenProvider.getInProgressOrderCount(
-                context
-              );
-              Navigator.of(context).pushNamedAndRemoveUntil(CustomerHomePage.routeName, (Route<dynamic> route) => false);
-
+              customerController.getCustomerInProgressOrderCount(context);
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(CustomerHomePage.routeName, (Route<dynamic> route) => false);
             }
           },
           label: Text("Confirm", style: Variables.font(color: null)),

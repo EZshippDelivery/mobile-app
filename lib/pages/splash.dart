@@ -3,8 +3,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:device_info/device_info.dart';
-import 'package:ezshipp/Provider/update_login_provider.dart';
-import 'package:ezshipp/pages/customer_homepage.dart';
+import 'package:ezshipp/Provider/auth_controller.dart';
+import 'package:ezshipp/pages/customer/customer_homepage.dart';
+import 'package:ezshipp/pages/biker/enter_kycpage.dart';
 import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -13,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'homepage.dart';
+import 'biker/rider_homepage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -26,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   late AnimationController animcontroller;
   late Animation<double> _anim;
   FirebaseMessaging fcm = FirebaseMessaging.instance;
-  late UpdateLoginProvider updateLoginProvider;
+  late AuthController authController;
   List types = ["Delivery Person", "Customer"];
 
   settimer() async {
@@ -36,12 +37,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     final login = await Variables.read(key: "islogin");
     bool islogin = login != null ? login.toLowerCase() == "true" : false;
+    final kyc = await Variables.read(key: "enterKYC");
+    final enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
     String userType = "";
     if (islogin) {
       final username = await Variables.read(key: "username");
       final password = await Variables.read(key: "password");
-      await updateLoginProvider.login(context,{"password": password, "username": username});
-      userType = await Variables.read(key: "usertype")?? "";
+      await authController.authenticateUser(context, {"password": password, "username": username});
+      userType = await Variables.read(key: "usertype") ?? "";
     }
     Timer(
         const Duration(seconds: 3),
@@ -49,7 +52,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             context,
             islogin
                 ? userType.toLowerCase() == "driver"
-                    ? MaterialPageRoute(builder: (context) => const HomePage())
+                    ? enterKYC
+                        ? MaterialPageRoute(builder: (context) => const EnterKYC())
+                        : MaterialPageRoute(builder: (context) => const HomePage())
                     : MaterialPageRoute(builder: (context) => const CustomerHomePage())
                 : MyRoutes.routelogin()));
   }
@@ -57,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   initState() {
     super.initState();
-    updateLoginProvider = Provider.of<UpdateLoginProvider>(context, listen: false);
+    authController = Provider.of<AuthController>(context, listen: false);
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _anim = Tween(begin: 0.0, end: 1.0).animate(animcontroller);
     CurvedAnimation(curve: Curves.fastOutSlowIn, parent: animcontroller);

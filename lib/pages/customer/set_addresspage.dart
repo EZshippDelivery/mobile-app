@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:ezshipp/APIs/get_top_addresses.dart';
-import 'package:ezshipp/Provider/get_addresses_provider.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/pages/add_addresspage.dart';
+import 'package:ezshipp/pages/customer/add_addresspage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+
+import '../../Provider/customer_controller.dart';
 
 class SetAddressPage extends StatefulWidget {
   static String routeName = "/set-address";
@@ -25,7 +26,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
   late GoogleMapController mapController;
   LatLng? screenCoordinates;
   List<GetAllAddresses> recentAddress = [];
-  GetAddressesProvider? getAddressesProvider;
+  CustomerController? customerController;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     mapsProvider.getCurrentlocations();
     mapsProvider.getTopAddresses(context, Variables.driverId);
-    getAddressesProvider = Provider.of<GetAddressesProvider>(context, listen: false);
+    customerController = Provider.of<CustomerController>(context, listen: false);
   }
 
   @override
@@ -198,7 +199,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                       'state': state,
                       'type': "OTHER",
                     };
-                    getAddressesProvider!.setAddress(address, isdelivery: false);
+                    customerController!.setAddress(address, isdelivery: false);
                     reference.clear(value: false);
                     Variables.pop(context);
                   },

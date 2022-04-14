@@ -3,7 +3,7 @@ import 'package:ezshipp/tabs/delivered.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../Provider/update_order_povider.dart';
+import '../Provider/order_controller.dart';
 
 class MyOrders extends StatefulWidget {
   const MyOrders({Key? key}) : super(key: key);
@@ -15,20 +15,21 @@ class MyOrders extends StatefulWidget {
 class _MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
   late TabController tabController;
 
-  late UpdateOrderProvider updateOrderProvider;
+  late OrderController orderController;
 
   @override
   void initState() {
     super.initState();
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
-    updateOrderProvider.accepted(context, 1, false);
+    orderController = Provider.of<OrderController>(context, listen: false);
+    orderController.pagenumber1 = 1;
+    orderController.getAcceptedAndinProgressOrders(context);
     tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<UpdateOrderProvider>(builder: (context, reference, child) {
+      body: Consumer<OrderController>(builder: (context, reference, child) {
         if (!reference.loading2) {
           return TabBarView(controller: tabController, children: const [Accepted(), Delivered()]);
         }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/Provider/update_order_povider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/tabs/my_orders.dart';
 import 'package:ezshipp/tabs/new_orders.dart';
@@ -12,8 +11,10 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
-import '../Provider/update_profile_provider.dart';
-import '../widgets/tabbar.dart';
+import '../../Provider/customer_controller.dart';
+import '../../Provider/order_controller.dart';
+import '../../Provider/update_profile_provider.dart';
+import '../../widgets/tabbar.dart';
 
 class HomePage extends StatefulWidget {
   static String routeName = "/driver";
@@ -24,11 +25,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  late TabController tabController;
-  late UpdateProfileProvider updateProfileProvider;
-  late UpdateOrderProvider updateOrderProvider;
-  late MapsProvider mapsProvider;
   TextEditingController controller = TextEditingController();
+  late UpdateProfileProvider updateProfileProvider;
+  late OrderController orderController;
+  late TabController tabController;
+  late MapsProvider mapsProvider;
   late StreamSubscription subscription;
 
   @override
@@ -36,7 +37,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    updateOrderProvider = Provider.of<UpdateOrderProvider>(context, listen: false);
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     subscribe();
   }
@@ -45,9 +45,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     subscription = InternetConnectionChecker().onStatusChange.listen((event) async {
       Variables.internetStatus = event;
       if (event == InternetConnectionStatus.connected) {
-        await updateProfileProvider.getcolor(context, true, driverid: Variables.driverId);
+        await updateProfileProvider.getProfile(context);
         setonline();
-        await updateOrderProvider.newOrders(context);
+        await updateProfileProvider.getAllOrdersByBikerId(context);
       } else if (event == InternetConnectionStatus.disconnected) {
         Variables.overlayNotification();
       }
@@ -57,8 +57,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   setonline() async {
     final value = await Variables.read(key: "isOnline");
-    mapsProvider.online(context, value != null ? value.toLowerCase() == "true" : true, Variables.driverId,
-        fromhomepage: true);
+    mapsProvider.offLineMode(context, value != null ? value.toLowerCase() == "true" : true, fromhomepage: true);
   }
 
   @override
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               if (tabController.index == 1)
                 IconButton(
                     onPressed: () async {
-                      updateOrderProvider.findOrderbyBarcode(
+                      orderController.findOrderbyBarcode(
                           context, await Variables.scantext(context, controller, fromhomepage: true), 7);
                     },
                     icon: const Icon(Icons.qr_code_scanner_rounded))
@@ -110,8 +109,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    updateOrderProvider.dispose();
-    updateProfileProvider.dispose();
     tabController.dispose();
     controller.dispose();
     subscription.cancel();
