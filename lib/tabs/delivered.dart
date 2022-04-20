@@ -97,13 +97,14 @@ class _DeliveredState extends State<Delivered> {
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Variables.text(head: "Order ID: ", value: reference.deliveredList[index].orderSeqId),
+                            Variables.text(context,
+                                head: "Order ID: ", value: reference.deliveredList[index].orderSeqId),
                             Text(Variables.datetime(reference.deliveredList[index].acceptedTime.isEmpty
                                 ? reference.deliveredList[index].orderCreatedTime
                                 : reference.deliveredList[index].acceptedTime))
                           ],
                         ),
-                        subtitle: Variables.text(
+                        subtitle: Variables.text(context,
                             head: "Status: ",
                             value: reference.deliveredList[index].status,
                             valueColor: Palette.kOrange),

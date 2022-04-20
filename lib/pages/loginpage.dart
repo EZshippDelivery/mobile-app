@@ -186,6 +186,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
     await Variables.write(key: "password", value: TextFields.data["Password"].toString());
     await Variables.write(key: "usertype", value: authController.userType);
+    await Variables.write(key: "FirstTime", value: "true");
     await Variables.write(key: "mobileSignUp", value: true.toString());
     if (authController.userType == "driver") {
       await Variables.write(key: "enterKYC", value: true.toString());

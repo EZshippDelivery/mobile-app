@@ -7,7 +7,7 @@ import 'package:ezshipp/pages/customer/add_addresspage.dart';
 import 'package:ezshipp/pages/customer/book_orderpage.dart';
 import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
 import 'package:ezshipp/pages/customer/confirm_orderpage.dart';
-import 'package:ezshipp/pages/contact_page.dart';
+import 'package:ezshipp/pages/biker/contact_page.dart';
 import 'package:ezshipp/pages/customer/customer_editprofilepage.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/customer/customer_invitepage.dart';
@@ -17,8 +17,9 @@ import 'package:ezshipp/pages/biker/editprofilepage.dart';
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/pages/customer/order_detailspage.dart';
-import 'package:ezshipp/pages/biker/orderpage.dart';
-import 'package:ezshipp/pages/profilepage.dart';
+// import 'package:ezshipp/pages/biker/orderpage.dart';
+import 'package:ezshipp/pages/biker/order_deliverypage.dart';
+import 'package:ezshipp/pages/biker/profilepage.dart';
 import 'package:ezshipp/pages/biker/saved_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_locationpage.dart';
@@ -94,7 +95,7 @@ class MyApp extends StatelessWidget {
           EditProfilePage.routeName: (context) => const EditProfilePage(),
           DeliveredPage.routeName: (context) =>
               DeliveredPage(reference: Variables.list1, index: Variables.index2, isdetails: Variables.isdetail),
-          TrackingPage.routeName: (context) => TrackingPage(Variables.list2)
+          TrackingPage.routeName: (context) => TrackingPage(updateOrderProvider.customerOrders[Variables.index])
         },
       ),
     );

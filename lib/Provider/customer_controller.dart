@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:ezshipp/APIs/customer_orders.dart';
 import 'package:ezshipp/Provider/biker_controller.dart';
 import 'package:flutter/material.dart';
 
@@ -19,9 +20,9 @@ import '../widgets/textfield.dart';
 class CustomerController extends BikerController {
   AddAddress addAddress = AddAddress.fromMap({}), addAddress1 = AddAddress.fromMap({});
   List<GetAllAddresses> getFirstTenAddress = [];
-  List<NewOrderList> customerOrders = [];
+  List<CustomerOrdersList> customerOrders = [];
   CustomerDetails? customerProfile;
-  CreateOrder? createNewOrder;
+  CreateOrder createNewOrder = CreateOrder.fromMap({});
 
   bool loading4 = true;
   String customer = "/customer/";
@@ -102,19 +103,19 @@ class CustomerController extends BikerController {
       final response = await addCustomerAddress(context, something.toJson());
       if (response != null) {
         if (index == 0) {
-          createNewOrder!.pickAddressId = response;
+          createNewOrder.pickAddressId = response;
         } else {
-          createNewOrder!.deliveryAddressId = response;
+          createNewOrder.deliveryAddressId = response;
         }
       }
     } else {
       if (index == 0) {
-        createNewOrder!.pickAddressId = check.first.addressId;
+        createNewOrder.pickAddressId = check.first.addressId;
       } else {
-        createNewOrder!.deliveryAddressId = check.first.addressId;
+        createNewOrder.deliveryAddressId = check.first.addressId;
       }
     }
-    if (createNewOrder!.deliveryAddressId > 0 && createNewOrder!.pickAddressId > 0) calculateOrderCost(context);
+    if (createNewOrder.deliveryAddressId > 0 && createNewOrder.pickAddressId > 0) calculateOrderCost(context);
   }
 
   void setAddressType(String upperCase, {bool isdelivery = false}) {
@@ -142,7 +143,7 @@ class CustomerController extends BikerController {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/orders"));
       List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
-        customerOrders = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
+        customerOrders = List.generate(responseJson.length, (index) => CustomerOrdersList.fromMap(responseJson[index]));
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -163,7 +164,7 @@ class CustomerController extends BikerController {
             customerOrders.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
           } else if (pagenumber == 1) {
             customerOrders = List.generate(
-                responseJson["data"].length, (index) => NewOrderList.fromMap(responseJson["data"][index]));
+                responseJson["data"].length, (index) => CustomerOrdersList.fromMap(responseJson["data"][index]));
             isLastPage = false;
           } else {
             isLastPage = true;
@@ -187,7 +188,7 @@ class CustomerController extends BikerController {
         if (responseJson["data"].isNotEmpty) {
           if (pagenumber == 1) {
             customerOrders = List.generate(
-                responseJson["data"].length, (index) => NewOrderList.fromMap(responseJson["data"][index]));
+                responseJson["data"].length, (index) => CustomerOrdersList.fromMap(responseJson["data"][index]));
           } else if (pagenumber > 1) {
             customerOrders.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
           }
@@ -244,12 +245,12 @@ class CustomerController extends BikerController {
     Map<String, dynamic> map = {
       "bookingType": "SAMEDAY",
       "customerId": Variables.driverId,
-      "deliveryAddressId": createNewOrder!.deliveryAddressId,
-      "pickAddressId": createNewOrder!.pickAddressId
+      "deliveryAddressId": createNewOrder.deliveryAddressId,
+      "pickAddressId": createNewOrder.pickAddressId
     };
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/cost"), jsonEncode(map));
-      createNewOrder!.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
+      createNewOrder.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
@@ -259,10 +260,10 @@ class CustomerController extends BikerController {
   creatOrder(BuildContext context) async {
     try {
       final response =
-          await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/create"), createNewOrder!.toJson());
+          await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/create"), createNewOrder.toJson());
       final responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
-        customerOrders.insert(0, NewOrderList.fromMap(responseJson));
+        customerOrders.insert(0, CustomerOrdersList.fromMap(responseJson));
         Variables.showtoast(context, "Order creted successfully", Icons.check);
       }
     } on SocketException {

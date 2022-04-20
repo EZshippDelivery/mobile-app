@@ -96,7 +96,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                 radio(true, "CASH", "ONLINE", 0, reference1, cashonly: true),
                               ])));
                     }),
-                    Consumer<CustomerController>(builder: (context, reference1, child) {
+                    Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
                       return Card(
                           child: Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -106,9 +106,34 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                   style: Variables.font(fontSize: 18),
                                 ),
                                 radio(BookOrderPage.selectedradio[0] == 1, "Collect At PickUp", "Collect At Delivery",
-                                    1, Provider.of<UpdateScreenProvider>(context, listen: false)),
+                                    1, reference1),
                                 textboxes("Item Description", null),
                                 textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
+                                // Padding(
+                                //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                //   child: Row(
+                                //     children: [
+                                //       Text("Take a Photo of your Item:", style: Variables.font(fontSize: 15)),
+                                //       const SizedBox(width: 4),
+                                //       FloatingActionButton.small(
+                                //         heroTag: "Lback",
+                                //         elevation: 1,
+                                //         onPressed: () async {
+                                //           var image = await ImagePicker().pickImage(source: ImageSource.camera);
+                                //           if (image != null) {
+                                //             reference.createNewOrder.itemImageUrl =
+                                //                 base64Encode(File(image.path).readAsBytesSync());
+                                //           }
+                                //         },
+                                //         child: const Icon(
+                                //           Icons.camera_alt_rounded,
+                                //           color: Colors.white,
+                                //         ),
+                                //         backgroundColor: Palette.deepgrey,
+                                //       )
+                                //     ],
+                                //   ),
+                                // ),
                                 Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
                                     child: Row(children: [
@@ -116,8 +141,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                           child: Text("Does your Item have Cash on Delivery charges?",
                                               style: Variables.font())),
                                       const SizedBox(width: 10),
-                                      radio(true, "Yes", "No", 2,
-                                          Provider.of<UpdateScreenProvider>(context, listen: false))
+                                      radio(true, "Yes", "No", 2, reference1)
                                     ])),
                                 if (BookOrderPage.selectedradio[2] == 1)
                                   textboxes("Cash on Delivery Charges", null, keyboardtype: TextInputType.number)
@@ -126,7 +150,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                     const SizedBox(height: 15),
                     Variables.text1(
                         head: "Delivery Charge",
-                        value: "₹ ${reference.createNewOrder!.deliveryCharge}",
+                        value: "₹ ${reference.createNewOrder.deliveryCharge}",
                         vpadding: 3,
                         valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16)),
                     ValueListenableBuilder(
@@ -141,7 +165,7 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                         valueListenable: cod,
                         builder: (context, int value, widget) => Variables.text1(
                             head: "Total",
-                            value: "₹ ${reference.createNewOrder!.deliveryCharge + value}",
+                            value: "₹ ${reference.createNewOrder.deliveryCharge + value}",
                             valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16))),
                     Padding(
                       padding: const EdgeInsets.only(top: 15.0, bottom: 10),
@@ -149,21 +173,21 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                           onPressed: () {
                             if (formkey.currentState!.validate()) {
                               String pay = BookOrderPage.selectedradio[0] == 1 ? "CASH" : "ONLINE";
-                              reference.createNewOrder!.amount =
-                                  reference.createNewOrder!.deliveryCharge + reference.createNewOrder!.codAmount;
-                              reference.createNewOrder!.bookingType = "SAMEDAY";
-                              reference.createNewOrder!.collectAtPickUp = BookOrderPage.selectedradio[1] == 1;
-                              reference.createNewOrder!.customerId = Variables.driverId;
-                              reference.createNewOrder!.createdBy = Variables.driverId;
-                              reference.createNewOrder!.lastModifiedBy = Variables.driverId;
-                              reference.createNewOrder!.payType = pay;
-                              reference.createNewOrder!.paymentId = "";
-                              reference.createNewOrder!.senderName = senderName.text;
-                              reference.createNewOrder!.senderPhone = senderPhone.text;
-                              reference.createNewOrder!.receiverName = receiverName.text;
-                              reference.createNewOrder!.receiverPhone = receiverPhone.text;
-                              reference.createNewOrder!.orderType = "STORE";
-                              reference.createNewOrder!.orderSource = Variables.device[Platform.isAndroid
+                              reference.createNewOrder.amount =
+                                  reference.createNewOrder.deliveryCharge + reference.createNewOrder.codAmount;
+                              reference.createNewOrder.bookingType = "SAMEDAY";
+                              reference.createNewOrder.collectAtPickUp = BookOrderPage.selectedradio[1] == 1;
+                              reference.createNewOrder.customerId = Variables.driverId;
+                              reference.createNewOrder.createdBy = Variables.driverId;
+                              reference.createNewOrder.lastModifiedBy = Variables.driverId;
+                              reference.createNewOrder.payType = pay;
+                              reference.createNewOrder.paymentId = "";
+                              reference.createNewOrder.senderName = senderName.text;
+                              reference.createNewOrder.senderPhone = senderPhone.text;
+                              reference.createNewOrder.receiverName = receiverName.text;
+                              reference.createNewOrder.receiverPhone = receiverPhone.text;
+                              reference.createNewOrder.orderType = "STORE";
+                              reference.createNewOrder.orderSource = Variables.device[Platform.isAndroid
                                   ? 0
                                   : Platform.isIOS
                                       ? 1
@@ -232,20 +256,20 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
             if (labelText.contains("Delivery Charges")) {
               if (value.isEmpty) {
                 cod.value = 0;
-                customerController.createNewOrder!.codAmount = 0;
+                customerController.createNewOrder.codAmount = 0;
               } else {
                 cod.value = int.parse(value);
-                customerController.createNewOrder!.codAmount = int.parse(value);
+                customerController.createNewOrder.codAmount = int.parse(value);
               }
-              customerController.createNewOrder!.amount =
-                  customerController.createNewOrder!.deliveryCharge + customerController.createNewOrder!.codAmount;
+              customerController.createNewOrder.amount =
+                  customerController.createNewOrder.deliveryCharge + customerController.createNewOrder.codAmount;
             } else if (labelText.contains("Description")) {
               if (value.isEmpty) {
-                customerController.createNewOrder!.itemDescription = "";
-                customerController.createNewOrder!.itemName = "";
+                customerController.createNewOrder.itemDescription = "";
+                customerController.createNewOrder.itemName = "";
               } else {
-                customerController.createNewOrder!.itemDescription = value;
-                customerController.createNewOrder!.itemName = value;
+                customerController.createNewOrder.itemDescription = value;
+                customerController.createNewOrder.itemName = value;
               }
             }
           },
@@ -259,6 +283,8 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
               if (labelText.contains("Receiver") && value == senderPhone.text) {
                 return "Receiver and Sender Phone numbers shoudn't be same";
               }
+            } else if (labelText.contains("Name")) {
+              if (value!.isEmpty) return "Enter $labelText";
             }
             return null;
           },

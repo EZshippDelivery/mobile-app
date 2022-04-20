@@ -140,13 +140,14 @@ class _NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      await Variables.updateOrder(context, index, direction == DismissDirection.startToEnd ? 3 : 14);
+                      await Variables.updateOrder(
+                          context, reference.newOrderList[index].id, direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }
                       if (direction == DismissDirection.startToEnd) {
                         Timer? timer = Timer.periodic(
-                            const Duration(seconds: 3), (time) => Navigator.of(context, rootNavigator: true).pop(true));
+                            const Duration(seconds: 1), (time) => Navigator.of(context, rootNavigator: true).pop(true));
                         showDialog(
                             context: context,
                             builder: (context) => SimpleDialog(
@@ -156,20 +157,13 @@ class _NewOrdersState extends State<NewOrders> {
                                       textAlign: TextAlign.center,
                                     ),
                                     children: [
-                                      Image.asset(
-                                        "assets/icon/check_circle.gif",
-                                        height: 100,
-                                      ),
-                                      Text(
-                                        "Your order is accepted",
-                                        style: Variables.font(color: Colors.grey.shade700, fontSize: 18),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        "Lets Go!",
-                                        style: Variables.font(color: Colors.grey.shade700, fontSize: 18),
-                                        textAlign: TextAlign.center,
-                                      )
+                                      Image.asset("assets/icon/check_circle.gif", height: 100),
+                                      Text("Your order is accepted",
+                                          style: Variables.font(color: Colors.grey.shade700, fontSize: 18),
+                                          textAlign: TextAlign.center),
+                                      Text("Lets Go!",
+                                          style: Variables.font(color: Colors.grey.shade700, fontSize: 18),
+                                          textAlign: TextAlign.center)
                                     ])).then((value) {
                           timer?.cancel();
                           timer = null;
@@ -206,7 +200,8 @@ class _NewOrdersState extends State<NewOrders> {
                               ),
                             ),
                           ),
-                          title: Variables.text(head: "Order ID:", value: reference.newOrderList[index].orderSeqId),
+                          title: Variables.text(context,
+                              head: "Order ID:", value: reference.newOrderList[index].orderSeqId),
                           subtitle: Text(
                             Variables.datetime(reference.newOrderList[index].orderCreatedTime),
                             style: Variables.font(color: Colors.grey[700]),
@@ -222,7 +217,7 @@ class _NewOrdersState extends State<NewOrders> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Variables.text(
+                                    Variables.text(context,
                                         head: "Delivery distance: ",
                                         value: reference.newOrderList[index].pickToDropDistance.toString() + " km"),
                                     IconButton(
@@ -239,7 +234,7 @@ class _NewOrdersState extends State<NewOrders> {
                                 ),
                                 Align(
                                   alignment: Alignment.topLeft,
-                                  child: Variables.text(
+                                  child: Variables.text(context,
                                       head: "Delivery duration: ",
                                       value: reference.newOrderList[index].pickToDropDuration.toString() + " min"),
                                 ),

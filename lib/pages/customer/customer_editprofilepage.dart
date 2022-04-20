@@ -27,9 +27,9 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
   void initState() {
     super.initState();
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
-    email.text = updateProfileProvider.riderProfile!.email;
-    phone.text = updateProfileProvider.riderProfile!.phone.toString();
-    List name = updateProfileProvider.riderProfile!.name.split(" ");
+    email.text = updateProfileProvider.customerProfile!.email;
+    phone.text = updateProfileProvider.customerProfile!.phone.toString();
+    List name = updateProfileProvider.customerProfile!.name.split(" ");
     firstname.text = name[0];
     lastname.text = name[1];
   }
@@ -84,7 +84,8 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
                       heroTag: "save_@",
                       onPressed: () async {
                         if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
-                          await updateProfileProvider.updateProfile(context);
+                          await updateProfileProvider.update(context);
+                          await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
                           await updateProfileProvider.getCustomer(context);
                           Navigator.of(context).pop();
                         }

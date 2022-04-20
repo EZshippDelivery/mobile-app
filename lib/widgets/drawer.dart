@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../pages/aboutpage.dart';
-import '../pages/contact_page.dart';
+import '../pages/biker/contact_page.dart';
 import '../pages/biker/profilepage.dart';
 
 class DrawerWidget extends StatefulWidget {
@@ -42,12 +42,10 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                       const SizedBox(width: 10),
                       InkWell(
-                        onTap: () => Variables.push(context, ProfilePage.routeName),
-                        child: Hero(
-                          tag: "Driver Profile",
-                          child: reference.getProfileImage(size: size.width / 3.7, canEdit: true),
-                        ),
-                      ),
+                          onTap: () => Variables.push(context, ProfilePage.routeName),
+                          child: Hero(
+                              tag: "Driver Profile",
+                              child: reference.getProfileImage(size: size.width / 3.7, canEdit: true))),
                       const SizedBox(width: 10),
                       Expanded(
                           child: TextButton(
@@ -105,18 +103,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                       AuthController authController =
                                           Provider.of<AuthController>(context, listen: false);
                                       await authController.storeLoginStatus(false);
-                                      bool isNewRouteSameAsCurrent = false;
-
-                                      Navigator.popUntil(context, (route) {
-                                        if (route.settings.name == LoginPage.routeName) {
-                                          isNewRouteSameAsCurrent = true;
-                                        }
-                                        return true;
-                                      });
-
-                                      if (!isNewRouteSameAsCurrent) {
-                                        Navigator.pushNamed(context, LoginPage.routeName);
-                                      }
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),

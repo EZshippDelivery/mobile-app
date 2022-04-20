@@ -40,16 +40,16 @@ class _DeliveredPageState extends State<DeliveredPage> {
                       padding: const EdgeInsets.all(5),
                       child: Align(
                           alignment: Alignment.topCenter,
-                          child: Variables.text(head: "Order Id: ", value: widget.reference.orderSeqId))),
+                          child: Variables.text(context, head: "Order Id: ", value: widget.reference.orderSeqId))),
                 ),
               ],
             ),
             const SizedBox(height: 5),
-            Variables.text(
+            Variables.text(context,
                 head: "Order Date: ", value: Variables.datetime(widget.reference.orderCreatedTime), vpadding: 5),
-            Variables.text(
+            Variables.text(context,
                 head: "Delivery distance: ", value: "${widget.reference.pickToDropDistance} km", vpadding: 5),
-            Variables.text(
+            Variables.text(context,
                 head: "Delivery duration: ", value: "${widget.reference.pickToDropDuration} min", vpadding: 5),
             if (widget.isdetails == false)
               Row(
@@ -94,23 +94,23 @@ class _DeliveredPageState extends State<DeliveredPage> {
                           ]),
                         ),
                         const SizedBox(height: 3),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Name: ",
                             value: widget.reference.senderName,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Phone number: ",
                             value: widget.reference.senderPhone,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Address:\n",
                             value: widget.reference.pickAddress,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
                         if (widget.reference.pickLandmark.isEmpty)
-                          Variables.text(
+                          Variables.text(context,
                               head: "Landmark:",
                               value: widget.reference.pickLandmark,
                               valueFontSize: 15,
@@ -134,23 +134,23 @@ class _DeliveredPageState extends State<DeliveredPage> {
                           ]),
                         ),
                         const SizedBox(height: 3),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Name: ",
                             value: widget.reference.receiverName,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Phone number: ",
                             value: widget.reference.receiverPhone,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
-                        Variables.text(
+                        Variables.text(context,
                             head: "Address:\n",
                             value: widget.reference.dropAddress,
                             valueFontSize: 15,
                             valueColor: Colors.grey),
                         if (widget.reference.dropLandmark.isEmpty)
-                          Variables.text(
+                          Variables.text(context,
                               head: "Landmark:",
                               value: widget.reference.dropLandmark,
                               valueFontSize: 15,
@@ -162,9 +162,10 @@ class _DeliveredPageState extends State<DeliveredPage> {
               ),
             ),
             const SizedBox(height: 15),
-            if (widget.reference.item.isNotEmpty) Variables.text(head: "Item Name: ", value: widget.reference.item),
+            if (widget.reference.item.isNotEmpty)
+              Variables.text(context, head: "Item Name: ", value: widget.reference.item),
             if (widget.reference.itemDescription.isNotEmpty)
-              Variables.text(head: "Item Description: ", value: widget.reference.itemDescription),
+              Variables.text(context, head: "Item Description: ", value: widget.reference.itemDescription),
             if (widget.reference.itemImage.isNotEmpty)
               RichText(
                   text: TextSpan(text: "Item Image:\t", children: [
@@ -281,7 +282,7 @@ class _DeliveredPageState extends State<DeliveredPage> {
                       if (DeliveredPage.addsignature == false) {
                         Variables.showtoast(context, "Add a Signature", Icons.warning_rounded);
                       } else {
-                        Variables.updateOrder(context, widget.index!, 12);
+                        Variables.updateOrder(context, widget.reference.id, 12);
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       }
                     },

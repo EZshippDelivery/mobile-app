@@ -11,15 +11,17 @@ import '../utils/variables.dart';
 class OrderController extends BikerController {
   bool loading4 = true;
 
-  update(BuildContext context, String body, int orderid) async {
+  updateOrder(BuildContext context, String body, int orderid) async {
+    Map<String, dynamic>? responseJson;
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
-      Variables.returnResponse(context, response);
+      responseJson = Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading4 = false;
     notifyListeners();
+    if (responseJson != null) return responseJson;
   }
 
   findOrderbyBarcode(BuildContext context, String value, int statusId) async {
@@ -42,7 +44,7 @@ class OrderController extends BikerController {
             })))!;
         Variables.updateOrderMap.zoneId = Variables.centers.indexWhere((element) => element.indexOf(body.zonedAt));
         Variables.updateOrderMap.collectAt = body.collectAt;
-        update(context, Variables.updateOrderMap.toJson(), body.id);
+        updateOrder(context, Variables.updateOrderMap.toJson(), body.id);
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);

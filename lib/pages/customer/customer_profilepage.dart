@@ -60,11 +60,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                                         child: Text(reference.fullName,
                                             style: Variables.font(color: Colors.grey[300], fontSize: 16)),
                                       ),
-                                      Text(reference.riderProfile!.email, style: Variables.font(color: Colors.grey)),
-                                      if (reference.riderProfile!.phone != 0)
+                                      Text(reference.customerProfile!.email, style: Variables.font(color: Colors.grey)),
+                                      if (reference.customerProfile!.phone != 0)
                                         Padding(
                                           padding: const EdgeInsets.all(10.0),
-                                          child: Text("+91 " + reference.riderProfile!.phone.toString(),
+                                          child: Text("+91 " + reference.customerProfile!.phone.toString(),
                                               style: Variables.font(color: Colors.grey)),
                                         ),
                                       const SizedBox(height: 10),

@@ -33,7 +33,7 @@ class BikerController extends ChangeNotifier {
 
   offLineMode(BuildContext context, bool value, {bool fromhomepage = false}) async {
     if (value) {
-      timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
         await getCurrentlocations();
         final response = await HTTPRequest.putRequest(
             Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
@@ -240,7 +240,7 @@ class BikerController extends ChangeNotifier {
         "wearingTShirt": true
       };
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/rating"), jsonEncode(body));
-      Variables.returnResponse(context, response);
+      Variables.returnResponse(context, response, onlinemode: true);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }

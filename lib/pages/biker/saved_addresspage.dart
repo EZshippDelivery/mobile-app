@@ -101,18 +101,18 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Variables.text(
+                                          Variables.text(context,
                                               head: "Appartment/House no. :\n",
                                               value: reference.getFirstTenAddress[index].apartment,
                                               valueColor: Colors.grey,
                                               vpadding: 5),
                                           Container(
-                                              child: Variables.text(
+                                              child: Variables.text(context,
                                                   head: "Address:\n",
                                                   value: reference.getFirstTenAddress[index].address1,
                                                   valueColor: Colors.grey,
                                                   vpadding: 5)),
-                                          Variables.text(
+                                          Variables.text(context,
                                               head: "Landmark:\n",
                                               value: reference.getFirstTenAddress[index].landmark,
                                               valueColor: Colors.grey,

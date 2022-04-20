@@ -84,14 +84,14 @@ class _AcceptedState extends State<Accepted> {
                                   title: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Variables.text(
+                                      Variables.text(context,
                                           head: "Order ID: ", value: reference.acceptedList[index].orderSeqId),
                                       Text(Variables.datetime(reference.acceptedList[index].acceptedTime.isEmpty
                                           ? reference.acceptedList[index].orderCreatedTime
                                           : reference.acceptedList[index].acceptedTime))
                                     ],
                                   ),
-                                  subtitle: Variables.text(
+                                  subtitle: Variables.text(context,
                                       head: "Status: ",
                                       value: reference.acceptedList[index].status,
                                       valueColor: Palette.kOrange),

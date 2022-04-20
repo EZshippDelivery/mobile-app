@@ -62,7 +62,7 @@ class _OldOrdersState extends State<OldOrders> {
                 child: const Icon(Icons.filter_list_rounded)),
           )
         ]),
-        body: Consumer2<CustomerController, UpdateScreenProvider>(builder: (context, reference, reference1, child) {
+        body: Consumer<CustomerController>(builder: (context, reference, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
               return RefreshIndicator(
@@ -81,24 +81,24 @@ class _OldOrdersState extends State<OldOrders> {
                       Variables.push(context, OrderDetailsPage.routeName);
                     },
                     title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Variables.text(
+                      Variables.text(context,
                           head: "Booking ID: ",
                           value: reference.customerOrders[index].orderSeqId,
                           valueColor: Colors.grey),
-                      Variables.text(
+                      Variables.text(context,
                           head: "",
                           value: Variables.datetime(reference.customerOrders[index].orderCreatedTime),
                           valueColor: Colors.grey)
                     ]),
                     subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Variables.text(
+                      Variables.text(context,
                           head: "",
                           value: reference.customerOrders[index].status,
                           valueColor: reference.customerOrders[index].statusId < 13 &&
                                   reference.customerOrders[index].statusId != 10
                               ? Colors.green
                               : Colors.red),
-                      Variables.text(
+                      Variables.text(context,
                           head: "",
                           value: "₹ ${reference.customerOrders[index].totalCharge}",
                           valueColor: Palette.deepgrey)

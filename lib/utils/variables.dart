@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/update_order.dart';
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 
 import '../Provider/update_profile_provider.dart';
+import '../widgets/textfield.dart';
 
 class Variables {
   static GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -34,7 +36,7 @@ class Variables {
   static final pref = FlutterSecureStorage(aOptions: _getAndroidOptions());
 
   static int index = 0, index1 = 0, index2 = 0;
-  static late NewOrderList list, list1, list2;
+  static late NewOrderList list, list1;
   static int orderscount = 0;
 
   static AndroidOptions _getAndroidOptions() => const AndroidOptions(
@@ -104,7 +106,7 @@ class Variables {
       Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
   //Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
 
-  static text(
+  static text(BuildContext context,
           {String head = "Order ID:",
           String value = "XXXXXXXXX",
           double vpadding = 1.0,
@@ -112,7 +114,9 @@ class Variables {
           Color? valueColor,
           Color? headColor,
           double valueFontSize = 16,
-          double headFontSize = 14}) =>
+          double headFontSize = 14,
+          bool islink = false,
+          String linkvalue = ""}) =>
       Padding(
         padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
         child: RichText(
@@ -120,11 +124,25 @@ class Variables {
                 text: head,
                 style: Variables.font(color: headColor ?? Palette.deepgrey, fontSize: headFontSize),
                 children: [
-              TextSpan(
-                  text: value,
-                  style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
+              islink
+                  ? linkvalue.isNotEmpty
+                      ? WidgetSpan(
+                          child: TextButton(
+                              onPressed: () async => await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        content: Image.memory(base64Decode(linkvalue), height: 500),
+                                      )),
+                              child: Text(value, style: Variables.font(color: null, fontSize: valueFontSize))))
+                      : TextSpan(
+                          text: value,
+                          style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
+                  : TextSpan(
+                      text: value,
+                      style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
             ])),
       );
+
   static text1(
           {String head = "Order ID:",
           String value = "XXXXXXXXX",
@@ -133,12 +151,11 @@ class Variables {
           TextStyle? headStyle,
           TextStyle? valueStyle}) =>
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(head, style: headStyle), if (value.isNotEmpty) Text(value, style: valueStyle)],
-        ),
-      );
+          padding: EdgeInsets.symmetric(horizontal: hpadding, vertical: vpadding),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [Text(head, style: headStyle), if (value.isNotEmpty) Text(value, style: valueStyle)]));
+
   static switchOptions(
           {String head = "Order ID:",
           bool value = false,
@@ -186,9 +203,9 @@ class Variables {
           )
         ]));
     fToast.showToast(
-      child: toast,
-      toastDuration: const Duration(seconds: 2),
-    );
+        child: toast,
+        toastDuration: const Duration(seconds: 2),
+        gravity: shouldup ? ToastGravity.TOP : ToastGravity.BOTTOM);
   }
 
   static String datetime(value, {bool timeNeed = false}) {
@@ -302,18 +319,14 @@ class Variables {
     if (statusId != null) Variables.updateOrderMap.statusId = statusId;
   }
 
-  static Future<void> updateOrder(BuildContext context, int index, statusId, [bool iscustomer = false]) async {
+  static dynamic updateOrder(BuildContext context, int orderId, statusId, [bool iscustomer = false]) async {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
     await Variables.getLiveLocation(statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
       "longitude": Variables.updateOrderMap.longitude,
-      "orderId": statusId > 3 && statusId < 13
-          ? value.acceptedList[index].id
-          : iscustomer
-              ? value.customerOrders[index].id
-              : value.newOrderList[index].id
+      "orderId": orderId
     };
     // print(jsonEncode(body));
     // var temp = value.newOrderList[index];
@@ -321,10 +334,11 @@ class Variables {
     var result = await value.getDistance(context, jsonEncode(body));
     if (result != null) {
       Variables.updateOrderMap.distance = result;
-      Variables.updateOrderMap.driverId = driverId;
-      Variables.updateOrderMap.newDriverId = driverId;
-      await value1.update(context, Variables.updateOrderMap.toJson(),
-          iscustomer ? value.customerOrders[index].id : value.newOrderList[index].id);
+      if (!iscustomer) {
+        Variables.updateOrderMap.driverId = driverId;
+        Variables.updateOrderMap.newDriverId = driverId;
+      }
+      return await value1.updateOrder(context, Variables.updateOrderMap.toJson(), orderId);
     }
   }
 
@@ -344,7 +358,7 @@ class Variables {
       default:
         Variables.showtoast(
             context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n',
             Icons.warning_rounded);
         break;
     }
@@ -375,4 +389,17 @@ class Variables {
           )),
         ]),
       );
+
+  static Future<void> writeDetails(BuildContext context) async {
+    AuthController authController = Provider.of<AuthController>(context, listen: false);
+    await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
+    await Variables.write(key: "password", value: TextFields.data["Password"].toString());
+    await Variables.write(key: "usertype", value: authController.userType);
+    await Variables.write(key: "mobileSignUp", value: true.toString());
+    if (authController.userType == "driver") {
+      await Variables.write(key: "enterKYC", value: true.toString());
+    } else {
+      await Variables.write(key: "enterKYC", value: false.toString());
+    }
+  }
 }

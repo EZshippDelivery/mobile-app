@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:ezshipp/APIs/customer_orders.dart';
 import 'package:ezshipp/APIs/new_orderlist.dart';
+import 'package:ezshipp/Provider/biker_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 // import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +18,7 @@ import '../../utils/themes.dart';
 // ignore: must_be_immutable
 class TrackingPage extends StatefulWidget {
   static String routeName = "/tracking";
-  NewOrderList order;
+  CustomerOrdersList order;
   static double rating = 0;
 
   static bool complete = false;
@@ -31,11 +34,13 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
   DecorationImage? decorationImage;
   String name = "";
   int index = 0;
+  late GoogleMapController mapController;
   late AnimationController animationController;
   late Animation animation;
   late UpdateScreenProvider updateScreen;
   late MapsProvider mapsProvider;
   bool value = false;
+
   @override
   void initState() {
     super.initState();
@@ -79,7 +84,14 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                 markers: {
                   if (reference1.driver != null) reference1.driver!,
                 },
-                onMapCreated: (controller) {},
+                onMapCreated: (controller) {
+                  mapController = controller;
+
+                  if (reference1.driver != null) {
+                    mapController.animateCamera(
+                        CameraUpdate.newCameraPosition(CameraPosition(target: reference1.driver!.position, zoom: 17)));
+                  }
+                },
               );
             }),
             DraggableScrollableSheet(
@@ -92,7 +104,7 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                             child: Column(children: [
                               Padding(
                                   padding: const EdgeInsets.all(10),
-                                  child: Variables.text(head: "Order Id: ", value: widget.order.orderSeqId)),
+                                  child: Variables.text(context, head: "Order Id: ", value: widget.order.orderSeqId)),
                               Variables.dividerName("Order Status", hpadding: 0, vpadding: 5),
                               const SizedBox(height: 5),
                               Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
@@ -123,10 +135,10 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                       step("Order Received",
                                           Variables.datetime(widget.order.orderCreatedTime, timeNeed: true), 0),
                                       step("Order Accepted",
-                                          Variables.datetime(widget.order.acceptedTime, timeNeed: true), 1),
+                                          Variables.datetime("widget.order.acceptedTime", timeNeed: true), 1),
                                       step("Order Picked", Variables.datetime(DateTime.now(), timeNeed: true), 2),
                                       step("Order Delivered",
-                                          Variables.datetime(widget.order.deliveredTime, timeNeed: true), 3),
+                                          Variables.datetime("widget.order.deliveredTime", timeNeed: true), 3),
                                     ],
                                   ),
                                 );
@@ -152,9 +164,10 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                               Row(children: [
                                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   const SizedBox(height: 10),
-                                  Variables.text(head: "Biker Name: ", value: widget.order.bikerName, vpadding: 4),
+                                  Variables.text(context,
+                                      head: "Biker Name: ", value: widget.order.bikerName, vpadding: 4),
                                   Row(children: [
-                                    Variables.text(
+                                    Variables.text(context,
                                         head: "Biker Phone: ", value: widget.order.bikerPhone.toString(), vpadding: 4),
                                     FloatingActionButton.small(
                                         onPressed: () async {
@@ -171,25 +184,53 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                   Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                      child: Variables.text(head: "Rate your biker: ", value: "${TrackingPage.rating}"),
+                                      child: Variables.text(context,
+                                          head: "Rate your biker: ", value: "${TrackingPage.rating}"),
                                     );
                                   })
                                 ])
                               ]),
-                              // RatingBar.builder(
-                              //     glow: false,
-                              //     updateOnDrag: true,
-                              //     itemPadding: const EdgeInsets.symmetric(horizontal: 4),
-                              //     itemBuilder: (context, index) => Icon(
-                              //           Icons.star,
-                              //           color: Colors.amber[700],
-                              //         ),
-                              //     onRatingUpdate: (value) {
-                              //       TrackingPage.rating = value;
-                              //       updateScreen.updateScreen();
-                              //       updateScreen.bikerRating(
-                              //           context, widget.order.bikerId, widget.order.id, value.ceil());
-                              //     })
+                              RatingBar.builder(
+                                  initialRating: 3,
+                                  itemCount: 5,
+                                  itemBuilder: (context, index) {
+                                    switch (index) {
+                                      case 0:
+                                        return const Icon(
+                                          Icons.sentiment_very_dissatisfied,
+                                          color: Colors.red,
+                                        );
+                                      case 1:
+                                        return const Icon(
+                                          Icons.sentiment_dissatisfied,
+                                          color: Colors.redAccent,
+                                        );
+                                      case 2:
+                                        return const Icon(
+                                          Icons.sentiment_neutral,
+                                          color: Colors.amber,
+                                        );
+                                      case 3:
+                                        return const Icon(
+                                          Icons.sentiment_satisfied,
+                                          color: Colors.lightGreen,
+                                        );
+                                      case 4:
+                                        return const Icon(
+                                          Icons.sentiment_very_satisfied,
+                                          color: Colors.green,
+                                        );
+                                    }
+                                    return Container();
+                                  },
+                                  onRatingUpdate: (value) {
+                                    TrackingPage.rating = value;
+                                    updateScreen.updateScreen();
+                                    BikerController bikerController =
+                                        Provider.of<BikerController>(context, listen: false);
+                                    bikerController.bikerRating(
+                                        context, widget.order.bikerId, widget.order.id, value.ceil());
+                                  })
                             ])))))
           ],
         ),

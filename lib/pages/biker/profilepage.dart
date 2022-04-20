@@ -4,7 +4,7 @@ import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../utils/variables.dart';
+import '../../../utils/variables.dart';
 
 class ProfilePage extends StatefulWidget {
   static String routeName = "/profile";

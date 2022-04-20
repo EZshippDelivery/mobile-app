@@ -356,75 +356,16 @@ class _OrderState extends State<Order> {
                                             await getLiveLocation();
 
                                             if (list.statusId < 5) {
-                                              await mapsProvider.directions(context, null, null, places: [
-                                                LatLng(Variables.updateOrderMap.latitude,
-                                                    Variables.updateOrderMap.longitude),
-                                                LatLng(list.pickLatitude, list.pickLongitude)
-                                              ]);
-                                              Timer.periodic(const Duration(seconds: 10), (timer) {
-                                                // ignore: avoid_print
-                                                print("Timer is calling ${DateTime.now()}");
-                                              });
-                                              int temp = mapsProvider.directioDetails[0]["value"];
-                                              Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
-                                                  LatLng(Variables.updateOrderMap.latitude,
-                                                      Variables.updateOrderMap.longitude),
-                                                  LatLng(list.pickLatitude, list.pickLongitude)
-                                                ]);
-                                                if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, list.id, 4);
-                                                }
-                                                timer.cancel();
-                                              });
-                                              Timer.periodic(
-                                                  Duration(seconds: mapsProvider.directioDetails[1]["value"]),
-                                                  (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
-                                                  LatLng(Variables.updateOrderMap.latitude,
-                                                      Variables.updateOrderMap.longitude),
-                                                  LatLng(list.pickLatitude, list.pickLongitude)
-                                                ]);
-                                                if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(context, list.id, 5);
-                                                }
-                                                timer.cancel();
-                                              });
+                                              Variables.updateOrder(context, list.id, 4);
+                                              if (list.statusId == 4) Variables.updateOrder(context, list.id, 5);
+
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
                                               Variables.updateOrder(context, list.id, 6);
-                                              await mapsProvider.directions(context, null, null, places: [
-                                                LatLng(Variables.updateOrderMap.latitude,
-                                                    Variables.updateOrderMap.longitude),
-                                                LatLng(list.dropLatitude, list.dropLongitude)
-                                              ]);
-                                              int temp = mapsProvider.directioDetails[0]["value"];
-                                              Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
-                                                  LatLng(Variables.updateOrderMap.latitude,
-                                                      Variables.updateOrderMap.longitude),
-                                                  LatLng(list.dropLatitude, list.dropLongitude)
-                                                ]);
-                                                if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, list.id, 9);
-                                                }
-                                                timer.cancel();
-                                              });
-                                              timer = Timer.periodic(
-                                                  Duration(seconds: mapsProvider.directioDetails[1]["value"]),
-                                                  (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
-                                                  LatLng(Variables.updateOrderMap.latitude,
-                                                      Variables.updateOrderMap.longitude),
-                                                  LatLng(list.dropLatitude, list.dropLongitude)
-                                                ]);
-                                                if (mapsProvider.directioDetails[0]["value"] <
-                                                    mapsProvider.directioDetails[0]["value"] * 0.1) {
-                                                  Variables.updateOrder(context, list.id, 11);
-                                                }
-                                                timer.cancel();
-                                              });
+                                              if (list.statusId == 6) Variables.updateOrder(context, list.id, 9);
+                                              if (list.statusId == 9) Variables.updateOrder(context, list.id, 11);
+
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                             } else if (list.statusId == 11) {
@@ -436,7 +377,7 @@ class _OrderState extends State<Order> {
                                               primary: Palette.kOrange,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                           child: Row(children: [
-                                            list.statusId < 5
+                                            list.statusId <= 5
                                                 ? Image.asset(
                                                     "assets/icon/icons8-pointer-64.png",
                                                     height: 22,
@@ -447,11 +388,13 @@ class _OrderState extends State<Order> {
                                             Text(
                                               list.statusId < 5
                                                   ? "Start"
-                                                  : list.statusId >= 5 && list.statusId < 11
-                                                      ? "Picked"
-                                                      : list.statusId == 11
-                                                          ? "Complete"
-                                                          : "",
+                                                  : list.statusId == 5
+                                                      ? "Pick"
+                                                      : list.statusId >= 5 && list.statusId < 11
+                                                          ? "Picked"
+                                                          : list.statusId == 11
+                                                              ? "Complete"
+                                                              : "",
                                               style: Variables.font(color: Colors.white, fontSize: 15),
                                             )
                                           ]))

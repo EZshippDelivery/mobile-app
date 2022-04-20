@@ -31,7 +31,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   Widget build(BuildContext context) {
     customerController = Provider.of<CustomerController>(context, listen: false);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    CreateOrder co = customerController.createNewOrder!;
+    CreateOrder co = customerController.createNewOrder;
     return Scaffold(
         appBar: Variables.app(),
         body: SingleChildScrollView(
@@ -45,25 +45,27 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                     child: Text("ORDER SUMMARY",
                         style: Variables.font(color: Palette.kOrange, fontWeight: FontWeight.bold, fontSize: 19))),
               ),
-              Variables.text(head: "", value: "Sender Details", valueColor: Palette.deepgrey, vpadding: 6),
+              Variables.text(context, head: "", value: "Sender Details", valueColor: Palette.deepgrey, vpadding: 6),
               const SizedBox(height: 5),
-              Variables.text(head: "Name: ", value: co.senderName, vpadding: 4),
-              Variables.text(head: "Phone: ", value: co.senderPhone, vpadding: 4),
-              Variables.text(head: "Address:\n", value: SetLocationPage.pickup.text, vpadding: 4),
+              Variables.text(context, head: "Name: ", value: co.senderName, vpadding: 4),
+              Variables.text(context, head: "Phone: ", value: co.senderPhone, vpadding: 4),
+              Variables.text(context, head: "Address:\n", value: SetLocationPage.pickup.text, vpadding: 4),
               if (customerController.addAddress.landmark.isNotEmpty)
-                Variables.text(head: "Landmark: ", value: customerController.addAddress.landmark, vpadding: 4),
+                Variables.text(context, head: "Landmark: ", value: customerController.addAddress.landmark, vpadding: 4),
               const Divider(),
-              Variables.text(head: "", value: "Receiver Details", valueColor: Palette.deepgrey, vpadding: 6),
+              Variables.text(context, head: "", value: "Receiver Details", valueColor: Palette.deepgrey, vpadding: 6),
               const SizedBox(height: 5),
-              Variables.text(head: "Name: ", value: co.receiverName, vpadding: 4),
-              Variables.text(head: "Phone: ", value: co.receiverPhone, vpadding: 4),
-              Variables.text(head: "Address:\n", value: SetLocationPage.delivery.text, vpadding: 4),
+              Variables.text(context, head: "Name: ", value: co.receiverName, vpadding: 4),
+              Variables.text(context, head: "Phone: ", value: co.receiverPhone, vpadding: 4),
+              Variables.text(context, head: "Address:\n", value: SetLocationPage.delivery.text, vpadding: 4),
               if (customerController.addAddress1.landmark.isNotEmpty)
-                Variables.text(head: "Landmark: ", value: customerController.addAddress1.landmark, vpadding: 4),
+                Variables.text(context,
+                    head: "Landmark: ", value: customerController.addAddress1.landmark, vpadding: 4),
               const SizedBox(height: 5),
-              Variables.text(head: "Item: ", value: co.itemDescription, vpadding: 4),
+              Variables.text(context,
+                  head: "Item: ", value: co.itemDescription, vpadding: 3, linkvalue: co.itemImageUrl, islink: true),
               const SizedBox(height: 5),
-              Variables.text(head: "", value: "Payment Details", valueColor: Palette.deepgrey, vpadding: 6),
+              Variables.text(context, head: "", value: "Payment Details", valueColor: Palette.deepgrey, vpadding: 6),
               const SizedBox(height: 5),
               Variables.text1(
                   head: "Payment Type",

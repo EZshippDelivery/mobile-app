@@ -25,7 +25,7 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
         width: size.width * 0.75,
         color: Colors.grey[100],
         child: Consumer<UpdateProfileProvider>(
-            builder: (context, reference, child) => reference.riderProfile != null
+            builder: (context, reference, child) => reference.customerProfile != null
                 ? Drawer(
                     child: Column(children: [
                     Container(

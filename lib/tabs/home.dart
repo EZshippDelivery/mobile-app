@@ -26,7 +26,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
         drawer: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {
-          return reference.riderProfile != null ? const CustomerDrawer() : Container();
+          return reference.customerProfile != null ? const CustomerDrawer() : Container();
         }),
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white),
@@ -55,15 +55,12 @@ class _HomeTabState extends State<HomeTab> {
                                   onPressed: () async {
                                     AuthController authController = Provider.of<AuthController>(context, listen: false);
                                     await authController.storeLoginStatus(false);
-                                    Navigator.of(context).popAndPushNamed(LoginPage.routeName);
+                                    Navigator.of(context)
+                                        .pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "YES",
-                                      style: Variables.font(fontSize: 16, color: Colors.white),
-                                    ),
-                                  ))
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text("YES", style: Variables.font(fontSize: 16, color: Colors.white))))
                             ])),
                 icon: const Icon(
                   Icons.power_settings_new_rounded,
