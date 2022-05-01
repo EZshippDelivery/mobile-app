@@ -9,10 +9,10 @@ class MyOrders extends StatefulWidget {
   const MyOrders({Key? key}) : super(key: key);
 
   @override
-  _MyOrdersState createState() => _MyOrdersState();
+  MyOrdersState createState() => MyOrdersState();
 }
 
-class _MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
+class MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
   late TabController tabController;
 
   late OrderController orderController;
@@ -22,7 +22,7 @@ class _MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
     orderController.pagenumber1 = 1;
-    orderController.getAcceptedAndinProgressOrders(context);
+    orderController.getAcceptedAndinProgressOrders(mounted, context);
     tabController = TabController(length: 2, vsync: this);
   }
 

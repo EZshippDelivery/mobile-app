@@ -31,7 +31,8 @@ class BikerController extends ChangeNotifier {
   int pagenumber = 1, pagenumber1 = 1;
   int index = 0;
 
-  offLineMode(BuildContext context, bool value, {bool fromhomepage = false}) async {
+  offLineMode(bool mounted, BuildContext context, bool value, {bool fromhomepage = false}) async {
+    if (!mounted) return;
     if (value) {
       timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
         await getCurrentlocations();
@@ -39,7 +40,7 @@ class BikerController extends ChangeNotifier {
             Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
             jsonEncode(
                 {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-
+        if (!mounted) return;
         Variables.returnResponse(context, response, onlinemode: true);
       });
       Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
@@ -50,6 +51,7 @@ class BikerController extends ChangeNotifier {
           Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
           jsonEncode(
               {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
+      if (!mounted) return;
       Variables.returnResponse(context, response, onlinemode: true);
       Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
     }
@@ -66,9 +68,10 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  getAllOrdersByBikerId(BuildContext context) async {
+  getAllOrdersByBikerId(bool mounted, BuildContext context) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/true"));
+      if (!mounted) return;
       List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         newOrderList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
@@ -81,10 +84,11 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<double?> getDistance(BuildContext context, String body) async {
+  Future<double?> getDistance(bool mounted, BuildContext context, String body) async {
     try {
       final response =
           await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/distance"), body);
+      if (!mounted) return 0;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         return responseJson[0]["distance"];
@@ -95,10 +99,11 @@ class BikerController extends ChangeNotifier {
     return null;
   }
 
-  getAcceptedAndinProgressOrders(BuildContext context) async {
+  getAcceptedAndinProgressOrders(bool mounted, BuildContext context) async {
     try {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
+      if (!mounted) return;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -120,20 +125,21 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  setDate(BuildContext context, DateTime? value, bool end) async {
+  setDate(bool mounted, BuildContext context, DateTime? value, bool end) async {
     if (end) {
       this.end = value ?? this.end;
     } else {
       start = value ?? start;
     }
-    await getAllCompletedOrders(context, start.toString(), this.end.toString());
+    await getAllCompletedOrders(mounted, context, start.toString(), this.end.toString());
   }
 
-  getAllCompletedOrders(BuildContext context, String startdate, String enddate) async {
+  getAllCompletedOrders(bool mounted, BuildContext context, String startdate, String enddate) async {
     try {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
       final response = await HTTPRequest.postRequest(
           Variables.uri(path: "/biker/orders/completed/${Variables.driverId}"), body.toJson());
+      if (!mounted) return;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -151,10 +157,11 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  livebikerTracking(BuildContext context, int driverId, int orderId) {
+  livebikerTracking(bool mounted, BuildContext context, int driverId, int orderId) {
     timer1 = Timer.periodic(const Duration(seconds: 5), (time) async {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
+      if (!mounted) return;
       Map<String, dynamic>? map = Variables.returnResponse(context, response);
       if (map != null) {
         driver = Marker(
@@ -182,16 +189,18 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  getProfile(BuildContext context) async {
+  getProfile(bool mounted, BuildContext context) async {
     final colorIndex = await Variables.read(key: "color_index");
     index = colorIndex == null ? Random().nextInt(Colors.primaries.length) : int.parse(colorIndex);
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"));
+      if (!mounted) return;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         riderProfile = Profile.fromMap(responseJson);
       }
     } on SocketException {
+      if (!mounted) return;
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     if (riderProfile != null) {
@@ -204,14 +213,16 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  updateProfile(BuildContext context) async {
+  updateProfile(bool mounted, BuildContext context) async {
     try {
       var json = UpdateProfile.fromMap1(riderProfile!.toMap(), TextFields.data).toJson();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"), json);
+      if (!mounted) return;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
+        if (!mounted) return;
         Variables.showtoast(context, "Updating profile successfull", Icons.check);
-        await getProfile(context);
+        await getProfile(mounted, context);
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -219,7 +230,7 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  bikerRating(BuildContext context, int driverid, int orderid, int rating) async {
+  bikerRating(bool mounted, BuildContext context, int driverid, int orderid, int rating) async {
     try {
       Map body = {
         "carryingBag": true,
@@ -240,6 +251,7 @@ class BikerController extends ChangeNotifier {
         "wearingTShirt": true
       };
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/rating"), jsonEncode(body));
+      if (!mounted) return;
       Variables.returnResponse(context, response, onlinemode: true);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);

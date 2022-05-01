@@ -20,10 +20,10 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController animcontroller;
   late Animation<double> _anim;
   FirebaseMessaging fcm = FirebaseMessaging.instance;
@@ -43,7 +43,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (islogin) {
       final username = await Variables.read(key: "username");
       final password = await Variables.read(key: "password");
-      await authController.authenticateUser(context, {"password": password, "username": username});
+      if (!mounted) return;
+      if (username.isNotEmpty && password.isNotEmpty) {
+        islogin = await authController.authenticateUser(mounted, context, {"password": password, "username": username});
+      } else {
+        islogin = false;
+      }
       userType = await Variables.read(key: "usertype") ?? "";
     }
     Timer(

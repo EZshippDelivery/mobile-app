@@ -1,4 +1,6 @@
 import 'dart:convert';
+// ignore: avoid_web_libraries_in_flutter
+// import 'dart:html';
 
 class CreateOrder {
   double amount;
@@ -118,57 +120,57 @@ class CreateOrder {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is CreateOrder &&
-      other.amount == amount &&
-      other.bookingType == bookingType &&
-      other.codAmount == codAmount &&
-      other.collectAtPickUp == collectAtPickUp &&
-      other.customerId == customerId &&
-      other.deliveryAddressId == deliveryAddressId &&
-      other.deliveryCharge == deliveryCharge &&
-      other.externalId == externalId &&
-      other.itemDescription == itemDescription &&
-      other.itemImageUrl == itemImageUrl &&
-      other.itemName == itemName &&
-      other.offerId == offerId &&
-      other.orderSource == orderSource &&
-      other.orderType == orderType &&
-      other.payType == payType &&
-      other.paymentId == paymentId &&
-      other.pickAddressId == pickAddressId &&
-      other.receiverName == receiverName &&
-      other.receiverPhone == receiverPhone &&
-      other.senderName == senderName &&
-      other.senderPhone == senderPhone &&
-      other.lastModifiedBy == lastModifiedBy &&
-      other.createdBy == createdBy;
+        other.amount == amount &&
+        other.bookingType == bookingType &&
+        other.codAmount == codAmount &&
+        other.collectAtPickUp == collectAtPickUp &&
+        other.customerId == customerId &&
+        other.deliveryAddressId == deliveryAddressId &&
+        other.deliveryCharge == deliveryCharge &&
+        other.externalId == externalId &&
+        other.itemDescription == itemDescription &&
+        other.itemImageUrl == itemImageUrl &&
+        other.itemName == itemName &&
+        other.offerId == offerId &&
+        other.orderSource == orderSource &&
+        other.orderType == orderType &&
+        other.payType == payType &&
+        other.paymentId == paymentId &&
+        other.pickAddressId == pickAddressId &&
+        other.receiverName == receiverName &&
+        other.receiverPhone == receiverPhone &&
+        other.senderName == senderName &&
+        other.senderPhone == senderPhone &&
+        other.lastModifiedBy == lastModifiedBy &&
+        other.createdBy == createdBy;
   }
 
   @override
   int get hashCode {
     return amount.hashCode ^
-      bookingType.hashCode ^
-      codAmount.hashCode ^
-      collectAtPickUp.hashCode ^
-      customerId.hashCode ^
-      deliveryAddressId.hashCode ^
-      deliveryCharge.hashCode ^
-      externalId.hashCode ^
-      itemDescription.hashCode ^
-      itemImageUrl.hashCode ^
-      itemName.hashCode ^
-      offerId.hashCode ^
-      orderSource.hashCode ^
-      orderType.hashCode ^
-      payType.hashCode ^
-      paymentId.hashCode ^
-      pickAddressId.hashCode ^
-      receiverName.hashCode ^
-      receiverPhone.hashCode ^
-      senderName.hashCode ^
-      senderPhone.hashCode ^
-      lastModifiedBy.hashCode ^
-      createdBy.hashCode;
+        bookingType.hashCode ^
+        codAmount.hashCode ^
+        collectAtPickUp.hashCode ^
+        customerId.hashCode ^
+        deliveryAddressId.hashCode ^
+        deliveryCharge.hashCode ^
+        externalId.hashCode ^
+        itemDescription.hashCode ^
+        itemImageUrl.hashCode ^
+        itemName.hashCode ^
+        offerId.hashCode ^
+        orderSource.hashCode ^
+        orderType.hashCode ^
+        payType.hashCode ^
+        paymentId.hashCode ^
+        pickAddressId.hashCode ^
+        receiverName.hashCode ^
+        receiverPhone.hashCode ^
+        senderName.hashCode ^
+        senderPhone.hashCode ^
+        lastModifiedBy.hashCode ^
+        createdBy.hashCode;
   }
 }

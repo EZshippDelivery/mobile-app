@@ -33,8 +33,7 @@ class _SignInState extends State<SignIn> {
                 style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
               ),
             ),
-            TextFields(
-                title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.phone, radius: 4),
+            TextFields(title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.phone, radius: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -44,11 +43,12 @@ class _SignInState extends State<SignIn> {
                     child: const Text("Cancel")),
                 ElevatedButton(
                     onPressed: () async {
-                      if (TextFields.data["Email id"]!.contains(RegExp(r"\s")) || TextFields.data["Email id"]!.contains(RegExp("@"))) {
+                      if (TextFields.data["Email id"]!.contains(RegExp(r"\s")) ||
+                          TextFields.data["Email id"]!.contains(RegExp("@"))) {
                         await resetPassword(context);
                         Navigator.of(context).pop();
                       } else {
-                        Variables.showtoast(context,"Enter valid Email id",Icons.warning_rounded);
+                        Variables.showtoast(context, "Enter valid Email id", Icons.warning_rounded);
                       }
                     },
                     child: const Text("Send")),
@@ -93,8 +93,6 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  
-
   Future<void> resetPassword(context) async {
     await showDialog(
       context: context,
@@ -135,6 +133,7 @@ class _SignInState extends State<SignIn> {
                     onPressed: () async {
                       if (formkey3.currentState!.validate()) {
                         await store();
+                        if (!mounted) return;
                         Navigator.of(context).pop();
                       }
                     },

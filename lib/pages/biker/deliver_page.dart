@@ -14,18 +14,18 @@ class DeliveredPage extends StatefulWidget {
   DeliveredPage({Key? key, required this.reference, this.isdetails = false, this.index}) : super(key: key);
 
   @override
-  _DeliveredPageState createState() => _DeliveredPageState();
+  DeliveredPageState createState() => DeliveredPageState();
 }
 
-class _DeliveredPageState extends State<DeliveredPage> {
+class DeliveredPageState extends State<DeliveredPage> {
   SignatureController signatureController = SignatureController(penColor: Palette.deepgrey);
   @override
   Widget build(BuildContext context) {
     List paymentItems = [
       ["Collect Cash At", widget.reference.collectAt],
       ["Payment Type", widget.reference.paymentType],
-      ["Delivery Charges", "₹ " + widget.reference.codCharge.toString()],
-      ["Total Amount", "₹ " + widget.reference.totalCharge.toString()]
+      ["Delivery Charges", "₹ ${widget.reference.codCharge}"],
+      ["Total Amount", "₹ ${widget.reference.totalCharge}"]
     ];
     return Scaffold(
       appBar: Variables.app(),
@@ -201,72 +201,8 @@ class _DeliveredPageState extends State<DeliveredPage> {
                   Text("Signature", style: Variables.font(fontSize: 15)),
                   TextButton(
                       onPressed: () async {
-                        String value = await showDialog(
-                                context: context,
-                                builder: (context) => Center(
-                                      child: SizedBox(
-                                        height: MediaQuery.of(context).size.height * 0.45,
-                                        width: MediaQuery.of(context).size.width * 0.95,
-                                        child: Material(
-                                          color: Colors.grey[200],
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                      child: Padding(
-                                                    padding: const EdgeInsets.only(left: 13.0),
-                                                    child: Text("Signature", style: Variables.font(fontSize: 20)),
-                                                  )),
-                                                  IconButton(
-                                                    icon: const Icon(Icons.restart_alt_rounded),
-                                                    onPressed: () => signatureController.clear(),
-                                                  )
-                                                ],
-                                              ),
-                                              Signature(
-                                                controller: signatureController,
-                                                height: MediaQuery.of(context).size.height * 0.3,
-                                                backgroundColor: Colors.white,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(5.0),
-                                                    child: ElevatedButton(
-                                                        style: ButtonStyle(
-                                                            backgroundColor:
-                                                                MaterialStateProperty.all<Color>(Palette.deepgrey),
-                                                            overlayColor:
-                                                                MaterialStateProperty.all<Color>(Palette.kOrange)),
-                                                        onPressed: () async {
-                                                          if (signatureController.points.isNotEmpty) {
-                                                            String value = SignatureController(
-                                                                    exportBackgroundColor: Colors.white,
-                                                                    penStrokeWidth: 3,
-                                                                    penColor: Colors.black,
-                                                                    points: signatureController.points)
-                                                                .toString();
-                                                            Variables.pop(context, value: value);
-                                                          } else {
-                                                            Variables.showtoast(
-                                                                context, "Write a Signature", Icons.warning_rounded);
-                                                          }
-                                                        },
-                                                        child: const Icon(
-                                                          Icons.check_rounded,
-                                                        )),
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    )) ??
-                            "";
-
+                        String value = await writeSignatureDialog(context) ?? "";
+                        // Variables.updateOrderMap.signUrl = value;
                         DeliveredPage.addsignature = value.isNotEmpty;
                       },
                       child: Text("Add Signature", style: Variables.font(color: null, fontSize: 16)))
@@ -282,7 +218,8 @@ class _DeliveredPageState extends State<DeliveredPage> {
                       if (DeliveredPage.addsignature == false) {
                         Variables.showtoast(context, "Add a Signature", Icons.warning_rounded);
                       } else {
-                        Variables.updateOrder(context, widget.reference.id, 12);
+                        Variables.updateOrderMap.deliveredAt = widget.reference.dropAddress;
+                        Variables.updateOrder(mounted, context, widget.reference.id, 12);
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       }
                     },
@@ -296,6 +233,70 @@ class _DeliveredPageState extends State<DeliveredPage> {
         ),
       ),
     );
+  }
+
+  Future<String?> writeSignatureDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) => Center(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.45,
+                width: MediaQuery.of(context).size.width * 0.95,
+                child: Material(
+                  color: Colors.grey[200],
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.only(left: 13.0),
+                            child: Text("Signature", style: Variables.font(fontSize: 20)),
+                          )),
+                          IconButton(
+                            icon: const Icon(Icons.restart_alt_rounded),
+                            onPressed: () => signatureController.clear(),
+                          )
+                        ],
+                      ),
+                      Signature(
+                        controller: signatureController,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        backgroundColor: Colors.white,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: ElevatedButton(
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all<Color>(Palette.deepgrey),
+                                    overlayColor: MaterialStateProperty.all<Color>(Palette.kOrange)),
+                                onPressed: () async {
+                                  if (signatureController.points.isNotEmpty) {
+                                    String value = SignatureController(
+                                            exportBackgroundColor: Colors.white,
+                                            penStrokeWidth: 3,
+                                            penColor: Colors.black,
+                                            points: signatureController.points)
+                                        .toString();
+                                    Variables.pop(context, value: value);
+                                  } else {
+                                    Variables.showtoast(context, "Write a Signature", Icons.warning_rounded);
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                )),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ));
   }
 
   @override

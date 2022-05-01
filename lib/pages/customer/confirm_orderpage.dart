@@ -20,10 +20,10 @@ class ConfirmOrderPage extends StatefulWidget {
   const ConfirmOrderPage({Key? key}) : super(key: key);
 
   @override
-  _ConfirmOrderPageState createState() => _ConfirmOrderPageState();
+  ConfirmOrderPageState createState() => ConfirmOrderPageState();
 }
 
-class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
+class ConfirmOrderPageState extends State<ConfirmOrderPage> {
   late CustomerController customerController;
   late MapsProvider mapsProvider;
 
@@ -63,7 +63,11 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                     head: "Landmark: ", value: customerController.addAddress1.landmark, vpadding: 4),
               const SizedBox(height: 5),
               Variables.text(context,
-                  head: "Item: ", value: co.itemDescription, vpadding: 3, linkvalue: co.itemImageUrl, islink: true),
+                  head: "Item: ",
+                  value: co.itemDescription,
+                  vpadding: 3,
+                  linkvalue: co.itemImageUrl.toString(),
+                  islink: co.itemImageUrl.isNotEmpty),
               const SizedBox(height: 5),
               Variables.text(context, head: "", value: "Payment Details", valueColor: Palette.deepgrey, vpadding: 6),
               const SizedBox(height: 5),
@@ -120,12 +124,17 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
             if (!ConfirmOrderPage.check) {
               Variables.showtoast(context, "Accept the Package & Delivery Policies", Icons.warning_rounded);
             } else {
-              await customerController.creatOrder(context);
+              await customerController.creatOrder(mounted, context);
 
               ConfirmAddressPage.selectedradio = [null, null];
               ConfirmAddressPage.toggle = [false, false];
               ConfirmAddressPage.temp = [2, 2];
-              if (customerController.timer != null) customerController.settimer(context);
+              ConfirmAddressPage.addresstypesC = [
+                [false, false, true],
+                [false, false, true]
+              ];
+              if (!mounted) return;
+              if (customerController.timer != null) customerController.settimer(mounted, context);
               SetLocationPage.pickup.clear();
               SetLocationPage.delivery.clear();
               mapsProvider.pickmark = null;
@@ -133,7 +142,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
               mapsProvider.info.clear();
               ConfirmOrderPage.check = false;
               BookOrderPage.selectedradio = [1, 1, 2];
-              customerController.getCustomerInProgressOrderCount(context);
+              customerController.getCustomerInProgressOrderCount(mounted, context);
               Navigator.of(context)
                   .pushNamedAndRemoveUntil(CustomerHomePage.routeName, (Route<dynamic> route) => false);
             }
@@ -144,10 +153,10 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   }
 
   _launchURL(String link) async {
-    if (await canLaunch(link)) {
-      await launch(link);
+    if (await canLaunchUrl(Uri.parse(link))) {
+      await launchUrl(Uri.parse(link));
     } else {
-      throw 'Could not launch $link';
+      throw 'Could not launchUrl $link';
     }
   }
 }

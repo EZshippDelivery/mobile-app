@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ezshipp/APIs/customer_orders.dart';
-import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/pages/customer/trakingpage.dart';
@@ -20,10 +19,10 @@ class OrderDetailsPage extends StatefulWidget {
   OrderDetailsPage(this.order, {Key? key}) : super(key: key);
 
   @override
-  _OrderDetailsPageState createState() => _OrderDetailsPageState();
+  OrderDetailsPageState createState() => OrderDetailsPageState();
 }
 
-class _OrderDetailsPageState extends State<OrderDetailsPage> {
+class OrderDetailsPageState extends State<OrderDetailsPage> {
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -103,9 +102,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   }
                   Variables.updateOrderMap.driverId = widget.order.bikerId;
                   Variables.updateOrderMap.newDriverId = widget.order.bikerId;
-                  await Variables.updateOrder(_scaffoldKey.currentContext!, widget.order.id, 13, true);
+                  await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
+                  if (!mounted) return;
                   CustomerController customerController = Provider.of<CustomerController>(context, listen: false);
-                  await customerController.getCustomerOrderHistory(context);
+                  await customerController.getCustomerOrderHistory(mounted, context);
+                  if (!mounted) return;
                   Variables.pop(context);
                 },
                 child: Text("Cancel", style: Variables.font(color: null, fontSize: 16))),
@@ -198,7 +199,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 13 && widget.order.statusId != 10
           ? FloatingActionButton.extended(
               onPressed: () {
-                mapsProvider.livebikerTracking(context, widget.order.bikerId, widget.order.id);
+                mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
 
                 Variables.push(context, TrackingPage.routeName);
               },
@@ -257,7 +258,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 onPressed: () async {
                   BikerController bikerController = Provider.of<BikerController>(context, listen: false);
                   await bikerController.bikerRating(
-                      context, widget.order.bikerId, widget.order.id, TrackingPage.rating.ceil());
+                      mounted, context, widget.order.bikerId, widget.order.id, TrackingPage.rating.ceil());
+                  if (!mounted) return;
                   if (TrackingPage.rating > 0) {
                     Variables.pop(context);
                   } else {

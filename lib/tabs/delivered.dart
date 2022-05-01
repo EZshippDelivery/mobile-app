@@ -22,13 +22,14 @@ class _DeliveredState extends State<Delivered> {
   void initState() {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
-    orderController.getAllCompletedOrders(context, orderController.start.toString(), orderController.end.toString());
+    orderController.getAllCompletedOrders(
+        mounted, context, orderController.start.toString(), orderController.end.toString());
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!orderController.isLastPage2) {
           orderController.pagenumber1 += 1;
           orderController.getAllCompletedOrders(
-              context, orderController.start.toString(), orderController.end.toString());
+              mounted, context, orderController.start.toString(), orderController.end.toString());
         }
       }
     });
@@ -49,7 +50,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.start,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now().subtract(const Duration(days: 1)))
-                      .then((value) => reference.setDate(context, value, false)),
+                      .then((value) => reference.setDate(mounted, context, value, false)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.start),
                   )),
@@ -60,7 +61,7 @@ class _DeliveredState extends State<Delivered> {
                           initialDate: reference.end,
                           firstDate: DateTime(2017),
                           lastDate: DateTime.now())
-                      .then((value) => reference.setDate(context, value, false)),
+                      .then((value) => reference.setDate(mounted, context, value, false)),
                   child: Text(
                     DateFormat("dd/MM/yyyy").format(reference.end),
                   ))

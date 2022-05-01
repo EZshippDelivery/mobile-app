@@ -33,10 +33,10 @@ class TextFields extends StatefulWidget {
       : super(key: key);
 
   @override
-  _TextFieldsState createState() => _TextFieldsState();
+  TextFieldsState createState() => TextFieldsState();
 }
 
-class _TextFieldsState extends State<TextFields> {
+class TextFieldsState extends State<TextFields> {
   bool hidepass2 = true;
 
   bool verifyPhone = false;
@@ -70,7 +70,7 @@ class _TextFieldsState extends State<TextFields> {
                 TextFields.data["Last Name"]!.isNotEmpty &&
                 widget.onchange != null) {
               widget.onchange!
-                  .setName((TextFields.data["First Name"]! + " " + TextFields.data["Last Name"]!).toUpperCase());
+                  .setName(("${TextFields.data["First Name"]!} ${TextFields.data["Last Name"]!}").toUpperCase());
             } else if (TextFields.data["First Name"]!.isNotEmpty && widget.onchange != null) {
               widget.onchange!.setName(TextFields.data["First Name"]!.toUpperCase());
             } else if (widget.onchange != null) {

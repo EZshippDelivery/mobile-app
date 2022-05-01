@@ -11,10 +11,11 @@ import '../utils/variables.dart';
 class OrderController extends BikerController {
   bool loading4 = true;
 
-  updateOrder(BuildContext context, String body, int orderid) async {
+  updateOrder(bool mounted, BuildContext context, String body, int orderid) async {
     Map<String, dynamic>? responseJson;
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
+      if (!mounted) return;
       responseJson = Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -24,10 +25,11 @@ class OrderController extends BikerController {
     if (responseJson != null) return responseJson;
   }
 
-  findOrderbyBarcode(BuildContext context, String value, int statusId) async {
+  findOrderbyBarcode(bool mounted, BuildContext context, String value, int statusId) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/order/find/barcode/$value"));
       if (response.statusCode == 500) {
+        if (!mounted) return;
         Variables.showtoast(context, "Invalid Barcode", Icons.cancel_outlined);
       } else if (response.statusCode == 200) {
         var body = NewOrderList.fromJson(response.body);
@@ -35,7 +37,9 @@ class OrderController extends BikerController {
         Variables.updateOrderMap.newDriverId = Variables.driverId;
         Variables.updateOrderMap.barcode = value;
         Variables.getLiveLocation(statusId: statusId);
+        if (!mounted) return;
         Variables.updateOrderMap.distance = (await getDistance(
+            mounted,
             context,
             jsonEncode({
               "latitude": Variables.updateOrderMap.latitude,
@@ -44,10 +48,23 @@ class OrderController extends BikerController {
             })))!;
         Variables.updateOrderMap.zoneId = Variables.centers.indexWhere((element) => element.indexOf(body.zonedAt));
         Variables.updateOrderMap.collectAt = body.collectAt;
-        updateOrder(context, Variables.updateOrderMap.toJson(), body.id);
+        if (!mounted) return;
+        updateOrder(mounted, context, Variables.updateOrderMap.toJson(), body.id);
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    }
+    notifyListeners();
+  }
+
+  update(var data) {
+    var obj = NewOrderList.fromMap(data);
+    if (acceptedList.isNotEmpty) {
+      for (var i in acceptedList) {
+        if (i.orderSeqId == obj.orderSeqId) {
+          acceptedList[acceptedList.indexOf(i)] = obj;
+        }
+      }
     }
     notifyListeners();
   }

@@ -12,10 +12,10 @@ class NewOrders extends StatefulWidget {
   const NewOrders({Key? key}) : super(key: key);
 
   @override
-  _NewOrdersState createState() => _NewOrdersState();
+  NewOrdersState createState() => NewOrdersState();
 }
 
-class _NewOrdersState extends State<NewOrders> {
+class NewOrdersState extends State<NewOrders> {
   int length = 1;
   late OrderController orderController;
 
@@ -27,7 +27,7 @@ class _NewOrdersState extends State<NewOrders> {
   }
 
   constructor() async {
-    await orderController.getAllOrdersByBikerId(context);
+    await orderController.getAllOrdersByBikerId(mounted, context);
   }
 
   @override
@@ -140,8 +140,8 @@ class _NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      await Variables.updateOrder(
-                          context, reference.newOrderList[index].id, direction == DismissDirection.startToEnd ? 3 : 14);
+                      await Variables.updateOrder(mounted, context, reference.newOrderList[index].id,
+                          direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }
@@ -192,7 +192,7 @@ class _NewOrdersState extends State<NewOrders> {
                                   ),
                                   FittedBox(
                                     child: Text(
-                                      reference.newOrderList[index].pickDistance.toString() + " km",
+                                      "${reference.newOrderList[index].pickDistance} km",
                                       style: Variables.font(color: Palette.kOrange),
                                     ),
                                   )
@@ -219,13 +219,13 @@ class _NewOrdersState extends State<NewOrders> {
                                   children: [
                                     Variables.text(context,
                                         head: "Delivery distance: ",
-                                        value: reference.newOrderList[index].pickToDropDistance.toString() + " km"),
+                                        value: "${reference.newOrderList[index].pickToDropDistance} km"),
                                     IconButton(
                                         onPressed: () async {
                                           String urlString =
                                               "https://www.google.com/maps/dir/?api=1&origin=${reference.newOrderList[index].pickLatitude},${reference.newOrderList[index].pickLongitude} &destination=${reference.newOrderList[index].dropLatitude},${reference.newOrderList[index].dropLongitude}";
-                                          await canLaunch(urlString)
-                                              ? launch(urlString)
+                                          await canLaunchUrl(Uri.parse(urlString))
+                                              ? launchUrl(Uri.parse(urlString))
                                               : Variables.showtoast(
                                                   context, "Can't open Google Maps App", Icons.cancel_outlined);
                                         },
@@ -236,7 +236,7 @@ class _NewOrdersState extends State<NewOrders> {
                                   alignment: Alignment.topLeft,
                                   child: Variables.text(context,
                                       head: "Delivery duration: ",
-                                      value: reference.newOrderList[index].pickToDropDuration.toString() + " min"),
+                                      value: "${reference.newOrderList[index].pickToDropDuration} min"),
                                 ),
                                 ListTile(
                                   contentPadding: const EdgeInsets.only(

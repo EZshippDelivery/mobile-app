@@ -26,7 +26,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
         drawer: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {
-          return reference.customerProfile != null ? const CustomerDrawer() : Container();
+          return const CustomerDrawer();
         }),
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white),
@@ -55,6 +55,7 @@ class _HomeTabState extends State<HomeTab> {
                                   onPressed: () async {
                                     AuthController authController = Provider.of<AuthController>(context, listen: false);
                                     await authController.storeLoginStatus(false);
+                                    if (!mounted) return;
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
                                   },

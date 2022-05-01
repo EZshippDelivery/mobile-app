@@ -14,10 +14,10 @@ class CustomerDrawer extends StatefulWidget {
   const CustomerDrawer({Key? key}) : super(key: key);
 
   @override
-  _CustomerDrawerState createState() => _CustomerDrawerState();
+  CustomerDrawerState createState() => CustomerDrawerState();
 }
 
-class _CustomerDrawerState extends State<CustomerDrawer> {
+class CustomerDrawerState extends State<CustomerDrawer> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -25,66 +25,64 @@ class _CustomerDrawerState extends State<CustomerDrawer> {
         width: size.width * 0.75,
         color: Colors.grey[100],
         child: Consumer<UpdateProfileProvider>(
-            builder: (context, reference, child) => reference.customerProfile != null
-                ? Drawer(
+            builder: (context, reference, child) => Drawer(
                     child: Column(children: [
-                    Container(
-                        height: size.height * 0.3,
-                        color: Palette.kOrange,
-                        child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(children: [
-                              const SizedBox(width: 10),
-                              InkWell(
-                                onTap: () => Variables.push(context, CustomerProfilePage.routeName),
-                                child: Hero(
-                                  tag: "Customer Profile",
-                                  child: reference.getProfileImage(size: size.width / 3.6, canEdit: true),
-                                ),
+                  Container(
+                      height: size.height * 0.3,
+                      color: Palette.kOrange,
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(children: [
+                            const SizedBox(width: 10),
+                            InkWell(
+                              onTap: () => Variables.push(context, CustomerProfilePage.routeName),
+                              child: Hero(
+                                tag: "Customer Profile",
+                                child: reference.getProfileImage(size: size.width / 3.6, canEdit: true),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                  child: TextButton(
-                                      onPressed: () => Variables.push(context, CustomerProfilePage.routeName),
-                                      child: Text(
-                                        reference.customerProfile!.name,
-                                        style: Variables.font(fontSize: 24, color: Colors.white),
-                                      )))
-                            ]))),
-                    ListTile(
-                      leading: Image.asset("assets/icon/icons8-address-100.png"),
-                      title: Text("Saved Address", style: Variables.font(fontSize: 15)),
-                      onTap: () => Variables.push(context, SavedAddressPage.routeName),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                                child: TextButton(
+                                    onPressed: () => Variables.push(context, CustomerProfilePage.routeName),
+                                    child: Text(
+                                      reference.customerProfile!.name,
+                                      style: Variables.font(fontSize: 24, color: Colors.white),
+                                    )))
+                          ]))),
+                  ListTile(
+                    leading: Image.asset("assets/icon/icons8-address-100.png"),
+                    title: Text("Saved Address", style: Variables.font(fontSize: 15)),
+                    onTap: () => Variables.push(context, SavedAddressPage.routeName),
+                  ),
+                  ListTile(
+                    leading: Image.asset("assets/icon/icons8-about-100.png"),
+                    title: Text("About", style: Variables.font(fontSize: 15)),
+                    onTap: () => Variables.push(context, AboutPage.routeName),
+                  ),
+                  ListTile(
+                    leading: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Image.asset("assets/icon/icons8-invite-48.png"),
                     ),
-                    ListTile(
-                      leading: Image.asset("assets/icon/icons8-about-100.png"),
-                      title: Text("About", style: Variables.font(fontSize: 15)),
-                      onTap: () => Variables.push(context, AboutPage.routeName),
-                    ),
-                    ListTile(
+                    title: Text("Invite", style: Variables.font(fontSize: 15)),
+                    onTap: () => Variables.push(context, CustomerInvitePage.routeName),
+                  ),
+                  ListTile(
                       leading: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Image.asset("assets/icon/icons8-invite-48.png"),
-                      ),
-                      title: Text("Invite", style: Variables.font(fontSize: 15)),
-                      onTap: () => Variables.push(context, CustomerInvitePage.routeName),
-                    ),
-                    ListTile(
-                        leading: Padding(
-                          padding: const EdgeInsets.all(7.0),
-                          child: Image.asset(
-                            "assets/icon/customer-service.png",
-                            height: 43,
-                          ),
+                        padding: const EdgeInsets.all(7.0),
+                        child: Image.asset(
+                          "assets/icon/customer-service.png",
+                          height: 43,
                         ),
-                        title: Text("Customer Care", style: Variables.font(fontSize: 15)),
-                        onTap: () async {
-                          var url = "tel:04049674477";
-                          await canLaunch(url)
-                              ? launch(url)
-                              : Variables.showtoast(context, "Unable to open Phone App", Icons.cancel_outlined);
-                        }),
-                  ]))
-                : Container()));
+                      ),
+                      title: Text("Customer Care", style: Variables.font(fontSize: 15)),
+                      onTap: () async {
+                        var url = "tel:04049674477";
+                        await canLaunchUrl(Uri.parse(url))
+                            ? launchUrl(Uri.parse(url))
+                            : Variables.showtoast(context, "Unable to open Phone App", Icons.cancel_outlined);
+                      }),
+                ]))));
   }
 }

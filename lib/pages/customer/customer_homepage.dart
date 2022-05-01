@@ -15,10 +15,10 @@ class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({Key? key}) : super(key: key);
 
   @override
-  _CustomerHomePageState createState() => _CustomerHomePageState();
+  CustomerHomePageState createState() => CustomerHomePageState();
 }
 
-class _CustomerHomePageState extends State<CustomerHomePage> with TickerProviderStateMixin {
+class CustomerHomePageState extends State<CustomerHomePage> with TickerProviderStateMixin {
   late TabController tabController;
   late UpdateProfileProvider updateCustomerProfileProvider;
   late CustomerController customerController;
@@ -38,11 +38,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> with TickerProvider
 
   void constructor() async {
     if (Variables.driverId > 0) {
-      await updateCustomerProfileProvider.getCustomer(context);
+      await updateCustomerProfileProvider.getCustomer(mounted, context);
     }
-    await customerController.getFirstTenAddresses(context);
-    customerController.getCustomerInProgressOrderCount(context);
-    orderController.getAcceptedAndinProgressOrders(context);
+    if (!mounted) return;
+    await customerController.getFirstTenAddresses(mounted, context);
+    if (!mounted) return;
+    customerController.getCustomerInProgressOrderCount(mounted, context);
+    orderController.getAcceptedAndinProgressOrders(mounted, context);
   }
 
   @override
@@ -57,7 +59,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> with TickerProvider
       bottomNavigationBar: Consumer<CustomerController>(builder: (context, reference, child) {
         return BottomAppBar(
           child: TabBar(
-            onTap: (value) => reference.getCustomerInProgressOrderCount(context),
+            onTap: (value) => reference.getCustomerInProgressOrderCount(mounted, context),
             controller: tabController,
             tabs: TabBars.tabs2(reference.inProgresOrderCount),
           ),

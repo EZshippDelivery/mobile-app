@@ -20,10 +20,10 @@ class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController controller = TextEditingController();
   late UpdateProfileProvider updateProfileProvider;
   late OrderController orderController;
@@ -47,9 +47,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     subscription = InternetConnectionChecker().onStatusChange.listen((event) async {
       Variables.internetStatus = event;
       if (event == InternetConnectionStatus.connected) {
-        await updateProfileProvider.getProfile(context);
+        await updateProfileProvider.getProfile(mounted, context);
         setonline();
-        await updateProfileProvider.getAllOrdersByBikerId(context);
+        if (!mounted) return;
+        await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
       } else if (event == InternetConnectionStatus.disconnected) {
         Variables.overlayNotification();
       }
@@ -62,7 +63,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final value = await Variables.read(key: "isOnline");
     final value1 = await Variables.read(key: "FirstTime");
     firstTime = value1 != null ? value1 == "true" : false;
-    mapsProvider.offLineMode(context, value != null ? value.toLowerCase() == "true" : true, fromhomepage: true);
+    if (!mounted) return;
+    mapsProvider.offLineMode(mounted, context, value != null ? value.toLowerCase() == "true" : true,
+        fromhomepage: true);
     if (updateProfileProvider.newOrderList.isNotEmpty) await Variables.write(key: "FirstTime", value: "false");
   }
 
@@ -84,7 +87,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           Image.asset("assets/images/bloodbros-swipe-left.gif", scale: 0.2, height: 100),
                           SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                           Flexible(
-                              child: Text("Swipe the ORDER to left to accept",
+                              child: Text("Swipe the ORDER to right to accept",
                                   style: Variables.font(color: Colors.green, fontSize: 17)))
                         ]),
                       )),
@@ -96,7 +99,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           Image.asset("assets/images/bloodbros-swipe-right.gif", scale: 0.2, height: 100),
                           SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                           Flexible(
-                              child: Text("Swipe the ORDER to right to reject",
+                              child: Text("Swipe the ORDER to left to reject",
                                   style: Variables.font(color: Colors.red, fontSize: 17)))
                         ]),
                       ))
@@ -131,7 +134,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     IconButton(
                         onPressed: () async {
                           orderController.findOrderbyBarcode(
-                              context, await Variables.scantext(context, controller, fromhomepage: true), 7);
+                              mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 7);
                         },
                         icon: const Icon(Icons.qr_code_scanner_rounded))
                 ]),

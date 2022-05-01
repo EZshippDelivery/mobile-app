@@ -15,10 +15,10 @@ class EnterKYC extends StatefulWidget {
   const EnterKYC({Key? key}) : super(key: key);
 
   @override
-  _EnterKYCState createState() => _EnterKYCState();
+  EnterKYCState createState() => EnterKYCState();
 }
 
-class _EnterKYCState extends State<EnterKYC> {
+class EnterKYCState extends State<EnterKYC> {
   int currentStep = 0;
   bool? license, vehicle;
 
@@ -146,11 +146,11 @@ class _EnterKYCState extends State<EnterKYC> {
                             scantext(value: TextFields.data["License Number"] ?? "", name: "LFront.png")
                                 .then((value) => license = value);
                           }),
+                      backgroundColor: Palette.kOrange,
                       child: const Icon(
                         Icons.camera_alt_rounded,
                         color: Colors.white,
-                      ),
-                      backgroundColor: Palette.kOrange),
+                      )),
                   const SizedBox(width: 10),
                   if (license != null)
                     if (license == true) const Icon(Icons.check_circle_rounded, color: Colors.green),
@@ -166,11 +166,11 @@ class _EnterKYCState extends State<EnterKYC> {
                     heroTag: "Lback",
                     elevation: 1,
                     onPressed: () => scantext(name: "Lback.png"),
+                    backgroundColor: Palette.kOrange,
                     child: const Icon(
                       Icons.camera_alt_rounded,
                       color: Colors.white,
                     ),
-                    backgroundColor: Palette.kOrange,
                   )
                 ],
               )
@@ -193,11 +193,11 @@ class _EnterKYCState extends State<EnterKYC> {
                             scantext(value: TextFields.data["Vehicle Reg. Number"]!, name: "VFront.png")
                                 .then((value) => vehicle = value);
                           }),
+                      backgroundColor: Palette.kOrange,
                       child: const Icon(
                         Icons.camera_alt_rounded,
                         color: Colors.white,
-                      ),
-                      backgroundColor: Palette.kOrange),
+                      )),
                   if (vehicle != null)
                     if (vehicle == true) const Icon(Icons.check_circle_rounded, color: Colors.green),
                   if (vehicle != null)
@@ -212,11 +212,11 @@ class _EnterKYCState extends State<EnterKYC> {
                     heroTag: "Vback",
                     elevation: 1,
                     onPressed: () => scantext(name: "VBack.png"),
+                    backgroundColor: Palette.kOrange,
                     child: const Icon(
                       Icons.camera_alt_rounded,
                       color: Colors.white,
                     ),
-                    backgroundColor: Palette.kOrange,
                   )
                 ],
               )

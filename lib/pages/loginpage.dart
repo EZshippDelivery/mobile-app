@@ -138,6 +138,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             if (SignIn.formkey1.currentState!.validate()) {
               await readDetails();
               authController.storeLoginStatus(true);
+              if (!mounted) return;
               if (enterKYC && userType.toLowerCase() == "driver") {
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
               } else if (!enterKYC && userType.toLowerCase() == "driver") {
@@ -147,8 +148,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               } else {
                 Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
               }
-            } else {
-              Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
             }
           } else if (tabController.index == 1) {
             if (SignUp.formkey2.currentState!.validate() && SignUp.check) {
@@ -157,10 +156,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               } else {
                 Variables.deviceInfo["userType"] = "DRIVER";
               }
-              await writeDetails();
               Map? response = await authController.registerUser(
-                  context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+                  mounted, context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+              if (response != null) await writeDetails();
               if (authController.userType == "Customer" && response != null) {
+                if (!mounted) return;
                 if (await showdialog(
                     context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
                   animController2.reverse();
@@ -173,7 +173,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             } else if (!SignUp.check) {
               Variables.showtoast(context, "Accept Terms & Conditions", Icons.warning_rounded);
             } else {
-              Variables.showtoast(context, "Something went wrong. Please Try Again", Icons.warning_rounded);
+              Variables.showtoast(context, "Please enter valid details", Icons.warning_rounded);
             }
           }
         } else {
@@ -197,20 +197,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   readDetails() async {
     try {
-      bool username = (await Variables.read(key: "username")) == TextFields.data["Email id"];
-      bool password = (await Variables.read(key: "password")) == TextFields.data["Password"];
-      final kyc = await Variables.read(key: "enterKYC");
-      enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
-
-      if (username && password) {
-        userType = await Variables.read(key: "usertype") ?? "";
-      } else {
-        await authController.authenticateUser(
-            context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
-        if (Variables.driverId == -1 && authController.userType == "") return null;
-        writeDetails();
-        userType = authController.userType;
-      }
+      await authController.authenticateUser(
+          mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
+      if (Variables.driverId == -1 && authController.userType == "") return null;
+      writeDetails();
+      userType = authController.userType;
     } catch (e) {
       Variables.showtoast(context, "Sign In is not successfull", Icons.cancel_outlined);
     }
@@ -225,7 +216,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               contentPadding: const EdgeInsets.all(20),
               children: [
                 Text(
-                  (text ? "C" : "Before you fill the details, c") + "hoose the type of user you like to be",
+                  "${text ? "C" : "Before you fill the details, c"}hoose the type of user you like to be",
                   style: TextStyle(fontSize: 17, color: Colors.grey.shade700),
                 ),
                 const SizedBox(height: 10),
@@ -304,9 +295,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
                     onPressed: () async {
-                      var validate =
-                          await customerController.verifyOTP(context, {"otp": code, "phoneNumber": phonenumber});
+                      var validate = await customerController
+                          .verifyOTP(mounted, context, {"otp": code, "phoneNumber": phonenumber});
                       if (validate != null) {
+                        if (!mounted) return;
                         if (validate["otpVerified"]) {
                           Variables.showtoast(context, "Your Phone number is verified", Icons.check);
                           Variables.pop(context, value: true);
@@ -323,7 +315,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   void resendOTP(id, email, phonenumber) {
     customerController.challengeOTP(
-        context, jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));
+        mounted, context, jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));
     isResend.value = true;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (count.value == 0) {

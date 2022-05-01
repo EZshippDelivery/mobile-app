@@ -12,10 +12,10 @@ class OldOrders extends StatefulWidget {
   const OldOrders({Key? key}) : super(key: key);
 
   @override
-  _OldOrdersState createState() => _OldOrdersState();
+  OldOrdersState createState() => OldOrdersState();
 }
 
-class _OldOrdersState extends State<OldOrders> {
+class OldOrdersState extends State<OldOrders> {
   ScrollController scrollController = ScrollController();
   late CustomerController customerController;
   late UpdateScreenProvider updateScreenProvider;
@@ -25,12 +25,12 @@ class _OldOrdersState extends State<OldOrders> {
     super.initState();
     customerController = Provider.of<CustomerController>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
-    customerController.getCustomerOrderHistory(context);
+    customerController.getCustomerOrderHistory(mounted, context);
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!customerController.isLastPage) {
           customerController.pagenumber += 1;
-          customerController.getAcceptedAndinProgressOrders(context);
+          customerController.getAcceptedAndinProgressOrders(mounted, context);
         }
       }
     });
@@ -47,14 +47,14 @@ class _OldOrdersState extends State<OldOrders> {
                 itemBuilder: (BuildContext context) => [
                       PopupMenuItem(
                           onTap: () {
-                            customerController.getCustomerOrderHistory(context);
+                            customerController.getCustomerOrderHistory(mounted, context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("Recent", style: Variables.font(fontSize: 15))),
                       PopupMenuItem(
                           onTap: () {
                             customerController.pagenumber1 = 1;
-                            customerController.getAcceptedAndinProgressOrders(context);
+                            customerController.getAcceptedAndinProgressOrders(mounted, context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("All", style: Variables.font(fontSize: 15)))
@@ -68,7 +68,7 @@ class _OldOrdersState extends State<OldOrders> {
               return RefreshIndicator(
                 onRefresh: () {
                   customerController.pagenumber1 = 1;
-                  return customerController.getAcceptedAndinProgressOrders(context);
+                  return customerController.getAcceptedAndinProgressOrders(mounted, context);
                 },
                 child: ListView.builder(
                   controller: scrollController,

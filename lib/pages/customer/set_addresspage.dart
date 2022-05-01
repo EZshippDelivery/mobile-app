@@ -17,10 +17,10 @@ class SetAddressPage extends StatefulWidget {
   const SetAddressPage({Key? key}) : super(key: key);
 
   @override
-  _SetAddressPageState createState() => _SetAddressPageState();
+  SetAddressPageState createState() => SetAddressPageState();
 }
 
-class _SetAddressPageState extends State<SetAddressPage> {
+class SetAddressPageState extends State<SetAddressPage> {
   late MapsProvider mapsProvider;
 
   late GoogleMapController mapController;
@@ -33,7 +33,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     mapsProvider.getCurrentlocations();
-    mapsProvider.getTopAddresses(context, Variables.driverId);
+    mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
     customerController = Provider.of<CustomerController>(context, listen: false);
   }
 
@@ -67,8 +67,8 @@ class _SetAddressPageState extends State<SetAddressPage> {
                       ? size.height * 0.1
                       : (size.height - (size.height * 0.2)) / 2.0,
                   left: (size.width - 30) / 2.0,
-                  child: Image.asset("assets/icon/pickmarker.png"),
                   height: 45,
+                  child: Image.asset("assets/icon/pickmarker.png"),
                 ),
               Column(
                 children: [
@@ -114,7 +114,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                                             SetAddressPage.pickup.text = reference.placesList[index].description;
                                             AddAddressPage.controller.text = reference.placesList[index].description;
                                             reference
-                                                .getPlaceDetails(context, reference.placesList[index].place_id)
+                                                .getPlaceDetails(mounted, context, reference.placesList[index].place_id)
                                                 .then((value) {
                                               var location = reference.placesDetails.result.geometry.location;
                                               screenCoordinates = LatLng(location.lat, location.lng);
@@ -228,7 +228,7 @@ class _SetAddressPageState extends State<SetAddressPage> {
                   .where((element) => element.address1.toLowerCase().startsWith(value.toLowerCase()))
                   .toList();
               Variables.locations[labelText] = value;
-              await mapsProvider.getAutoComplete(context, value);
+              await mapsProvider.getAutoComplete(mounted, context, value);
               mapsProvider.placesList.insertAll(0, recentAddress);
             },
             decoration: InputDecoration(

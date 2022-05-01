@@ -10,10 +10,10 @@ class Accepted extends StatefulWidget {
   const Accepted({Key? key}) : super(key: key);
 
   @override
-  _AcceptedState createState() => _AcceptedState();
+  AcceptedState createState() => AcceptedState();
 }
 
-class _AcceptedState extends State<Accepted> {
+class AcceptedState extends State<Accepted> {
   ScrollController scrollController = ScrollController();
   late OrderController orderController;
 
@@ -26,7 +26,7 @@ class _AcceptedState extends State<Accepted> {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!orderController.isLastPage1) {
           orderController.pagenumber += 1;
-          orderController.getAcceptedAndinProgressOrders(context);
+          orderController.getAcceptedAndinProgressOrders(mounted, context);
         }
       }
     });
@@ -66,7 +66,7 @@ class _AcceptedState extends State<Accepted> {
               child: RefreshIndicator(
                   onRefresh: () {
                     orderController.pagenumber = 1;
-                    return orderController.getAcceptedAndinProgressOrders(context);
+                    return orderController.getAcceptedAndinProgressOrders(mounted, context);
                   },
                   child: ListView.builder(
                       controller: scrollController,
@@ -79,7 +79,8 @@ class _AcceptedState extends State<Accepted> {
                                   tileColor: Colors.white,
                                   onTap: () {
                                     Variables.index1 = index;
-                                    Variables.push(context, "/order" + Order.routeName);
+                                    if (!mounted) return;
+                                    Variables.push(context, "/order${Order.routeName}");
                                   },
                                   title: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

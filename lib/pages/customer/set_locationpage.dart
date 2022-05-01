@@ -20,10 +20,10 @@ class SetLocationPage extends StatefulWidget {
   const SetLocationPage({Key? key}) : super(key: key);
 
   @override
-  _SetLocationPageState createState() => _SetLocationPageState();
+  SetLocationPageState createState() => SetLocationPageState();
 }
 
-class _SetLocationPageState extends State<SetLocationPage> {
+class SetLocationPageState extends State<SetLocationPage> {
   late MapsProvider mapsProvider;
 
   late GoogleMapController mapController;
@@ -38,7 +38,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     mapsProvider.getCurrentlocations();
-    mapsProvider.getTopAddresses(context, Variables.driverId);
+    mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
     customerController = Provider.of<CustomerController>(context, listen: false);
   }
 
@@ -99,8 +99,8 @@ class _SetLocationPageState extends State<SetLocationPage> {
                         ? size.height * 0.1
                         : (size.height - (size.height * 0.2)) / 2.0,
                     left: (size.width - 30) / 2.0,
-                    child: Image.asset("assets/icon/pickmarker.png"),
                     height: 45,
+                    child: Image.asset("assets/icon/pickmarker.png"),
                   ),
                 //Delivery location pin on screen when slider equals to 1 and delivery textfield is tapped
                 if (snapshot.onMOve && SetLocationPage.slider == 1)
@@ -109,8 +109,8 @@ class _SetLocationPageState extends State<SetLocationPage> {
                         ? size.height * 0.1
                         : (size.height - (size.height * 0.2)) / 2.0,
                     left: (size.width - 30) / 2.0,
-                    child: Image.asset("assets/icon/dropmarker.png"),
                     height: 45,
+                    child: Image.asset("assets/icon/dropmarker.png"),
                   )
               ]),
 
@@ -171,7 +171,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                         ? recentAddress[index].addressType
                                         : "OTHER";
                                     return InkWell(
-                                        onTap: () {
+                                        onTap: () async {
                                           String state = "", city = "", pincode = "";
 
                                           if (recentAddress.isNotEmpty && index < recentAddress.length) {
@@ -194,24 +194,21 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                           } else {
                                             if (SetLocationPage.slider == 0) {
                                               SetLocationPage.pickup.text = reference.placesList[index].description;
-                                              reference
-                                                  .getPlaceDetails(context, reference.placesList[index].place_id)
-                                                  .then((value) {
-                                                var location = reference.placesDetails.result.geometry.location;
-                                                screenCoordinates = LatLng(location.lat, location.lng);
-                                                mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                    CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                              });
+                                              await reference.getPlaceDetails(
+                                                  mounted, context, reference.placesList[index].place_id);
+
+                                              var location = reference.placesDetails.result.geometry.location;
+                                              screenCoordinates = LatLng(location.lat, location.lng);
+                                              mapController.animateCamera(CameraUpdate.newCameraPosition(
+                                                  CameraPosition(target: screenCoordinates!, zoom: 17)));
                                             } else {
                                               SetLocationPage.delivery.text = reference.placesList[index].description;
-                                              reference
-                                                  .getPlaceDetails(context, reference.placesList[index].place_id)
-                                                  .then((value) {
-                                                var location = reference.placesDetails.result.geometry.location;
-                                                screenCoordinates = LatLng(location.lat, location.lng);
-                                                mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                    CameraPosition(target: screenCoordinates!, zoom: 17)));
-                                              });
+                                              await reference.getPlaceDetails(
+                                                  mounted, context, reference.placesList[index].place_id);
+                                              var location = reference.placesDetails.result.geometry.location;
+                                              screenCoordinates = LatLng(location.lat, location.lng);
+                                              mapController.animateCamera(CameraUpdate.newCameraPosition(
+                                                  CameraPosition(target: screenCoordinates!, zoom: 17)));
                                             }
                                             state = reference.placesDetails.result.addressComponents
                                                 .where(
@@ -244,13 +241,16 @@ class _SetLocationPageState extends State<SetLocationPage> {
                                             'state': state,
                                             'type': "OTHER",
                                           };
+                                          if (!mounted) return;
                                           if (SetLocationPage.slider == 0) {
-                                            reference.setMarkers(context, mapController, pickup: screenCoordinates);
+                                            reference.setMarkers(mounted, context, mapController,
+                                                pickup: screenCoordinates);
                                             customerController!.setAddress(address, isdelivery: false);
                                             reference.clear(value: false);
                                           } else {
                                             customerController!.setAddress(address, isdelivery: true);
-                                            reference.setMarkers(context, mapController, delivery: screenCoordinates);
+                                            reference.setMarkers(mounted, context, mapController,
+                                                delivery: screenCoordinates);
                                             reference.clear(value: false);
                                           }
                                           reference.clear(value: true);
@@ -338,12 +338,12 @@ class _SetLocationPageState extends State<SetLocationPage> {
                       'type': "OTHER",
                     };
                     if (SetLocationPage.slider == 0) {
-                      reference.setMarkers(context, mapController, pickup: screenCoordinates);
+                      reference.setMarkers(mounted, context, mapController, pickup: screenCoordinates);
                       customerController!.setAddress(address, isdelivery: false);
                       reference.clear(value: false);
                     } else {
                       customerController!.setAddress(address, isdelivery: true);
-                      reference.setMarkers(context, mapController, delivery: screenCoordinates);
+                      reference.setMarkers(mounted, context, mapController, delivery: screenCoordinates);
                       reference.clear(value: false);
                     }
                   },
@@ -384,7 +384,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
                   .where((element) => element.address1.toLowerCase().startsWith(value.toLowerCase()))
                   .toList();
               Variables.locations[labelText] = value;
-              if (mapsProvider.focus[sliderValue.toInt()]) await mapsProvider.getAutoComplete(context, value);
+              if (mapsProvider.focus[sliderValue.toInt()]) await mapsProvider.getAutoComplete(mounted, context, value);
               mapsProvider.placesList.insertAll(0, recentAddress);
             },
             decoration: InputDecoration(

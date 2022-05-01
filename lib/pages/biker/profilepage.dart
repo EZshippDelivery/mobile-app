@@ -11,10 +11,10 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  ProfilePageState createState() => ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -61,7 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Text(reference.riderProfile!.email, style: Variables.font(color: Colors.grey)),
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
-                                      child: Text("+91 " + reference.riderProfile!.phone.toString(),
+                                      child: Text("+91 ${reference.riderProfile!.phone}",
                                           style: Variables.font(color: Colors.grey)),
                                     ),
                                     const SizedBox(height: 10),
@@ -79,12 +79,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         "Last Bill",
                         reference.riderProfile!.lastOrderAmount == 0
                             ? "0"
-                            : "₹ " + reference.riderProfile!.lastOrderAmount.toString()),
+                            : "₹ ${reference.riderProfile!.lastOrderAmount}"),
                     profileOrders(
                         "Today Earnings",
                         reference.riderProfile!.todayEarnings == 0
                             ? "0"
-                            : "₹ " + reference.riderProfile!.todayEarnings.toString()),
+                            : "₹ ${reference.riderProfile!.todayEarnings}"),
                   ]))),
           const SizedBox(height: 15),
           // Variables.text1(

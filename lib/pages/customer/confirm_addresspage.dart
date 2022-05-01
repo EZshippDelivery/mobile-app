@@ -20,15 +20,15 @@ class ConfirmAddressPage extends StatefulWidget {
   const ConfirmAddressPage({Key? key}) : super(key: key);
 
   @override
-  _ConfirmAddressPageState createState() => _ConfirmAddressPageState();
+  ConfirmAddressPageState createState() => ConfirmAddressPageState();
 }
 
-class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
+class ConfirmAddressPageState extends State<ConfirmAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
   late CustomerController customerController;
 
-  List<String> addresstypes = ["Home", "Office", "Others"];
+  List<String> addresstypes = ["Home", "Office", "Other"];
 
   List<GlobalKey<FormState>> formkey = [GlobalKey<FormState>(), GlobalKey<FormState>()];
 
@@ -54,8 +54,10 @@ class _ConfirmAddressPageState extends State<ConfirmAddressPage> {
                   bool form = formkey[1].currentState!.validate();
                   bool form1 = formkey[0].currentState!.validate();
                   if (form && form1) {
-                    await customerController.saveAllAddresses(context, customerController.addAddress, 0);
-                    await customerController.saveAllAddresses(context, customerController.addAddress1, 1);
+                    await customerController.saveAllAddresses(mounted, context, customerController.addAddress, 0);
+                    if (!mounted) return;
+                    await customerController.saveAllAddresses(mounted, context, customerController.addAddress1, 1);
+                    if (!mounted) return;
                     Variables.push(context, BookOrderPage.routeName);
                   }
                 },

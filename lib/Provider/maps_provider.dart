@@ -78,7 +78,7 @@ class MapsProvider extends BikerController {
     }
   }
 
-  dynamic returnResponse(BuildContext context, dio.Response response, int details) {
+  dynamic returnResponse(bool mounted, BuildContext context, dio.Response response, int details) {
     switch (response.statusCode) {
       case 200:
         if (details == 0) {
@@ -107,7 +107,7 @@ class MapsProvider extends BikerController {
     }
   }
 
-  Future<void> directions(BuildContext context, GoogleMapController? controller, NewOrderList? reference,
+  Future<void> directions(bool mounted, BuildContext context, GoogleMapController? controller, NewOrderList? reference,
       {List<LatLng>? places}) async {
     try {
       if (reference != null) {
@@ -116,6 +116,7 @@ class MapsProvider extends BikerController {
           "destination": "${reference.dropLatitude},${reference.dropLongitude}",
           "key": Variables.key
         });
+        if (!mounted) return;
         _returnResponse(context, reference, controller, response);
       } else {
         if (places != null) {
@@ -125,6 +126,7 @@ class MapsProvider extends BikerController {
             "destination": "${places[1].latitude},${places[1].longitude}",
             "key": Variables.key
           });
+          if (!mounted) return;
           _returnResponse(context, null, controller, response);
         }
       }
@@ -143,7 +145,7 @@ class MapsProvider extends BikerController {
         await BitmapDescriptor.fromAssetImage(const ImageConfiguration(size: Size(10, 10)), "assets/icon/ic_rider.png");
   }
 
-  getAutoComplete(BuildContext context, String value) async {
+  getAutoComplete(bool mounted, BuildContext context, String value) async {
     try {
       if (value.isNotEmpty) {
         final response =
@@ -156,7 +158,8 @@ class MapsProvider extends BikerController {
           "key": Variables.key,
           "components": "country:in"
         });
-        returnResponse(context, response, 0);
+        if (!mounted) return;
+        returnResponse(mounted, context, response, 0);
       } else {
         placesList.clear();
       }
@@ -166,7 +169,7 @@ class MapsProvider extends BikerController {
     notifyListeners();
   }
 
-  Future<void> getPlaceDetails(BuildContext context, String value) async {
+  Future<void> getPlaceDetails(bool mounted, BuildContext context, String value) async {
     try {
       if (value.isNotEmpty) {
         final response =
@@ -174,7 +177,8 @@ class MapsProvider extends BikerController {
           "place_id": value,
           "key": Variables.key,
         });
-        returnResponse(context, response, 1);
+        if (!mounted) return;
+        returnResponse(mounted, context, response, 1);
       } else {
         placesList.clear();
       }
@@ -195,7 +199,7 @@ class MapsProvider extends BikerController {
     notifyListeners();
   }
 
-  setMarkers(BuildContext context, GoogleMapController controller, {pickup, delivery}) {
+  setMarkers(bool mounted, BuildContext context, GoogleMapController controller, {pickup, delivery}) {
     if (pickup != null) {
       pickmark = Marker(
           onTap: () =>
@@ -215,7 +219,7 @@ class MapsProvider extends BikerController {
           infoWindow: const InfoWindow(title: "Delivery Address"));
     }
     if (pickmark != null && dropmark != null) {
-      directions(context, controller, null, places: [pickmark!.position, dropmark!.position]).then((value) {
+      directions(mounted, context, controller, null, places: [pickmark!.position, dropmark!.position]).then((value) {
         var latLngBounds = LatLngBounds(southwest: boundsMap[1], northeast: boundsMap[0]);
         controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
       });
@@ -223,9 +227,10 @@ class MapsProvider extends BikerController {
     notifyListeners();
   }
 
-  getTopAddresses(BuildContext context, customerId) async {
+  getTopAddresses(bool mounted, BuildContext context, customerId) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
+      if (!mounted) return;
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         savedAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
@@ -234,18 +239,20 @@ class MapsProvider extends BikerController {
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
-    await setCurrentLocation(context, customerId);
+    if (!mounted) return;
+    await setCurrentLocation(mounted, context, customerId);
     notifyListeners();
   }
 
-  Future<void> setCurrentLocation(BuildContext context, customerId) async {
+  Future<void> setCurrentLocation(bool mounted, BuildContext context, customerId) async {
     try {
       await getCurrentlocations();
       final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
         "latlng": "$latitude,$longitude",
         "key": Variables.key,
       });
-      returnResponse(context, response, 2);
+      if (!mounted) return;
+      returnResponse(mounted, context, response, 2);
       placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
           i.addressComponents.first.types.contains("premise")));
       placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));

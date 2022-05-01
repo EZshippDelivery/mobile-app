@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:ezshipp/APIs/customer_orders.dart';
-import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/biker_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
@@ -25,10 +24,10 @@ class TrackingPage extends StatefulWidget {
   TrackingPage(this.order, {Key? key}) : super(key: key);
 
   @override
-  _TrackingPageState createState() => _TrackingPageState();
+  TrackingPageState createState() => TrackingPageState();
 }
 
-class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMixin {
+class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixin {
   int _stepper = 0;
   bool laststep = false;
   DecorationImage? decorationImage;
@@ -172,13 +171,13 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                     FloatingActionButton.small(
                                         onPressed: () async {
                                           var url = "tel:${widget.order.bikerPhone}";
-                                          await canLaunch(url)
-                                              ? launch(url)
+                                          await canLaunchUrl(Uri.parse(url))
+                                              ? launchUrl(Uri.parse(url))
                                               : Variables.showtoast(
                                                   context, "Unable to open Phone App", Icons.cancel_outlined);
                                         },
-                                        child: const Icon(Icons.phone, size: 17),
-                                        elevation: 3),
+                                        elevation: 3,
+                                        child: const Icon(Icons.phone, size: 17)),
                                   ]),
                                   const SizedBox(height: 15),
                                   Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
@@ -229,7 +228,7 @@ class _TrackingPageState extends State<TrackingPage> with TickerProviderStateMix
                                     BikerController bikerController =
                                         Provider.of<BikerController>(context, listen: false);
                                     bikerController.bikerRating(
-                                        context, widget.order.bikerId, widget.order.id, value.ceil());
+                                        mounted, context, widget.order.bikerId, widget.order.id, value.ceil());
                                   })
                             ])))))
           ],

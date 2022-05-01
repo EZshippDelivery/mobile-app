@@ -11,10 +11,10 @@ class SavedAddressPage extends StatefulWidget {
   const SavedAddressPage({Key? key}) : super(key: key);
 
   @override
-  _SavedAddressPageState createState() => _SavedAddressPageState();
+  SavedAddressPageState createState() => SavedAddressPageState();
 }
 
-class _SavedAddressPageState extends State<SavedAddressPage> {
+class SavedAddressPageState extends State<SavedAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
 
@@ -31,7 +31,7 @@ class _SavedAddressPageState extends State<SavedAddressPage> {
   }
 
   void constructor() async {
-    await customerController.getFirstTenAddresses(context);
+    await customerController.getFirstTenAddresses(mounted, context);
   }
 
   @override

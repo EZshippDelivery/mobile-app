@@ -10,10 +10,10 @@ class CustomerEditProfilePage extends StatefulWidget {
   const CustomerEditProfilePage({Key? key}) : super(key: key);
 
   @override
-  _CustomerEditProfilePageState createState() => _CustomerEditProfilePageState();
+  CustomerEditProfilePageState createState() => CustomerEditProfilePageState();
 }
 
-class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
+class CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
   DecorationImage? decorationImage;
   String userType = "Driver";
   ValueNotifier<String> name = ValueNotifier<String>("");
@@ -84,9 +84,11 @@ class _CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
                       heroTag: "save_@",
                       onPressed: () async {
                         if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
-                          await updateProfileProvider.update(context);
+                          await updateProfileProvider.update(mounted, context);
                           await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
-                          await updateProfileProvider.getCustomer(context);
+                          if (!mounted) return;
+                          await updateProfileProvider.getCustomer(mounted, context);
+                          if (!mounted) return;
                           Navigator.of(context).pop();
                         }
                       },

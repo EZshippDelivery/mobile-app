@@ -6,6 +6,7 @@ import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/utils/themes.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -100,11 +101,14 @@ class Variables {
   static push(BuildContext context, String routeName) => Navigator.of(context).pushNamed(routeName);
   static pop(BuildContext context, {var value}) => Navigator.of(context).pop(value);
   static TextStyle font(
-          {double fontSize = 14, FontWeight fontWeight = FontWeight.normal, Color? color = Palette.deepgrey}) =>
-      GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight);
+          {double fontSize = 14,
+          FontWeight fontWeight = FontWeight.normal,
+          Color? color = Palette.deepgrey,
+          TextDecoration? decoration}) =>
+      GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
   static Uri uri({required String path, queryParameters}) =>
-      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1" + path, queryParameters: queryParameters);
-  //Uri(scheme: "http", host: "192.168.0.106", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
+      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+  // Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -126,14 +130,28 @@ class Variables {
                 children: [
               islink
                   ? linkvalue.isNotEmpty
-                      ? WidgetSpan(
-                          child: TextButton(
-                              onPressed: () async => await showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        content: Image.memory(base64Decode(linkvalue), height: 500),
-                                      )),
-                              child: Text(value, style: Variables.font(color: null, fontSize: valueFontSize))))
+                      // ? WidgetSpan(
+                      //     child: GestureDetector(
+                      //     onTap: () async => await showDialog(
+                      //         context: context,
+                      //         builder: (context) => AlertDialog(
+                      //               content: Image.memory(base64Decode(linkvalue), height: 500),
+                      //             )),
+                      //     child: Text(
+                      //       value,
+                      //       style: Variables.font(fontSize: valueFontSize),
+                      //     ),
+                      //   ))
+                      ? TextSpan(
+                          text: value,
+                          style: Variables.font(
+                              color: Palette.kOrange, fontSize: valueFontSize, decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async => await showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                      content: Image.memory(base64Decode(linkvalue), height: 500),
+                                    )))
                       : TextSpan(
                           text: value,
                           style: Variables.font(color: valueColor ?? Colors.grey.shade700, fontSize: valueFontSize))
@@ -209,18 +227,18 @@ class Variables {
   }
 
   static String datetime(value, {bool timeNeed = false}) {
-    DateTime _time = DateTime.now();
+    DateTime timeCurrent = DateTime.now();
     if (value.toString() != "null" && value.toString().isNotEmpty) {
       if (value is DateTime) {
-        _time = value;
+        timeCurrent = value;
       } else {
-        _time = DateTime.parse(value);
+        timeCurrent = DateTime.parse(value);
       }
-      String time = DateFormat().add_jm().format(_time);
-      String date = DateFormat().add_MMMd().format(_time) + "," + DateFormat().add_y().format(_time);
-      if (DateTime.now() == _time) {
+      String time = DateFormat().add_jm().format(timeCurrent);
+      String date = "${DateFormat().add_MMMd().format(timeCurrent)},${DateFormat().add_y().format(timeCurrent)}";
+      if (DateTime.now() == timeCurrent) {
         return "Today, $time";
-      } else if (DateTime.now().subtract(const Duration(days: 1)) == _time) {
+      } else if (DateTime.now().subtract(const Duration(days: 1)) == timeCurrent) {
         return "Yesterday, $time";
       }
       if (timeNeed) return "$date | $time";
@@ -319,7 +337,8 @@ class Variables {
     if (statusId != null) Variables.updateOrderMap.statusId = statusId;
   }
 
-  static dynamic updateOrder(BuildContext context, int orderId, statusId, [bool iscustomer = false]) async {
+  static dynamic updateOrder(bool mounted, BuildContext context, int orderId, statusId,
+      [bool iscustomer = false]) async {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
     await Variables.getLiveLocation(statusId: statusId);
@@ -331,28 +350,28 @@ class Variables {
     // print(jsonEncode(body));
     // var temp = value.newOrderList[index];
     // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
-    var result = await value.getDistance(context, jsonEncode(body));
+    if (!mounted) return;
+    var result = await value.getDistance(mounted, context, jsonEncode(body));
     if (result != null) {
       Variables.updateOrderMap.distance = result;
       if (!iscustomer) {
         Variables.updateOrderMap.driverId = driverId;
         Variables.updateOrderMap.newDriverId = driverId;
       }
-      return await value1.updateOrder(context, Variables.updateOrderMap.toJson(), orderId);
+      if (!mounted) return;
+      value1.update(await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId));
     }
   }
 
   static returnResponse(BuildContext context, Response response, {onlinemode = false}) {
+    var responseJson = onlinemode ? response.body : json.decode(response.body);
     switch (response.statusCode) {
       case 200:
-        var responseJson = onlinemode ? response.body : json.decode(response.body);
         return responseJson;
       case 400:
-        Variables.showtoast(context, response.body.toString(), Icons.warning_rounded);
-        break;
       case 401:
       case 403:
-        Variables.showtoast(context, response.body.toString(), Icons.warning_rounded);
+        Variables.showtoast(context, "${responseJson["status"]}: ${responseJson["error"]}", Icons.warning_rounded);
         break;
       case 500:
       default:

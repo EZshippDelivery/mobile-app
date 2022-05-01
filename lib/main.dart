@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
               OrderDetailsPage(updateOrderProvider.customerOrders[Variables.index]),
           SetLocationPage.routeName: (context) => const SetLocationPage(),
           ConfirmAddressPage.routeName: (context) => const ConfirmAddressPage(),
-          "/order" + Order.routeName: (context) => Order(index: Variables.index1, accepted: true),
+          "/order${Order.routeName}": (context) => Order(index: Variables.index1, accepted: true),
           BookOrderPage.routeName: (context) => const BookOrderPage(),
           ConfirmOrderPage.routeName: (context) => const ConfirmOrderPage(),
           CustomerEditProfilePage.routeName: (context) => const CustomerEditProfilePage(),

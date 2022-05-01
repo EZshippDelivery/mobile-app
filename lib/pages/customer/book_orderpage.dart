@@ -16,10 +16,10 @@ class BookOrderPage extends StatefulWidget {
   const BookOrderPage({Key? key}) : super(key: key);
 
   @override
-  _BookOrderPageState createState() => _BookOrderPageState();
+  BookOrderPageState createState() => BookOrderPageState();
 }
 
-class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMixin {
+class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMixin {
   TextEditingController senderName = TextEditingController(),
       senderPhone = TextEditingController(),
       receiverName = TextEditingController(),
@@ -110,9 +110,8 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                 textboxes("Item Description", null),
                                 textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
                                 // Padding(
-                                //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                //   child: Row(
-                                //     children: [
+                                //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                //     child: Row(children: [
                                 //       Text("Take a Photo of your Item:", style: Variables.font(fontSize: 15)),
                                 //       const SizedBox(width: 4),
                                 //       FloatingActionButton.small(
@@ -121,19 +120,15 @@ class _BookOrderPageState extends State<BookOrderPage> with TickerProviderStateM
                                 //         onPressed: () async {
                                 //           var image = await ImagePicker().pickImage(source: ImageSource.camera);
                                 //           if (image != null) {
-                                //             reference.createNewOrder.itemImageUrl =
-                                //                 base64Encode(File(image.path).readAsBytesSync());
+                                //             var blob = html.Blob(await image.readAsBytes());
+                                //             debugPrint("Image:${blob.toString()}");
+                                //             reference.createNewOrder.itemImageUrl = blob.toString();
                                 //           }
                                 //         },
-                                //         child: const Icon(
-                                //           Icons.camera_alt_rounded,
-                                //           color: Colors.white,
-                                //         ),
+                                //         child: const Icon(Icons.camera_alt_rounded, color: Colors.white),
                                 //         backgroundColor: Palette.deepgrey,
                                 //       )
-                                //     ],
-                                //   ),
-                                // ),
+                                //     ])),
                                 Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1),
                                     child: Row(children: [

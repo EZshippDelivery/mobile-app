@@ -17,10 +17,10 @@ class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
 
   @override
-  _SignUpState createState() => _SignUpState();
+  SignUpState createState() => SignUpState();
 }
 
-class _SignUpState extends State<SignUp> {
+class SignUpState extends State<SignUp> {
   @override
   void initState() {
     super.initState();
@@ -102,10 +102,10 @@ class _SignUpState extends State<SignUp> {
   }
 
   _launchURL(String link) async {
-    if (await canLaunch(link)) {
-      await launch(link);
+    if (await canLaunchUrl(Uri.parse(link))) {
+      await launchUrl(Uri.parse(link));
     } else {
-      throw 'Could not launch $link';
+      throw 'Could not launchUrl $link';
     }
   }
 

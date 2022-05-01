@@ -11,10 +11,10 @@ class CustomerProfilePage extends StatefulWidget {
   const CustomerProfilePage({Key? key}) : super(key: key);
 
   @override
-  _CustomerProfilePageState createState() => _CustomerProfilePageState();
+  CustomerProfilePageState createState() => CustomerProfilePageState();
 }
 
-class _CustomerProfilePageState extends State<CustomerProfilePage> {
+class CustomerProfilePageState extends State<CustomerProfilePage> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -64,7 +64,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                                       if (reference.customerProfile!.phone != 0)
                                         Padding(
                                           padding: const EdgeInsets.all(10.0),
-                                          child: Text("+91 " + reference.customerProfile!.phone.toString(),
+                                          child: Text("+91 ${reference.customerProfile!.phone}",
                                               style: Variables.font(color: Colors.grey)),
                                         ),
                                       const SizedBox(height: 10),

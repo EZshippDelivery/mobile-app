@@ -15,10 +15,10 @@ class AddAddressPage extends StatefulWidget {
   const AddAddressPage({Key? key}) : super(key: key);
 
   @override
-  _AddAddressPageState createState() => _AddAddressPageState();
+  AddAddressPageState createState() => AddAddressPageState();
 }
 
-class _AddAddressPageState extends State<AddAddressPage> {
+class AddAddressPageState extends State<AddAddressPage> {
   double padding = 15;
   double avatarRadius = 45;
 
@@ -44,10 +44,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
               child: TextButton(
                 onPressed: () {
                   if (formkey.currentState!.validate()) {
-                    customerController.addCustomerAddress(context, customerController.addAddress.toJson());
+                    customerController.addCustomerAddress(mounted, context, customerController.addAddress.toJson());
                     Variables.showtoast(context, "Address Saved", Icons.check);
                     AddAddressPage.controller.clear();
-                    customerController.getFirstTenAddresses(context);
+                    customerController.getFirstTenAddresses(mounted, context);
                     Variables.pop(context);
                   }
                 },

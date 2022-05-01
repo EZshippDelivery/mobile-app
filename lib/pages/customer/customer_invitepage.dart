@@ -45,7 +45,7 @@ class CustomerInvitePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               for (String links in Variables.share.keys)
-                apps(Variables.share[links][1], Variables.share[links][0], links,context)
+                apps(Variables.share[links][1], Variables.share[links][0], links, context)
             ],
           ),
         ],
@@ -53,17 +53,19 @@ class CustomerInvitePage extends StatelessWidget {
     );
   }
 
-  void launchApps(BuildContext context,urlString, app) async {
-    await canLaunch(urlString) ? launch(urlString) : Variables.showtoast(context, "Can't open $app App", Icons.cancel_outlined);
+  void launchApps(BuildContext context, urlString, app) async {
+    await canLaunchUrl(urlString)
+        ? launchUrl(urlString)
+        : Variables.showtoast(context, "Can't open $app App", Icons.cancel_outlined);
   }
 
-  apps(String path, String urlString, String app,BuildContext context) {
+  apps(String path, String urlString, String app, BuildContext context) {
     try {
       return FloatingActionButton(
           heroTag: app,
           elevation: 3,
           mini: true,
-          onPressed: () => launchApps(context,urlString, app),
+          onPressed: () => launchApps(context, urlString, app),
           child: Image.asset(
             path,
             fit: BoxFit.cover,

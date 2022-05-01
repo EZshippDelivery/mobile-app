@@ -10,10 +10,10 @@ class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
 
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  EditProfilePageState createState() => EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class EditProfilePageState extends State<EditProfilePage> {
   DecorationImage? decorationImage;
   String userType = "Driver";
   ValueNotifier<String> name = ValueNotifier<String>("");
@@ -84,8 +84,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       heroTag: "save_@",
                       onPressed: () async {
                         if (EditProfilePage.formkey3.currentState!.validate()) {
-                          await updateProfileProvider.updateProfile(context);
-                          await updateProfileProvider.getProfile(context);
+                          await updateProfileProvider.updateProfile(mounted, context);
+                          if (!mounted) return;
+                          await updateProfileProvider.getProfile(mounted, context);
+                          if (!mounted) return;
                           Navigator.of(context).pop();
                         }
                       },

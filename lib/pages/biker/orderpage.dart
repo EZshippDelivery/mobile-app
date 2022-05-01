@@ -26,10 +26,10 @@ class Order extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _OrderState createState() => _OrderState();
+  OrderState createState() => OrderState();
 }
 
-class _OrderState extends State<Order> {
+class OrderState extends State<Order> {
   late Animation anim;
 
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -60,7 +60,8 @@ class _OrderState extends State<Order> {
               IconButton(
                   onPressed: () async {
                     Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
-                    Variables.updateOrder(context, list.id, 8);
+                    if (!mounted) return;
+                    Variables.updateOrder(mounted, context, list.id, 8);
                     if (timer != null) timer!.cancel();
                     Variables.pop(context);
                   },
@@ -159,8 +160,8 @@ class _OrderState extends State<Order> {
                                           ElevatedButton(
                                               onPressed: () async {
                                                 var url = "tel:${list.senderPhone}";
-                                                await canLaunch(url)
-                                                    ? launch(url)
+                                                await canLaunchUrl(Uri.parse(url))
+                                                    ? launchUrl(Uri.parse(url))
                                                     : Variables.showtoast(
                                                         context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
@@ -223,8 +224,9 @@ class _OrderState extends State<Order> {
                                           ElevatedButton(
                                               onPressed: () async {
                                                 var url = "tel:${list.receiverPhone}";
-                                                await canLaunch(url)
-                                                    ? launch(url)
+
+                                                await canLaunchUrl(Uri.parse(url))
+                                                    ? launchUrl(Uri.parse(url))
                                                     : Variables.showtoast(
                                                         context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
@@ -288,7 +290,7 @@ class _OrderState extends State<Order> {
                                                                     Variables.cancelReasons[index][1];
                                                                 Variables.updateOrderMap.cancelReasonId =
                                                                     Variables.cancelReasons[index][0];
-                                                                Variables.updateOrder(context, list.id, 14);
+                                                                Variables.updateOrder(mounted, context, list.id, 14);
                                                                 Variables.pop(context,
                                                                     value: Variables.cancelReasons[index][3] == 1
                                                                         ? true
@@ -331,6 +333,7 @@ class _OrderState extends State<Order> {
                                                                 ))
                                                           ]));
                                             }
+                                            if (!mounted) return;
                                             Variables.pop(context);
                                           },
                                           style: ElevatedButton.styleFrom(
@@ -347,8 +350,8 @@ class _OrderState extends State<Order> {
                                       ElevatedButton(
                                           onPressed: () async {
                                             void launchApps(urlString) async {
-                                              await canLaunch(urlString)
-                                                  ? launch(urlString)
+                                              await canLaunchUrl(urlString)
+                                                  ? launchUrl(urlString)
                                                   : Variables.showtoast(
                                                       context, "Can't open Google Maps", Icons.cancel_outlined);
                                             }
@@ -356,7 +359,8 @@ class _OrderState extends State<Order> {
                                             await getLiveLocation();
 
                                             if (list.statusId < 5) {
-                                              await mapsProvider.directions(context, null, null, places: [
+                                              if (!mounted) return;
+                                              await mapsProvider.directions(mounted, context, null, null, places: [
                                                 LatLng(Variables.updateOrderMap.latitude,
                                                     Variables.updateOrderMap.longitude),
                                                 LatLng(list.pickLatitude, list.pickLongitude)
@@ -367,61 +371,66 @@ class _OrderState extends State<Order> {
                                               });
                                               int temp = mapsProvider.directioDetails[0]["value"];
                                               Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
+                                                await mapsProvider.directions(mounted, context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, list.id, 4);
+                                                  if (!mounted) return;
+                                                  Variables.updateOrder(mounted, context, list.id, 4);
                                                 }
                                                 timer.cancel();
                                               });
                                               Timer.periodic(
                                                   Duration(seconds: mapsProvider.directioDetails[1]["value"]),
                                                   (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
+                                                await mapsProvider.directions(mounted, context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.pickLatitude, list.pickLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] < 1000) {
-                                                  Variables.updateOrder(context, list.id, 5);
+                                                  if (!mounted) return;
+                                                  Variables.updateOrder(mounted, context, list.id, 5);
                                                 }
                                                 timer.cancel();
                                               });
                                               launchApps(
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
-                                              Variables.updateOrder(context, list.id, 6);
-                                              await mapsProvider.directions(context, null, null, places: [
+                                              if (!mounted) return;
+                                              Variables.updateOrder(mounted, context, list.id, 6);
+                                              await mapsProvider.directions(mounted, context, null, null, places: [
                                                 LatLng(Variables.updateOrderMap.latitude,
                                                     Variables.updateOrderMap.longitude),
                                                 LatLng(list.dropLatitude, list.dropLongitude)
                                               ]);
                                               int temp = mapsProvider.directioDetails[0]["value"];
                                               Timer.periodic(const Duration(minutes: 1), (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
+                                                await mapsProvider.directions(mounted, context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (temp > mapsProvider.directioDetails[0]["value"]) {
-                                                  Variables.updateOrder(context, list.id, 9);
+                                                  if (!mounted) return;
+                                                  Variables.updateOrder(mounted, context, list.id, 9);
                                                 }
                                                 timer.cancel();
                                               });
                                               timer = Timer.periodic(
                                                   Duration(seconds: mapsProvider.directioDetails[1]["value"]),
                                                   (timer) async {
-                                                await mapsProvider.directions(context, null, null, places: [
+                                                await mapsProvider.directions(mounted, context, null, null, places: [
                                                   LatLng(Variables.updateOrderMap.latitude,
                                                       Variables.updateOrderMap.longitude),
                                                   LatLng(list.dropLatitude, list.dropLongitude)
                                                 ]);
                                                 if (mapsProvider.directioDetails[0]["value"] <
                                                     mapsProvider.directioDetails[0]["value"] * 0.1) {
-                                                  Variables.updateOrder(context, list.id, 11);
+                                                  if (!mounted) return;
+                                                  Variables.updateOrder(mounted, context, list.id, 11);
                                                 }
                                                 timer.cancel();
                                               });
@@ -429,6 +438,7 @@ class _OrderState extends State<Order> {
                                                   "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                             } else if (list.statusId == 11) {
                                               Variables.isdetail = false;
+                                              if (!mounted) return;
                                               Variables.push(context, DeliveredPage.routeName);
                                             }
                                           },
@@ -447,11 +457,15 @@ class _OrderState extends State<Order> {
                                             Text(
                                               list.statusId < 5
                                                   ? "Start"
-                                                  : list.statusId >= 5 && list.statusId < 11
-                                                      ? "Picked"
-                                                      : list.statusId == 11
-                                                          ? "Complete"
-                                                          : "",
+                                                  : list.statusId == 5
+                                                      ? "Pick"
+                                                      : list.statusId == 6
+                                                          ? "Picked"
+                                                          : list.statusId < 11
+                                                              ? "Start"
+                                                              : list.statusId == 11
+                                                                  ? "Complete"
+                                                                  : "",
                                               style: Variables.font(color: Colors.white, fontSize: 15),
                                             )
                                           ]))

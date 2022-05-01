@@ -15,10 +15,10 @@ class DrawerWidget extends StatefulWidget {
   const DrawerWidget({Key? key}) : super(key: key);
 
   @override
-  _DrawerWidgetState createState() => _DrawerWidgetState();
+  DrawerWidgetState createState() => DrawerWidgetState();
 }
 
-class _DrawerWidgetState extends State<DrawerWidget> {
+class DrawerWidgetState extends State<DrawerWidget> {
   @override
   void initState() {
     super.initState();
@@ -63,7 +63,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     child: Text(reference1.isOnline ? "Online" : "Offline", style: Variables.font(fontSize: 15)),
                   ),
                   trailing: Switch.adaptive(
-                      value: reference1.isOnline, onChanged: (value) => reference1.offLineMode(context, value)));
+                      value: reference1.isOnline,
+                      onChanged: (value) => reference1.offLineMode(mounted, context, value)));
             }),
             ...ListTile.divideTiles(context: context, tiles: [
               ListTile(
@@ -103,8 +104,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                       AuthController authController =
                                           Provider.of<AuthController>(context, listen: false);
                                       await authController.storeLoginStatus(false);
-                                      Navigator.of(context)
-                                          .pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
+                                      if (!mounted) return;
+                                      Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (route) => false);
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
