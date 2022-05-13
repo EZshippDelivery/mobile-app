@@ -1,3 +1,4 @@
+import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
@@ -28,76 +29,83 @@ class SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-          key: SignUp.formkey2,
-          child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(children: [
-                Consumer<UpdateProfileProvider>(builder: (context, reference1, child) {
-                  return Column(children: [
-                    Padding(
-                        padding: const EdgeInsets.only(top: 10.0, bottom: 25),
-                        child: InkWell(
-                            onTap: () => reference1.inkwell(context),
-                            child: reference1.getProfileImage(
-                                canEdit: true, size: MediaQuery.of(context).size.width / 2.5))),
-                    TextFields(
-                        title: "First Name", icon: const Icon(Icons.person_outline_rounded), onchange: reference1),
-                    TextFields(
-                        title: "Last Name", icon: const Icon(Icons.person_outline_rounded), onchange: reference1),
-                  ]);
-                }),
-                TextFields(title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress),
-                TextFields(
-                  title: "Phone number",
-                  icon: const Icon(Icons.phone_enabled_rounded),
-                  type: TextInputType.number,
-                ),
-                TextFields(
-                    title: "Password",
-                    icon: const Icon(Icons.lock_outline),
-                    type: TextInputType.visiblePassword,
-                    hidepass: true),
-                TextFields(
-                    title: "Confirm Password",
-                    icon: const Icon(Icons.lock_outline),
-                    type: TextInputType.visiblePassword,
-                    hidepass: true),
-                Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
-                  return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Checkbox(
-                      value: SignUp.check,
-                      onChanged: (value) {
-                        SignUp.check = value!;
-                        reference.updateScreen();
-                      },
-                      activeColor: Palette.kOrange,
-                    ),
-                    Expanded(
-                        child: RichText(
-                            text: TextSpan(
-                                text: "I accept ",
-                                style: Variables.font(color: Palette.deepgrey, fontSize: 15),
-                                children: [
-                          TextSpan(
-                              text: "Terms & Conditions",
-                              style: Variables.font(color: Palette.kOrange, fontSize: 15),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => _launchURL("https://www.ezshipp.com/terms-conditions/")),
-                          const TextSpan(text: " and "),
-                          TextSpan(
-                              text: "Package & Delivery Policies",
-                              style: Variables.font(color: Palette.kOrange, fontSize: 15),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => _launchURL("https://www.ezshipp.com/package-delivery-policy/"))
-                        ])))
-                  ]);
-                }),
-                const SizedBox(
-                  height: 50,
-                )
-              ]))),
+    return WillPopScope(
+      onWillPop: () async {
+        LoginPage.tabController.index = 0;
+        return false;
+      },
+      child: SingleChildScrollView(
+        child: Form(
+            key: SignUp.formkey2,
+            child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(children: [
+                  Consumer<UpdateProfileProvider>(builder: (context, reference1, child) {
+                    return Column(children: [
+                      Padding(
+                          padding: const EdgeInsets.only(top: 10.0, bottom: 25),
+                          child: InkWell(
+                              onTap: () => reference1.inkwell(context),
+                              child: reference1.getProfileImage(
+                                  canEdit: true, size: MediaQuery.of(context).size.width / 2.5))),
+                      TextFields(
+                          title: "First Name", icon: const Icon(Icons.person_outline_rounded), onchange: reference1),
+                      TextFields(
+                          title: "Last Name", icon: const Icon(Icons.person_outline_rounded), onchange: reference1),
+                    ]);
+                  }),
+                  TextFields(
+                      title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress),
+                  TextFields(
+                    title: "Phone number",
+                    icon: const Icon(Icons.phone_enabled_rounded),
+                    type: TextInputType.number,
+                  ),
+                  TextFields(
+                      title: "Password",
+                      icon: const Icon(Icons.lock_outline),
+                      type: TextInputType.visiblePassword,
+                      hidepass: true),
+                  TextFields(
+                      title: "Confirm Password",
+                      icon: const Icon(Icons.lock_outline),
+                      type: TextInputType.visiblePassword,
+                      hidepass: true),
+                  Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
+                    return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                      Checkbox(
+                        value: SignUp.check,
+                        onChanged: (value) {
+                          SignUp.check = value!;
+                          reference.updateScreen();
+                        },
+                        activeColor: Palette.kOrange,
+                      ),
+                      Expanded(
+                          child: RichText(
+                              text: TextSpan(
+                                  text: "I accept ",
+                                  style: Variables.font(color: Palette.deepgrey, fontSize: 15),
+                                  children: [
+                            TextSpan(
+                                text: "Terms & Conditions",
+                                style: Variables.font(color: Palette.kOrange, fontSize: 15),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => _launchURL("https://www.ezshipp.com/terms-conditions/")),
+                            const TextSpan(text: " and "),
+                            TextSpan(
+                                text: "Package & Delivery Policies",
+                                style: Variables.font(color: Palette.kOrange, fontSize: 15),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => _launchURL("https://www.ezshipp.com/package-delivery-policy/"))
+                          ])))
+                    ]);
+                  }),
+                  const SizedBox(
+                    height: 50,
+                  )
+                ]))),
+      ),
     );
   }
 

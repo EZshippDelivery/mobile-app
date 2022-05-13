@@ -110,8 +110,8 @@ class Variables {
           TextDecoration? decoration}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
   static Uri uri({required String path, queryParameters}) =>
-      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-  //Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
+      // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+      Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -377,14 +377,17 @@ class Variables {
       case 400:
       case 401:
       case 403:
-      if(responseJson["error"]=="Unauthorized")
-        Variables.showtoast(context, "${responseJson["status"]}: ${responseJson["error"]}", Icons.warning_rounded);
+        if (responseJson["error"] == "Unauthorized") {
+          Variables.showtoast(context, "${responseJson["error"]} account.", Icons.warning_rounded);
+        } else {
+          Variables.showtoast(context, "${responseJson["status"]}: ${responseJson["error"]}", Icons.warning_rounded);
+        }
         break;
       case 500:
       default:
         Variables.showtoast(
             context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n',
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"]}',
             Icons.warning_rounded);
         break;
     }

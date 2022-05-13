@@ -22,6 +22,7 @@ import '../Provider/customer_controller.dart';
 import 'biker/enter_kycpage.dart';
 
 class LoginPage extends StatefulWidget {
+  static late TabController tabController;
   static String routeName = "/login";
   const LoginPage({Key? key}) : super(key: key);
 
@@ -32,7 +33,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   late Animation _anim, _anim2;
   late AnimationController animController, animController2;
-  late TabController tabController;
+  
   late AuthController authController;
   late CustomerController customerController;
   late Timer timer;
@@ -57,11 +58,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     animController2 = AnimationController(vsync: this, duration: const Duration(milliseconds: 750));
     _anim = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: animController, curve: Curves.fastOutSlowIn));
     _anim2 = Tween(begin: 0.7, end: 1.0).animate(CurvedAnimation(parent: animController2, curve: Curves.fastOutSlowIn));
-    tabController = TabController(length: 2, vsync: this);
-    tabController.addListener(() {
-      if (tabController.index == 1) {
+    LoginPage.tabController = TabController(length: 2, vsync: this);
+    LoginPage.tabController.addListener(() {
+      if (LoginPage.tabController.index == 1) {
         animController2.forward();
-      } else if (tabController.index == 0) {
+      } else if (LoginPage.tabController.index == 0) {
         animController2.reverse();
       }
     });
@@ -101,7 +102,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 flex: 10,
                                 child: Center(
                                     child: TabBarView(
-                                        controller: tabController,
+                                        controller: LoginPage.tabController,
                                         physics: const NeverScrollableScrollPhysics(),
                                         children: const [SignIn(), SignUp()])))
                           ]),
@@ -110,7 +111,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               child: TabBar(
                                   labelPadding: const EdgeInsets.all(10),
                                   indicatorWeight: 4.0,
-                                  controller: tabController,
+                                  controller: LoginPage.tabController,
                                   onTap: (value) async {
                                     if (value == 1) {
                                       animController2.forward();
@@ -134,9 +135,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       heroTag: "login_button",
       onPressed: () async {
         if (await InternetConnectionChecker().hasConnection) {
-          if (tabController.index == 0) {
+          if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
-              if(await readDetails()) authController.storeLoginStatus(true);
+              if (await readDetails()) authController.storeLoginStatus(true);
               if (!mounted) return;
               if (enterKYC && userType.toLowerCase() == "driver") {
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => EnterKYC()));
@@ -148,7 +149,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
               }
             }
-          } else if (tabController.index == 1) {
+          } else if (LoginPage.tabController.index == 1) {
             if (SignUp.formkey2.currentState!.validate() && SignUp.check) {
               if (authController.userType == "Customer") {
                 Variables.deviceInfo["userType"] = "CUSTOMER";
@@ -166,11 +167,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 if (await showdialog(
                     context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
                   animController2.reverse();
-                  tabController.index = 0;
+                  LoginPage.tabController.index = 0;
                 }
               } else if (response != null) {
                 animController2.reverse();
-                tabController.index = 0;
+                LoginPage.tabController.index = 0;
               }
             } else if (!SignUp.check) {
               Variables.showtoast(context, "Accept Terms & Conditions", Icons.warning_rounded);
@@ -216,25 +217,28 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   show(context, [bool text = false]) => showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => SimpleDialog(
-              titleTextStyle: Variables.font(fontSize: 22),
-              title: const Text("Choose Your Profession"),
-              contentPadding: const EdgeInsets.all(20),
-              children: [
-                Text(
-                  "${text ? "C" : "Before you fill the details, c"}hoose the type of user you like to be",
-                  style: TextStyle(fontSize: 17, color: Colors.grey.shade700),
-                ),
-                const SizedBox(height: 10),
-                ...ListTile.divideTiles(
-                    context: context,
-                    tiles: types
-                        .map((e) => ListTile(
-                              title: Text(e),
-                              onTap: () => Variables.pop(context, value: e == "Delivery Person" ? "driver" : e),
-                            ))
-                        .toList())
-              ]));
+      builder: (context) => WillPopScope(
+            onWillPop: () async => false,
+            child: SimpleDialog(
+                titleTextStyle: Variables.font(fontSize: 22),
+                title: const Text("Choose Your Profession"),
+                contentPadding: const EdgeInsets.all(20),
+                children: [
+                  Text(
+                    "${text ? "C" : "Before you fill the details, c"}hoose the type of user you like to be",
+                    style: TextStyle(fontSize: 17, color: Colors.grey.shade700),
+                  ),
+                  const SizedBox(height: 10),
+                  ...ListTile.divideTiles(
+                      context: context,
+                      tiles: types
+                          .map((e) => ListTile(
+                                title: Text(e),
+                                onTap: () => Variables.pop(context, value: e == "Delivery Person" ? "driver" : e),
+                              ))
+                          .toList())
+                ]),
+          ));
 
   showdialog(BuildContext context, String phonenumber, String email, int id) async {
     var code;
@@ -342,7 +346,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    tabController.dispose();
+    LoginPage.tabController.dispose();
     animController.dispose();
     animController2.dispose();
     isResend.dispose();

@@ -88,8 +88,8 @@ class TextFieldsState extends State<TextFields> {
               switch (title) {
                 case "First Name":
                 case "Last Name":
-                  if (value.length <= 3 || value.length > 16) {
-                    return "Full name should be in range of 3 to 16 character ";
+                  if (value.length < 3 || value.length > 16) {
+                    return "$title should be in range of 3 to 16 character ";
                   }
                   break;
                 case "New Password":
@@ -108,7 +108,7 @@ class TextFieldsState extends State<TextFields> {
                       return "Password should contain Lower Alphabet, Upper Alphabet,$temp number and special character";
                     }
                   } else {
-                    return "Password should be in range of 6 to 16 character ";
+                    return "Password should be in range of 7 to 16 character ";
                   }
                   break;
                 case "Confirm Password":
