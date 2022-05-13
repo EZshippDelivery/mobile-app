@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/textfield.dart';
 
+// ignore: must_be_immutable
 class CustomerEditProfilePage extends StatefulWidget {
   static String routeName = "/cedit";
-  static GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
-  const CustomerEditProfilePage({Key? key}) : super(key: key);
+  GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
+  CustomerEditProfilePage({Key? key}) : super(key: key);
 
   @override
   CustomerEditProfilePageState createState() => CustomerEditProfilePageState();
@@ -44,7 +45,7 @@ class CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
           child: Stack(
             children: [
               Form(
-                key: CustomerEditProfilePage.formkey3,
+                key: widget.formkey3,
                 child: Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -83,11 +84,14 @@ class CustomerEditProfilePageState extends State<CustomerEditProfilePage> {
                   child: FloatingActionButton.extended(
                       heroTag: "save_@",
                       onPressed: () async {
-                        if (CustomerEditProfilePage.formkey3.currentState!.validate()) {
+                        if (widget.formkey3.currentState!.validate()) {
+                          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                           await updateProfileProvider.update(mounted, context);
                           await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
                           if (!mounted) return;
                           await updateProfileProvider.getCustomer(mounted, context);
+                          if (!mounted) return;
+                          Navigator.pop(context);
                           if (!mounted) return;
                           Navigator.of(context).pop();
                         }

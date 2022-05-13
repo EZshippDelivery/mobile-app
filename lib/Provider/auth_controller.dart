@@ -14,11 +14,12 @@ class AuthController extends ChangeNotifier {
   registerUser(bool mounted, BuildContext context, body) async {
     try {
       Response? response;
-      var uri = Variables.uri(path: '/register/${Variables.deviceInfo['userType']!.toLowerCase()}');
       if (Variables.deviceInfo['userType'] != null) {
+        var uri = Variables.uri(path: '/register/${Variables.deviceInfo['userType']!.toLowerCase()}');
         response = await HTTPRequest.postRequest(uri, body, true);
       }
       if (!mounted) return;
+
       if (response != null) {
         profile = Variables.returnResponse(context, response);
       } else {
@@ -49,6 +50,7 @@ class AuthController extends ChangeNotifier {
         userType = "";
       }
     } on SocketException {
+      if (!mounted) return;
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();

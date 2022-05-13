@@ -1,3 +1,4 @@
+import 'package:ezshipp/Provider/biker_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
@@ -64,7 +65,12 @@ class DrawerWidgetState extends State<DrawerWidget> {
                   ),
                   trailing: Switch.adaptive(
                       value: reference1.isOnline,
-                      onChanged: (value) => reference1.offLineMode(mounted, context, value)));
+                      onChanged: (value) async {
+                        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                        await reference1.offLineMode(mounted, context, value);
+                        if (!mounted) return;
+                        Navigator.pop(context);
+                      }));
             }),
             ...ListTile.divideTiles(context: context, tiles: [
               ListTile(
@@ -104,7 +110,14 @@ class DrawerWidgetState extends State<DrawerWidget> {
                                       AuthController authController =
                                           Provider.of<AuthController>(context, listen: false);
                                       await authController.storeLoginStatus(false);
+                                      await Variables.pref.deleteAll(aOptions: Variables.getAndroidOptions());
                                       if (!mounted) return;
+                                      BikerController bikerController =
+                                          Provider.of<BikerController>(context, listen: false);
+
+                                      if (bikerController.timer != null) bikerController.timer!.cancel();
+                                      if (!mounted) return;
+                                      Navigator.pop(context);
                                       Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (route) => false);
                                     },
                                     child: Padding(

@@ -55,6 +55,7 @@ class _HomeTabState extends State<HomeTab> {
                                   onPressed: () async {
                                     AuthController authController = Provider.of<AuthController>(context, listen: false);
                                     await authController.storeLoginStatus(false);
+                                    await Variables.pref.deleteAll(aOptions: Variables.getAndroidOptions());
                                     if (!mounted) return;
                                     Navigator.of(context)
                                         .pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);

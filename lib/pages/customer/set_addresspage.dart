@@ -32,9 +32,16 @@ class SetAddressPageState extends State<SetAddressPage> {
   void initState() {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    mapsProvider.getCurrentlocations();
-    mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
+    Future.delayed(Duration.zero, () => constructor());
     customerController = Provider.of<CustomerController>(context, listen: false);
+  }
+
+  constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    mapsProvider.getCurrentlocations();
+    await mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override

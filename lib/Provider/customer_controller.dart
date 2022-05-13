@@ -36,6 +36,7 @@ class CustomerController extends BikerController {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}"));
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         customerProfile = CustomerDetails.fromMap(responseJson);
@@ -68,6 +69,7 @@ class CustomerController extends BikerController {
       final response =
           await HTTPRequest.putRequest(Variables.uri(path: "$customer${Variables.driverId}"), json.toJson());
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         Variables.showtoast(context, "Updating profile successfully", Icons.check);
@@ -83,6 +85,7 @@ class CustomerController extends BikerController {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}/address"));
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         getFirstTenAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
@@ -94,7 +97,7 @@ class CustomerController extends BikerController {
     notifyListeners();
   }
 
-  saveAllAddresses(bool mounted, BuildContext context, AddAddress something, int index) async {
+  saveAllAddresses(bool mounted, BuildContext context, AddAddress something, int index, [bool load = true]) async {
     var check = getFirstTenAddress
         .where((element) =>
             something.address1 == element.address1 &&
@@ -104,7 +107,7 @@ class CustomerController extends BikerController {
             something.landmark == element.landmark)
         .toList();
     if (check.isEmpty) {
-      final response = await addCustomerAddress(mounted, context, something.toJson());
+      final response = await addCustomerAddress(mounted, context, something.toJson(), load);
       if (response != null) {
         if (index == 0) {
           createNewOrder.pickAddressId = response;
@@ -120,7 +123,9 @@ class CustomerController extends BikerController {
       }
     }
     if (!mounted) return;
-    if (createNewOrder.deliveryAddressId > 0 && createNewOrder.pickAddressId > 0) calculateOrderCost(mounted, context);
+    if (createNewOrder.deliveryAddressId > 0 && createNewOrder.pickAddressId > 0) {
+      calculateOrderCost(mounted, context, load);
+    }
   }
 
   void setAddressType(String upperCase, {bool isdelivery = false}) {
@@ -141,13 +146,11 @@ class CustomerController extends BikerController {
     notifyListeners();
   }
 
-  getCustomerOrderHistory(
-    bool mounted,
-    BuildContext context,
-  ) async {
+  getCustomerOrderHistory(bool mounted, BuildContext context) async {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/orders"));
       if (!mounted) return;
+
       List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         customerOrders = List.generate(responseJson.length, (index) => CustomerOrdersList.fromMap(responseJson[index]));
@@ -164,6 +167,7 @@ class CustomerController extends BikerController {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}/myorders/$pagenumber/20"));
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         Variables.orderscount = responseJson["totalCount"];
@@ -191,6 +195,7 @@ class CustomerController extends BikerController {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "/customer/${Variables.driverId}/neworders/$pagenumber/20"));
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -226,10 +231,10 @@ class CustomerController extends BikerController {
   }
 
   settimer(bool mounted, BuildContext context) {
-    timer = Timer.periodic(const Duration(seconds: 10), (time) {
+    timer = Timer.periodic(const Duration(seconds: 10), (time) async {
       getCustomerInProgressOrderCount(mounted, context);
       if (inProgresOrderCount > 0) {
-        getCustomerNewOrders(mounted, context);
+        await getCustomerNewOrders(mounted, context);
         for (int i = 0; i < customerOrders.length; i++) {
           customerOrders[i] = customerOrders[i];
         }
@@ -240,10 +245,11 @@ class CustomerController extends BikerController {
     });
   }
 
-  addCustomerAddress(bool mounted, BuildContext context, String body) async {
+  addCustomerAddress(bool mounted, BuildContext context, String body, [bool load = true]) async {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/address/add"), body);
       if (!mounted) return;
+
       return Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -251,7 +257,7 @@ class CustomerController extends BikerController {
     notifyListeners();
   }
 
-  calculateOrderCost(bool mounted, BuildContext context) async {
+  calculateOrderCost(bool mounted, BuildContext context, [bool load = true]) async {
     Map<String, dynamic> map = {
       "bookingType": "SAMEDAY",
       "customerId": Variables.driverId,
@@ -261,6 +267,7 @@ class CustomerController extends BikerController {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/cost"), jsonEncode(map));
       if (!mounted) return;
+
       createNewOrder.deliveryCharge = Variables.returnResponse(context, response) ?? 0;
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
@@ -273,6 +280,7 @@ class CustomerController extends BikerController {
       final response =
           await HTTPRequest.postRequest(Variables.uri(path: "/customer/order/create"), createNewOrder.toJson());
       if (!mounted) return;
+
       final responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         customerOrders.insert(0, CustomerOrdersList.fromMap(responseJson));
@@ -289,6 +297,7 @@ class CustomerController extends BikerController {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/otp/generate"), body);
       if (!mounted) return;
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) Variables.showtoast(context, "OTP send", Icons.check);
     } on SocketException catch (e) {
@@ -303,6 +312,7 @@ class CustomerController extends BikerController {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/customer/otp/validate", queryParameters: body as Map<String, dynamic>));
       if (!mounted) return;
+
       responseJson = Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);

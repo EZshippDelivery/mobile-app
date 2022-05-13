@@ -16,8 +16,10 @@ class OrderController extends BikerController {
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
       if (!mounted) return;
+     
       responseJson = Variables.returnResponse(context, response);
     } on SocketException {
+     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading4 = false;
@@ -30,6 +32,7 @@ class OrderController extends BikerController {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/order/find/barcode/$value"));
       if (response.statusCode == 500) {
         if (!mounted) return;
+       
         Variables.showtoast(context, "Invalid Barcode", Icons.cancel_outlined);
       } else if (response.statusCode == 200) {
         var body = NewOrderList.fromJson(response.body);
@@ -49,9 +52,10 @@ class OrderController extends BikerController {
         Variables.updateOrderMap.zoneId = Variables.centers.indexWhere((element) => element.indexOf(body.zonedAt));
         Variables.updateOrderMap.collectAt = body.collectAt;
         if (!mounted) return;
-        updateOrder(mounted, context, Variables.updateOrderMap.toJson(), body.id);
+        await updateOrder(mounted, context, Variables.updateOrderMap.toJson(), body.id);
       }
     } on SocketException {
+     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();

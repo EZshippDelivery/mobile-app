@@ -41,8 +41,8 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     final enterKYC = kyc == null ? false : kyc.toLowerCase() == "true";
     String userType = "";
     if (islogin) {
-      final username = await Variables.read(key: "username");
-      final password = await Variables.read(key: "password");
+      final username = await Variables.read(key: "username") ?? "";
+      final password = await Variables.read(key: "password") ?? "";
       if (!mounted) return;
       if (username.isNotEmpty && password.isNotEmpty) {
         islogin = await authController.authenticateUser(mounted, context, {"password": password, "username": username});
@@ -58,7 +58,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             islogin
                 ? userType.toLowerCase() == "driver"
                     ? enterKYC
-                        ? MaterialPageRoute(builder: (context) => const EnterKYC())
+                        ? MaterialPageRoute(builder: (context) => EnterKYC())
                         : MaterialPageRoute(builder: (context) => const HomePage())
                     : MaterialPageRoute(builder: (context) => const CustomerHomePage())
                 : MyRoutes.routelogin()));

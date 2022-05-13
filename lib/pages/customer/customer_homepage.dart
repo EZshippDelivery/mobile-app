@@ -33,18 +33,22 @@ class CustomerHomePageState extends State<CustomerHomePage> with TickerProviderS
     customerController = Provider.of<CustomerController>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
-    constructor();
+    Future.delayed(Duration.zero, () => constructor());
   }
 
   void constructor() async {
     if (Variables.driverId > 0) {
+      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
       await updateCustomerProfileProvider.getCustomer(mounted, context);
+      if (!mounted) return;
+      await customerController.getFirstTenAddresses(mounted, context);
+      if (!mounted) return;
+      await orderController.getAcceptedAndinProgressOrders(mounted, context);
+      if (!mounted) return;
+      await customerController.getCustomerInProgressOrderCount(mounted, context);
+      if (!mounted) return;
+      Navigator.pop(context);
     }
-    if (!mounted) return;
-    await customerController.getFirstTenAddresses(mounted, context);
-    if (!mounted) return;
-    customerController.getCustomerInProgressOrderCount(mounted, context);
-    orderController.getAcceptedAndinProgressOrders(mounted, context);
   }
 
   @override

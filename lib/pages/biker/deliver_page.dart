@@ -214,12 +214,14 @@ class DeliveredPageState extends State<DeliveredPage> {
                   padding: const EdgeInsets.all(10.0),
                   child: FloatingActionButton.extended(
                     elevation: 4,
-                    onPressed: () {
+                    onPressed: () async {
                       if (DeliveredPage.addsignature == false) {
                         Variables.showtoast(context, "Add a Signature", Icons.warning_rounded);
                       } else {
                         Variables.updateOrderMap.deliveredAt = widget.reference.dropAddress;
-                        Variables.updateOrder(mounted, context, widget.reference.id, 12);
+                        Variables.updateOrderMap.signUrl = 'sign';
+                        await Variables.updateOrder(mounted, context, widget.reference.id, 12);
+                        if (!mounted) return;
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       }
                     },

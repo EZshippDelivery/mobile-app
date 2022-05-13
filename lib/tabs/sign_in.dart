@@ -5,7 +5,7 @@ import '../utils/variables.dart';
 
 // ignore: must_be_immutable
 class SignIn extends StatefulWidget {
-  static final formkey1 = GlobalKey<FormState>();
+  static final formkey1 = GlobalKey<FormState>(debugLabel: "_signIn");
   const SignIn({Key? key}) : super(key: key);
 
   @override
@@ -13,7 +13,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
+  GlobalKey<FormState> formkey3 = GlobalKey<FormState>(debugLabel: "_resetPassword");
   String code = "";
 
   store() async {
@@ -33,7 +33,8 @@ class _SignInState extends State<SignIn> {
                 style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
               ),
             ),
-            TextFields(title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.phone, radius: 4),
+            TextFields(
+                title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress, radius: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

@@ -10,9 +10,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
 import 'package:path_provider/path_provider.dart';
 
+// ignore: must_be_immutable
 class EnterKYC extends StatefulWidget {
-  static GlobalKey<FormState> formkey4 = GlobalKey<FormState>();
-  const EnterKYC({Key? key}) : super(key: key);
+GlobalKey<FormState> formkey4 = GlobalKey<FormState>();
+  EnterKYC({Key? key}) : super(key: key);
 
   @override
   EnterKYCState createState() => EnterKYCState();
@@ -39,7 +40,7 @@ class EnterKYCState extends State<EnterKYC> {
             onStepTapped: (value) => setState(() => currentStep = value),
             onStepContinue: () async {
               if (currentStep == 0) {
-                if (EnterKYC.formkey4.currentState!.validate()) setState(() => currentStep += 1);
+                if (widget.formkey4.currentState!.validate()) setState(() => currentStep += 1);
               } else if (currentStep == 2) {
                 if (license! && vehicle!) {
                   Timer timer = Timer.periodic(
@@ -121,7 +122,7 @@ class EnterKYCState extends State<EnterKYC> {
           isActive: currentStep >= 0,
           title: Text("Enter KYC details", style: Variables.font(fontSize: 15)),
           content: Form(
-            key: EnterKYC.formkey4,
+            key: widget.formkey4,
             child: Column(
               children: [
                 inputText(title: "License Number", helperText: "ex: XXXXXXXXXXXXXXX"),

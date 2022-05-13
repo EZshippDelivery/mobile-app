@@ -64,9 +64,10 @@ class AcceptedState extends State<Accepted> {
         if (reference.acceptedList.isNotEmpty)
           Flexible(
               child: RefreshIndicator(
-                  onRefresh: () {
+                  onRefresh: () async {
                     orderController.pagenumber = 1;
-                    return orderController.getAcceptedAndinProgressOrders(mounted, context);
+                    return await orderController.getAcceptedAndinProgressOrders(mounted, context);
+
                   },
                   child: ListView.builder(
                       controller: scrollController,

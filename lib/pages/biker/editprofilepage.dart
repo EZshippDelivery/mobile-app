@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/textfield.dart';
 
+// ignore: must_be_immutable
 class EditProfilePage extends StatefulWidget {
   static String routeName = "/edit";
-  static GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
-  const EditProfilePage({Key? key}) : super(key: key);
+  GlobalKey<FormState> formkey3 = GlobalKey<FormState>();
+  EditProfilePage({Key? key}) : super(key: key);
 
   @override
   EditProfilePageState createState() => EditProfilePageState();
@@ -44,7 +45,7 @@ class EditProfilePageState extends State<EditProfilePage> {
           child: Stack(
             children: [
               Form(
-                key: EditProfilePage.formkey3,
+                key: widget.formkey3,
                 child: Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -83,10 +84,13 @@ class EditProfilePageState extends State<EditProfilePage> {
                   child: FloatingActionButton.extended(
                       heroTag: "save_@",
                       onPressed: () async {
-                        if (EditProfilePage.formkey3.currentState!.validate()) {
+                        if (widget.formkey3.currentState!.validate()) {
+                          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                           await updateProfileProvider.updateProfile(mounted, context);
                           if (!mounted) return;
                           await updateProfileProvider.getProfile(mounted, context);
+                          if (!mounted) return;
+                          Navigator.pop(context);
                           if (!mounted) return;
                           Navigator.of(context).pop();
                         }

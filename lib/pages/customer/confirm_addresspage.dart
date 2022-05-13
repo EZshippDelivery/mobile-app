@@ -54,9 +54,12 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
                   bool form = formkey[1].currentState!.validate();
                   bool form1 = formkey[0].currentState!.validate();
                   if (form && form1) {
+                    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                     await customerController.saveAllAddresses(mounted, context, customerController.addAddress, 0);
                     if (!mounted) return;
                     await customerController.saveAllAddresses(mounted, context, customerController.addAddress1, 1);
+                    if (!mounted) return;
+                    Navigator.pop(context);
                     if (!mounted) return;
                     Variables.push(context, BookOrderPage.routeName);
                   }

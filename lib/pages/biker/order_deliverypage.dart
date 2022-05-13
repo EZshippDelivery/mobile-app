@@ -155,7 +155,18 @@ class OrderState extends State<Order> {
                                               color: Colors.green,
                                             ),
                                             const SizedBox(width: 3),
-                                            Text("Pickup Address", style: Variables.font(fontSize: 17))
+                                            Text("Pickup Address", style: Variables.font(fontSize: 17)),
+                                            IconButton(
+                                                onPressed: () async {
+                                                  String urlString =
+                                                      "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}";
+                                                  await canLaunchUrl(Uri.parse(urlString))
+                                                      ? launchUrl(Uri.parse(urlString),
+                                                          mode: LaunchMode.externalApplication)
+                                                      : Variables.showtoast(
+                                                          context, "Can't open Google Maps App", Icons.cancel_outlined);
+                                                },
+                                                icon: Image.asset("assets/icon/icons8-google-maps-64.png"))
                                           ]),
                                           ElevatedButton(
                                               onPressed: () async {
@@ -219,7 +230,18 @@ class OrderState extends State<Order> {
                                               color: Colors.red,
                                             ),
                                             const SizedBox(width: 3),
-                                            Text("Drop Address", style: Variables.font(fontSize: 17))
+                                            Text("Drop Address", style: Variables.font(fontSize: 17)),
+                                            IconButton(
+                                                onPressed: () async {
+                                                  String urlString =
+                                                      "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}";
+                                                  await canLaunchUrl(Uri.parse(urlString))
+                                                      ? launchUrl(Uri.parse(urlString),
+                                                          mode: LaunchMode.externalApplication)
+                                                      : Variables.showtoast(
+                                                          context, "Can't open Google Maps App", Icons.cancel_outlined);
+                                                },
+                                                icon: Image.asset("assets/icon/icons8-google-maps-64.png"))
                                           ]),
                                           ElevatedButton(
                                               onPressed: () async {
@@ -348,12 +370,13 @@ class OrderState extends State<Order> {
                                           ])),
                                       ElevatedButton(
                                           onPressed: () async {
-                                            void launchApps(urlString) async {
-                                              await canLaunchUrl(urlString)
-                                                  ? launchUrl(urlString)
-                                                  : Variables.showtoast(
-                                                      context, "Can't open Google Maps", Icons.cancel_outlined);
-                                            }
+                                            // void launchApps(urlString) async {
+                                            //   await canLaunchUrl(Uri.parse(urlString))
+                                            //       ? launchUrl(Uri.parse(urlString),
+                                            //           mode: LaunchMode.externalApplication)
+                                            //       : Variables.showtoast(
+                                            //           context, "Can't open Google Maps", Icons.cancel_outlined);
+                                            // }
 
                                             await getLiveLocation();
 
@@ -366,8 +389,8 @@ class OrderState extends State<Order> {
                                                 Variables.updateOrder(mounted, context, list.id, 5);
                                               }
 
-                                              launchApps(
-                                                  "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
+                                              // launchApps(
+                                              //     "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.pickLatitude},${list.pickLongitude}");
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
                                               if (!mounted) return;
                                               if (list.statusId < 6) {
@@ -380,8 +403,8 @@ class OrderState extends State<Order> {
                                                 Variables.updateOrder(mounted, context, list.id, 11);
                                               }
 
-                                              launchApps(
-                                                  "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
+                                              // launchApps(
+                                              // "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                             } else if (list.statusId == 11) {
                                               Variables.isdetail = false;
                                               if (!mounted) return;
@@ -392,7 +415,7 @@ class OrderState extends State<Order> {
                                               primary: Palette.kOrange,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                           child: Row(children: [
-                                            list.statusId <= 5
+                                            list.statusId == 5 && list.statusId == 11
                                                 ? Image.asset(
                                                     "assets/icon/icons8-pointer-64.png",
                                                     height: 22,
@@ -401,15 +424,17 @@ class OrderState extends State<Order> {
                                                 : const Icon(Icons.check_rounded),
                                             const SizedBox(width: 5),
                                             Text(
-                                              list.statusId < 5
+                                              list.statusId == 3
                                                   ? "Start"
-                                                  : list.statusId == 5
-                                                      ? "Pick"
-                                                      : list.statusId >= 5 && list.statusId < 11
+                                                  : list.statusId == 4
+                                                      ? "Enroute PickUp"
+                                                      : list.statusId == 5
                                                           ? "Picked"
-                                                          : list.statusId == 11
-                                                              ? "Complete"
-                                                              : "",
+                                                          : list.statusId >= 5 && list.statusId < 11
+                                                              ? "Enroute Delivery"
+                                                              : list.statusId == 11
+                                                                  ? "Complete"
+                                                                  : "",
                                               style: Variables.font(color: Colors.white, fontSize: 15),
                                             )
                                           ]))

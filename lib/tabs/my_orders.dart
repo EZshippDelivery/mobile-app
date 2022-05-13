@@ -1,5 +1,6 @@
 import 'package:ezshipp/tabs/accepted.dart';
 import 'package:ezshipp/tabs/delivered.dart';
+import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,8 +23,15 @@ class MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
     orderController.pagenumber1 = 1;
-    orderController.getAcceptedAndinProgressOrders(mounted, context);
+    Future.delayed(Duration.zero, () => constructor());
     tabController = TabController(length: 2, vsync: this);
+  }
+
+  constructor() async{
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await  orderController.getAcceptedAndinProgressOrders(mounted, context);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override

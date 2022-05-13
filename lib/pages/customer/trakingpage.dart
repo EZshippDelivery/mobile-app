@@ -133,11 +133,9 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                                     steps: [
                                       step("Order Received",
                                           Variables.datetime(widget.order.orderCreatedTime, timeNeed: true), 0),
-                                      step("Order Accepted",
-                                          Variables.datetime("widget.order.acceptedTime", timeNeed: true), 1),
+                                      step("Order Accepted", Variables.datetime("", timeNeed: true), 1),
                                       step("Order Picked", Variables.datetime(DateTime.now(), timeNeed: true), 2),
-                                      step("Order Delivered",
-                                          Variables.datetime("widget.order.deliveredTime", timeNeed: true), 3),
+                                      step("Order Delivered", Variables.datetime("", timeNeed: true), 3),
                                     ],
                                   ),
                                 );

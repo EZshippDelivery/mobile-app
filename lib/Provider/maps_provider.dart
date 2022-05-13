@@ -231,12 +231,14 @@ class MapsProvider extends BikerController {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
       if (!mounted) return;
+     
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         savedAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
         savedAddress.sort((a, b) => a.addressType.compareTo(b.addressType));
       }
     } on SocketException {
+     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     if (!mounted) return;

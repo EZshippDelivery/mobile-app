@@ -102,10 +102,14 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                   }
                   Variables.updateOrderMap.driverId = widget.order.bikerId;
                   Variables.updateOrderMap.newDriverId = widget.order.bikerId;
-                  await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
                   if (!mounted) return;
                   CustomerController customerController = Provider.of<CustomerController>(context, listen: false);
+                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                  await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
+                  if (!mounted) return;
                   await customerController.getCustomerOrderHistory(mounted, context);
+                  if (!mounted) return;
+                  Navigator.pop(context);
                   if (!mounted) return;
                   Variables.pop(context);
                 },
@@ -198,9 +202,11 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 13 && widget.order.statusId != 10
           ? FloatingActionButton.extended(
-              onPressed: () {
-                mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
-
+              onPressed: () async {
+                Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
+                if (!mounted) return;
+                Navigator.pop(context);
                 Variables.push(context, TrackingPage.routeName);
               },
               label: Text("Track Your Order", style: Variables.font(color: null)),
@@ -257,8 +263,11 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
             ElevatedButton(
                 onPressed: () async {
                   BikerController bikerController = Provider.of<BikerController>(context, listen: false);
+                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                   await bikerController.bikerRating(
                       mounted, context, widget.order.bikerId, widget.order.id, TrackingPage.rating.ceil());
+                  if (!mounted) return;
+                  Navigator.pop(context);
                   if (!mounted) return;
                   if (TrackingPage.rating > 0) {
                     Variables.pop(context);

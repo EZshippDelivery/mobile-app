@@ -12,7 +12,7 @@ import '../Provider/update_screenprovider.dart';
 
 // ignore: must_be_immutable
 class SignUp extends StatefulWidget {
-  static final formkey2 = GlobalKey<FormState>();
+  static final formkey2 = GlobalKey<FormState>(debugLabel: "_signUp");
   static bool check = false;
   const SignUp({Key? key}) : super(key: key);
 

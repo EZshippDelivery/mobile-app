@@ -27,11 +27,14 @@ class SavedAddressPageState extends State<SavedAddressPage> {
   void initState() {
     super.initState();
     customerController = Provider.of<CustomerController>(context, listen: false);
-    constructor();
+    Future.delayed(Duration.zero, () => constructor());
   }
 
   void constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
     await customerController.getFirstTenAddresses(mounted, context);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override

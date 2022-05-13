@@ -136,15 +136,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (await InternetConnectionChecker().hasConnection) {
           if (tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
-              await readDetails();
-              authController.storeLoginStatus(true);
+              if(await readDetails()) authController.storeLoginStatus(true);
               if (!mounted) return;
               if (enterKYC && userType.toLowerCase() == "driver") {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => EnterKYC()));
               } else if (!enterKYC && userType.toLowerCase() == "driver") {
-                Navigator.pushReplacementNamed(context, HomePage.routeName);
+                Navigator.popAndPushNamed(context, HomePage.routeName);
               } else if (!enterKYC && userType.toLowerCase() == "customer") {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const CustomerHomePage()));
+                Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
               } else {
                 Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
               }
@@ -156,8 +155,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               } else {
                 Variables.deviceInfo["userType"] = "DRIVER";
               }
+              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
               Map? response = await authController.registerUser(
                   mounted, context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+              if (!mounted) return;
+              Navigator.pop(context);
               if (response != null) await writeDetails();
               if (authController.userType == "Customer" && response != null) {
                 if (!mounted) return;
@@ -195,16 +197,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  readDetails() async {
+  Future<bool> readDetails() async {
     try {
+      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
       await authController.authenticateUser(
           mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
-      if (Variables.driverId == -1 && authController.userType == "") return null;
+      if (!mounted) return false;
+      Navigator.pop(context);
+      if (Variables.driverId == -1 && authController.userType == "") return false;
       writeDetails();
       userType = authController.userType;
     } catch (e) {
       Variables.showtoast(context, "Sign In is not successfull", Icons.cancel_outlined);
     }
+    return true;
   }
 
   show(context, [bool text = false]) => showDialog(
@@ -295,8 +301,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
                     onPressed: () async {
+                      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                       var validate = await customerController
                           .verifyOTP(mounted, context, {"otp": code, "phoneNumber": phonenumber});
+                      if (!mounted) return;
+                      Navigator.pop(context);
                       if (validate != null) {
                         if (!mounted) return;
                         if (validate["otpVerified"]) {
@@ -313,10 +322,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         });
   }
 
-  void resendOTP(id, email, phonenumber) {
-    customerController.challengeOTP(
+  void resendOTP(id, email, phonenumber) async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await customerController.challengeOTP(
         mounted, context, jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));
     isResend.value = true;
+    if (!mounted) return;
+    Navigator.pop(context);
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (count.value == 0) {
         count.value = 45;

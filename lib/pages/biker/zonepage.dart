@@ -34,7 +34,6 @@ class ZonedPageState extends State<ZonedPage> {
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) => ListTile(
                           onTap: () {
-                            snapshot.updateScreen();
                             if (temp == -1) {
                               temp = index;
                             } else {
@@ -42,6 +41,7 @@ class ZonedPageState extends State<ZonedPage> {
                               temp = index;
                             }
                             Variables.centers[temp][2] = true;
+                            snapshot.updateScreen();
                           },
                           title: Text(Variables.centers[index][0], style: Variables.font(fontSize: 16)),
                           subtitle: Text(Variables.centers[index][1],
@@ -58,7 +58,10 @@ class ZonedPageState extends State<ZonedPage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Variables.updateOrderMap.zoneId = temp;
+          Variables.pop(context);
+        },
         child: Text(
           "Drop",
           style: Variables.font(fontSize: 16, color: Colors.white),

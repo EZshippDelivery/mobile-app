@@ -124,6 +124,7 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
             if (!ConfirmOrderPage.check) {
               Variables.showtoast(context, "Accept the Package & Delivery Policies", Icons.warning_rounded);
             } else {
+              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
               await customerController.creatOrder(mounted, context);
 
               ConfirmAddressPage.selectedradio = [null, null];
@@ -133,8 +134,7 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
                 [false, false, true],
                 [false, false, true]
               ];
-              if (!mounted) return;
-              if (customerController.timer != null) customerController.settimer(mounted, context);
+
               SetLocationPage.pickup.clear();
               SetLocationPage.delivery.clear();
               mapsProvider.pickmark = null;
@@ -142,7 +142,11 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
               mapsProvider.info.clear();
               ConfirmOrderPage.check = false;
               BookOrderPage.selectedradio = [1, 1, 2];
-              customerController.getCustomerInProgressOrderCount(mounted, context);
+              if (!mounted) return;
+              await customerController.getCustomerInProgressOrderCount(mounted, context);
+              if (!mounted) return;
+              Navigator.pop(context);
+              if (!mounted) return;
               Navigator.of(context)
                   .pushNamedAndRemoveUntil(CustomerHomePage.routeName, (Route<dynamic> route) => false);
             }

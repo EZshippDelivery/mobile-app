@@ -42,12 +42,18 @@ class AddAddressPageState extends State<AddAddressPage> {
           Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton(
-                onPressed: () {
+                onPressed: () async {
                   if (formkey.currentState!.validate()) {
-                    customerController.addCustomerAddress(mounted, context, customerController.addAddress.toJson());
+                    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                    await customerController.addCustomerAddress(
+                        mounted, context, customerController.addAddress.toJson());
+                    if (!mounted) return;
                     Variables.showtoast(context, "Address Saved", Icons.check);
                     AddAddressPage.controller.clear();
-                    customerController.getFirstTenAddresses(mounted, context);
+                    if (!mounted) return;
+                    await customerController.getFirstTenAddresses(mounted, context);
+                    if (!mounted) return;
+                    Navigator.pop(context);
                     Variables.pop(context);
                   }
                 },

@@ -22,8 +22,11 @@ import 'package:provider/provider.dart';
 import '../Provider/update_profile_provider.dart';
 import '../widgets/textfield.dart';
 
+enum AlertDialogAction { cancel, save }
+
 class Variables {
   static GlobalKey<FormState> formkey = GlobalKey<FormState>();
+
   static String token = "";
   static Map<String, String> headers = {"Content-Type": 'application/json'};
   static String locationPin = "assets/icon/icons8-location-48.png";
@@ -34,13 +37,13 @@ class Variables {
   static Map<String, String?> locations = {};
   static UpdateOrder updateOrderMap = UpdateOrder.fromMap({});
   static int driverId = -1;
-  static final pref = FlutterSecureStorage(aOptions: _getAndroidOptions());
+  static final pref = FlutterSecureStorage(aOptions: getAndroidOptions());
 
   static int index = 0, index1 = 0, index2 = 0;
   static late NewOrderList list, list1;
   static int orderscount = 0;
 
-  static AndroidOptions _getAndroidOptions() => const AndroidOptions(
+  static AndroidOptions getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
       );
 
@@ -95,9 +98,9 @@ class Variables {
   static InternetConnectionStatus internetStatus = InternetConnectionStatus.disconnected;
 
   static List device = ["ANDROID", "IOS", "WEB"];
-  static read({String key = ''}) async => await pref.read(key: key, aOptions: _getAndroidOptions());
+  static read({String key = ''}) async => await pref.read(key: key, aOptions: getAndroidOptions());
   static write({String key = "", String value = ""}) async =>
-      await pref.write(key: key, value: value, aOptions: _getAndroidOptions());
+      await pref.write(key: key, value: value, aOptions: getAndroidOptions());
   static push(BuildContext context, String routeName) => Navigator.of(context).pushNamed(routeName);
   static pop(BuildContext context, {var value}) => Navigator.of(context).pop(value);
   static TextStyle font(
@@ -108,7 +111,7 @@ class Variables {
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
   static Uri uri({required String path, queryParameters}) =>
       Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-  // Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1" + path, queryParameters: queryParameters);
+  //Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -251,7 +254,7 @@ class Variables {
       {bool fromhomepage = false}) async {
     List<Barcode> texts = [];
     try {
-      var camera = FlutterMobileVision.scan(fps: 5.0, forceCloseCameraOnTap: true, waitTap: true);
+      var camera = FlutterMobileVision.scan(fps: 5.0, forceCloseCameraOnTap: true);
 
       texts = await camera;
 
@@ -350,6 +353,7 @@ class Variables {
     // print(jsonEncode(body));
     // var temp = value.newOrderList[index];
     // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
+    loadingDialogue(context: context, subHeading: "Please wait ...");
     if (!mounted) return;
     var result = await value.getDistance(mounted, context, jsonEncode(body));
     if (result != null) {
@@ -359,7 +363,9 @@ class Variables {
         Variables.updateOrderMap.newDriverId = driverId;
       }
       if (!mounted) return;
-      value1.update(await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId));
+      await value1.update(await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId));
+      if (!mounted) return;
+      Navigator.pop(context);
     }
   }
 
@@ -371,6 +377,7 @@ class Variables {
       case 400:
       case 401:
       case 403:
+      if(responseJson["error"]=="Unauthorized")
         Variables.showtoast(context, "${responseJson["status"]}: ${responseJson["error"]}", Icons.warning_rounded);
         break;
       case 500:
@@ -419,6 +426,46 @@ class Variables {
       await Variables.write(key: "enterKYC", value: true.toString());
     } else {
       await Variables.write(key: "enterKYC", value: false.toString());
+    }
+  }
+
+  static Future<Object> loadingDialogue({
+    BuildContext? context,
+    String? subHeading,
+  }) async {
+    Future? action = await showDialog(
+        context: context!,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            title: Row(
+              children: [
+                const SizedBox(
+                  height: 30,
+                  width: 30,
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(Palette.kOrange),
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  subHeading!,
+                  style: Variables.font(color: Palette.deepgrey),
+                )
+              ],
+            ),
+          );
+        });
+    // ignore: unnecessary_null_comparison
+    if ((action != null)) {
+      return action;
+    } else {
+      return AlertDialogAction.cancel;
     }
   }
 }

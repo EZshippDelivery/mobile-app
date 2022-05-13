@@ -88,11 +88,11 @@ class MyApp extends StatelessWidget {
           "/order${Order.routeName}": (context) => Order(index: Variables.index1, accepted: true),
           BookOrderPage.routeName: (context) => const BookOrderPage(),
           ConfirmOrderPage.routeName: (context) => const ConfirmOrderPage(),
-          CustomerEditProfilePage.routeName: (context) => const CustomerEditProfilePage(),
+          CustomerEditProfilePage.routeName: (context) => CustomerEditProfilePage(),
           AddAddressPage.routeName: (context) => const AddAddressPage(),
           SetAddressPage.routeName: (context) => const SetAddressPage(),
           ZonedPage.routeName: (context) => const ZonedPage(),
-          EditProfilePage.routeName: (context) => const EditProfilePage(),
+          EditProfilePage.routeName: (context) => EditProfilePage(),
           DeliveredPage.routeName: (context) =>
               DeliveredPage(reference: Variables.list1, index: Variables.index2, isdetails: Variables.isdetail),
           TrackingPage.routeName: (context) => TrackingPage(updateOrderProvider.customerOrders[Variables.index])

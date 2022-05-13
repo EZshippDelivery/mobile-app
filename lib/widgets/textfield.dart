@@ -118,7 +118,9 @@ class TextFieldsState extends State<TextFields> {
                   break;
                 case "Username":
                 case "Email id":
-                  if (value.contains(RegExp(r"\s")) || !value.contains(RegExp("@"))) {
+                  if (value.contains(RegExp(r"\s")) ||
+                      !value.contains(RegExp("@")) ||
+                      !value.contains(RegExp(r".+@.+\..+"))) {
                     return "Enter valid Email id";
                   }
                   break;

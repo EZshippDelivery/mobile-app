@@ -25,7 +25,7 @@ class OldOrdersState extends State<OldOrders> {
     super.initState();
     customerController = Provider.of<CustomerController>(context, listen: false);
     updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
-    customerController.getCustomerOrderHistory(mounted, context);
+    Future.delayed(Duration.zero, () => constructor());
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!customerController.isLastPage) {
@@ -34,6 +34,13 @@ class OldOrdersState extends State<OldOrders> {
         }
       }
     });
+  }
+
+  void constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await customerController.getCustomerOrderHistory(mounted, context);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override
@@ -46,15 +53,22 @@ class OldOrdersState extends State<OldOrders> {
             child: PopupMenuButton(
                 itemBuilder: (BuildContext context) => [
                       PopupMenuItem(
-                          onTap: () {
-                            customerController.getCustomerOrderHistory(mounted, context);
+                          onTap: () async {
+                            Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+
+                            await customerController.getCustomerOrderHistory(mounted, context);
+                            if (!mounted) return;
+                            Navigator.pop(context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("Recent", style: Variables.font(fontSize: 15))),
                       PopupMenuItem(
-                          onTap: () {
+                          onTap: () async {
                             customerController.pagenumber1 = 1;
-                            customerController.getAcceptedAndinProgressOrders(mounted, context);
+                            Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                            await customerController.getAcceptedAndinProgressOrders(mounted, context);
+                            if (!mounted) return;
+                            Navigator.pop(context);
                           },
                           padding: const EdgeInsets.only(left: 8),
                           child: Text("All", style: Variables.font(fontSize: 15)))

@@ -22,8 +22,6 @@ class _DeliveredState extends State<Delivered> {
   void initState() {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
-    orderController.getAllCompletedOrders(
-        mounted, context, orderController.start.toString(), orderController.end.toString());
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!orderController.isLastPage2) {
@@ -33,6 +31,15 @@ class _DeliveredState extends State<Delivered> {
         }
       }
     });
+    Future.delayed(Duration.zero, () => constructor());
+  }
+
+  void constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await orderController.getAllCompletedOrders(
+        mounted, context, orderController.start.toString(), orderController.end.toString());
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override

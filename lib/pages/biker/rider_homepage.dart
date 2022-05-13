@@ -47,10 +47,13 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     subscription = InternetConnectionChecker().onStatusChange.listen((event) async {
       Variables.internetStatus = event;
       if (event == InternetConnectionStatus.connected) {
+        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
         await updateProfileProvider.getProfile(mounted, context);
         setonline();
         if (!mounted) return;
         await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
+        if (!mounted) return;
+        Navigator.pop(context);
       } else if (event == InternetConnectionStatus.disconnected) {
         Variables.overlayNotification();
       }
@@ -64,14 +67,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final value1 = await Variables.read(key: "FirstTime");
     firstTime = value1 != null ? value1 == "true" : false;
     if (!mounted) return;
-    mapsProvider.offLineMode(mounted, context, value != null ? value.toLowerCase() == "true" : true,
+    await mapsProvider.offLineMode(mounted, context, value != null ? value.toLowerCase() == "true" : true,
         fromhomepage: true);
     if (updateProfileProvider.newOrderList.isNotEmpty) await Variables.write(key: "FirstTime", value: "false");
   }
 
   show(BuildContext context) {
     if (firstTime == false) {
-      Timer.periodic(const Duration(seconds: 3), (timer) async {
+      Timer.periodic(Duration.zero, (timer) async {
         timer.cancel();
         await showDialog(
             context: context,
@@ -86,9 +89,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: Row(children: [
                           Image.asset("assets/images/bloodbros-swipe-left.gif", scale: 0.2, height: 100),
                           SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                          Flexible(
-                              child: Text("Swipe the ORDER to right to accept",
-                                  style: Variables.font(color: Colors.green, fontSize: 17)))
+                          Flexible(child: info("right", "Accept"))
                         ]),
                       )),
                   Card(
@@ -98,9 +99,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: Row(children: [
                           Image.asset("assets/images/bloodbros-swipe-right.gif", scale: 0.2, height: 100),
                           SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                          Flexible(
-                              child: Text("Swipe the ORDER to left to reject",
-                                  style: Variables.font(color: Colors.red, fontSize: 17)))
+                          Flexible(child: info("left", "Reject"))
                         ]),
                       ))
                 ]),
@@ -114,6 +113,22 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 titlePadding: const EdgeInsets.only(top: 20, bottom: 10)));
       });
     }
+  }
+
+  RichText info(String direction, String action) {
+    return RichText(
+        text: TextSpan(
+            text: "Swipe $direction to ",
+            children: [
+              TextSpan(
+                  text: action,
+                  style: Variables.font(
+                      color: action == "Reject" ? Colors.red : Colors.green,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold)),
+              const TextSpan(text: " the order")
+            ],
+            style: Variables.font(color: action == "Reject" ? Colors.red : Colors.green, fontSize: 17)));
   }
 
   @override
@@ -133,8 +148,11 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   if (tabController.index == 1)
                     IconButton(
                         onPressed: () async {
+                          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                           orderController.findOrderbyBarcode(
                               mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 7);
+                          if (!mounted) return;
+                          Navigator.pop(context);
                         },
                         icon: const Icon(Icons.qr_code_scanner_rounded))
                 ]),

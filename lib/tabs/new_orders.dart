@@ -23,11 +23,14 @@ class NewOrdersState extends State<NewOrders> {
   void initState() {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
-    constructor();
+    Future.delayed(Duration.zero, () => constructor());
   }
 
   constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
     await orderController.getAllOrdersByBikerId(mounted, context);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override
