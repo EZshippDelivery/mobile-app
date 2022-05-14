@@ -15,15 +15,18 @@ class OrderController extends BikerController {
     Map<String, dynamic>? responseJson;
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
-      if (!mounted) return;
 
+      if (!mounted) return;
       responseJson = Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading4 = false;
     notifyListeners();
-    if (responseJson != null) return responseJson;
+    if (!mounted) return;
+    if (responseJson != null) {
+      
+    }
   }
 
   findOrderbyBarcode(bool mounted, BuildContext context, String value, int statusId) async {

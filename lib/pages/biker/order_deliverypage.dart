@@ -35,8 +35,6 @@ class OrderState extends State<Order> {
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   late OrderController orderController;
   late MapsProvider mapsProvider;
-  TextEditingController controller = TextEditingController();
-  Timer? timer;
 
   @override
   void initState() {
@@ -55,18 +53,7 @@ class OrderState extends State<Order> {
       Variables.list1 = list;
       Variables.index2 = widget.index;
       return Scaffold(
-          appBar: Variables.app(actions: [
-            if (list.statusId > 5 && list.statusId < 11)
-              IconButton(
-                  onPressed: () async {
-                    Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
-                    if (!mounted) return;
-                    Variables.updateOrder(mounted, context, list.id, 8);
-                    if (timer != null) timer!.cancel();
-                    Variables.pop(context);
-                  },
-                  icon: const Icon(Icons.qr_code_scanner_rounded))
-          ]),
+          appBar: Variables.app(),
           body: Stack(children: [
             Consumer<MapsProvider>(builder: (context, reference1, child) {
               return GoogleMap(
@@ -110,9 +97,14 @@ class OrderState extends State<Order> {
                                                 child: Variables.text(context,
                                                     head: "Order Id: ", value: list.orderSeqId))),
                                       ),
-                                      if (list.statusId > 5 && list.statusId < 12)
+                                      if (list.statusId > 5 && list.statusId < 11)
                                         TextButton(
-                                            onPressed: () => Variables.push(context, ZonedPage.routeName),
+                                            onPressed: () async {
+                                              Variables.index3 = list.id;
+                                              await Variables.push(context, ZonedPage.routeName);
+                                              if (!mounted) return;
+                                              Variables.pop(context);
+                                            },
                                             child: Text(
                                               "Zone At Hub",
                                               style: Variables.font(fontSize: 15, color: null),
@@ -383,10 +375,11 @@ class OrderState extends State<Order> {
                                             if (list.statusId < 5) {
                                               if (!mounted) return;
                                               if (list.statusId < 4) {
-                                                Variables.updateOrder(mounted, context, list.id, 4);
+                                                await Variables.updateOrder(mounted, context, list.id, 4);
                                               }
+                                              if (!mounted) return;
                                               if (list.statusId == 4) {
-                                                Variables.updateOrder(mounted, context, list.id, 5);
+                                                await Variables.updateOrder(mounted, context, list.id, 5);
                                               }
 
                                               // launchApps(
@@ -394,13 +387,15 @@ class OrderState extends State<Order> {
                                             } else if (list.statusId >= 5 && list.statusId < 11) {
                                               if (!mounted) return;
                                               if (list.statusId < 6) {
-                                                Variables.updateOrder(mounted, context, list.id, 6);
+                                                await Variables.updateOrder(mounted, context, list.id, 6);
                                               }
+                                              if (!mounted) return;
                                               if (list.statusId == 6) {
-                                                Variables.updateOrder(mounted, context, list.id, 9);
+                                                await Variables.updateOrder(mounted, context, list.id, 9);
                                               }
+                                              if (!mounted) return;
                                               if (list.statusId == 9) {
-                                                Variables.updateOrder(mounted, context, list.id, 11);
+                                                await Variables.updateOrder(mounted, context, list.id, 11);
                                               }
 
                                               // launchApps(
@@ -410,6 +405,8 @@ class OrderState extends State<Order> {
                                               if (!mounted) return;
                                               Variables.push(context, DeliveredPage.routeName);
                                             }
+                                            if (!mounted) return;
+                                            await reference.getAcceptedAndinProgressOrders(mounted, context);
                                           },
                                           style: ElevatedButton.styleFrom(
                                               primary: Palette.kOrange,
@@ -471,7 +468,6 @@ class OrderState extends State<Order> {
 
   @override
   void dispose() {
-    controller.dispose();
     super.dispose();
   }
 }

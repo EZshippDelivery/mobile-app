@@ -8,7 +8,7 @@ import '../utils/http_requests.dart';
 import '../utils/variables.dart';
 
 class AuthController extends ChangeNotifier {
-  String userType = "driver";
+  String userType = "";
   Map? profile;
 
   registerUser(bool mounted, BuildContext context, body) async {

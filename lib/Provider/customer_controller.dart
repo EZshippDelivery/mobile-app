@@ -11,7 +11,6 @@ import '../APIs/add_address.dart';
 import '../APIs/create_order.dart';
 import '../APIs/get_customerprofile.dart';
 import '../APIs/get_top_addresses.dart';
-import '../APIs/new_orderlist.dart';
 import '../APIs/update_customer_profile.dart';
 import '../utils/http_requests.dart';
 import '../utils/variables.dart';
@@ -173,7 +172,8 @@ class CustomerController extends BikerController {
         Variables.orderscount = responseJson["totalCount"];
         if (responseJson["data"].isNotEmpty) {
           if (pagenumber > 1) {
-            customerOrders.addAll(responseJson["data"].map<CustomerOrdersList>((e) => CustomerOrdersList.fromMap(e)).toList());
+            customerOrders
+                .addAll(responseJson["data"].map<CustomerOrdersList>((e) => CustomerOrdersList.fromMap(e)).toList());
           } else if (pagenumber == 1) {
             customerOrders = List.generate(
                 responseJson["data"].length, (index) => CustomerOrdersList.fromMap(responseJson["data"][index]));
@@ -249,7 +249,6 @@ class CustomerController extends BikerController {
     try {
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/customer/address/add"), body);
       if (!mounted) return;
-
       return Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);

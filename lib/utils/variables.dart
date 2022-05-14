@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
+import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/gestures.dart';
@@ -39,7 +40,7 @@ class Variables {
   static int driverId = -1;
   static final pref = FlutterSecureStorage(aOptions: getAndroidOptions());
 
-  static int index = 0, index1 = 0, index2 = 0;
+  static int index = 0, index1 = 0, index2 = 0, index3 = 0;
   static late NewOrderList list, list1;
   static int orderscount = 0;
 
@@ -101,7 +102,7 @@ class Variables {
   static read({String key = ''}) async => await pref.read(key: key, aOptions: getAndroidOptions());
   static write({String key = "", String value = ""}) async =>
       await pref.write(key: key, value: value, aOptions: getAndroidOptions());
-  static push(BuildContext context, String routeName) => Navigator.of(context).pushNamed(routeName);
+  static push(BuildContext context, String routeName) async => await Navigator.of(context).pushNamed(routeName);
   static pop(BuildContext context, {var value}) => Navigator.of(context).pop(value);
   static TextStyle font(
           {double fontSize = 14,
@@ -344,6 +345,7 @@ class Variables {
       [bool iscustomer = false]) async {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
+    CustomerController value2 = Provider.of<CustomerController>(context, listen: false);
     await Variables.getLiveLocation(statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
@@ -355,15 +357,21 @@ class Variables {
     // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
     loadingDialogue(context: context, subHeading: "Please wait ...");
     if (!mounted) return;
-    var result = await value.getDistance(mounted, context, jsonEncode(body));
-    if (result != null) {
-      Variables.updateOrderMap.distance = result;
-      if (!iscustomer) {
+    if (!iscustomer) {
+      var result = await value.getDistance(mounted, context, jsonEncode(body));
+      if (result != null) {
+        Variables.updateOrderMap.distance = result;
         Variables.updateOrderMap.driverId = driverId;
         Variables.updateOrderMap.newDriverId = driverId;
+        if (!mounted) return;
+        await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
+        if (!mounted) return;
+        Navigator.pop(context);
       }
+    } else {
+      Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
       if (!mounted) return;
-      await value1.update(await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId));
+      await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
       if (!mounted) return;
       Navigator.pop(context);
     }
@@ -387,7 +395,7 @@ class Variables {
       default:
         Variables.showtoast(
             context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"].toString()}',
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"]}',
             Icons.warning_rounded);
         break;
     }

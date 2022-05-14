@@ -17,6 +17,7 @@ import '../../widgets/tabbar.dart';
 
 class HomePage extends StatefulWidget {
   static String routeName = "/driver";
+  static late TabController bikerTabController;
   const HomePage({Key? key}) : super(key: key);
 
   @override
@@ -27,7 +28,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController controller = TextEditingController();
   late UpdateProfileProvider updateProfileProvider;
   late OrderController orderController;
-  late TabController tabController;
+
   late MapsProvider mapsProvider;
   late StreamSubscription subscription;
 
@@ -36,7 +37,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
+    HomePage.bikerTabController = TabController(length: 2, vsync: this);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
@@ -146,12 +147,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             "https://play.google.com/store/apps/details?id=com.ezshipp.customer.app&hl=en&gl=US");
                       },
                       icon: const Icon(Icons.share)),
-                  if (tabController.index == 1)
+                  if (HomePage.bikerTabController.index == 1)
                     IconButton(
                         onPressed: () async {
                           Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                          orderController.findOrderbyBarcode(
-                              mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 7);
+                          await orderController.findOrderbyBarcode(
+                              mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 9);
+                          if (!mounted) return;
+                          await orderController.getAcceptedAndinProgressOrders(mounted, context);
                           if (!mounted) return;
                           Navigator.pop(context);
                         },
@@ -164,15 +167,15 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         onTap: (value) => snapshot.updateScreen(),
                         labelPadding: const EdgeInsets.all(11),
                         indicatorWeight: 4.0,
-                        controller: tabController,
-                        tabs: TabBars.tabs1(tabController))),
+                        controller: HomePage.bikerTabController,
+                        tabs: TabBars.tabs1(HomePage.bikerTabController))),
               );
             },
             child: Stack(
               children: [
                 TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
-                  controller: tabController,
+                  controller: HomePage.bikerTabController,
                   children: const [NewOrders(), MyOrders()],
                 ),
               ],
@@ -192,7 +195,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    tabController.dispose();
+    HomePage.bikerTabController.dispose();
     controller.dispose();
     subscription.cancel();
     super.dispose();

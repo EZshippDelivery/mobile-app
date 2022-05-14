@@ -33,7 +33,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   late Animation _anim, _anim2;
   late AnimationController animController, animController2;
-  
+
   late AuthController authController;
   late CustomerController customerController;
   late Timer timer;
@@ -134,6 +134,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   floatingbutton(BuildContext context) => FloatingActionButton(
       heroTag: "login_button",
       onPressed: () async {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
         if (await InternetConnectionChecker().hasConnection) {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {

@@ -21,7 +21,7 @@ class MapsProvider extends BikerController {
   List<GetAllAddresses> savedAddress = [];
   List focus = [true, true];
   late PlaceDetails placesDetails;
-  late PlaceAddress placeAddress;
+  late PlaceAddress placeAddress, placeAddress1;
   bool isclicked = false, currentLocation = false;
   List boundsMap = [], directioDetails = [];
 
@@ -86,8 +86,10 @@ class MapsProvider extends BikerController {
               (index) => PlaceSearch.fromMap(response.data['predictions'][index]));
         } else if (details == 1) {
           placesDetails = PlaceDetails.fromMap(response.data);
-        } else {
+        } else if (details == 2) {
           placeAddress = PlaceAddress.fromMap(response.data);
+        } else {
+          placeAddress1 = PlaceAddress.fromMap(response.data);
         }
         break;
       case 400:
@@ -231,14 +233,13 @@ class MapsProvider extends BikerController {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/customer/$customerId/address"));
       if (!mounted) return;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         savedAddress = responseJson.map<GetAllAddresses>((e) => GetAllAddresses.fromMap(e)).toList();
         savedAddress.sort((a, b) => a.addressType.compareTo(b.addressType));
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     if (!mounted) return;
@@ -282,6 +283,45 @@ class MapsProvider extends BikerController {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> setLocation(
+      bool mounted, BuildContext context, double lat, double long, customerId) async {
+    Map<String, dynamic>? currentLocation;
+    try {
+      final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
+        "latlng": "$lat,$long",
+        "key": Variables.key,
+      });
+      if (!mounted) return currentLocation;
+      returnResponse(mounted, context, response, 3);
+      placeAddress1.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
+          i.addressComponents.first.types.contains("premise")));
+      placeAddress1.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
+      String state = placeAddress1.results.first.addressComponents
+          .where((element) => element.types.contains("administrative_area_level_1"))
+          .first
+          .longName;
+      String city = placeAddress1.results.first.addressComponents
+          .where((element) => element.types.contains("administrative_area_level_2"))
+          .first
+          .longName;
+
+      currentLocation = {
+        "customerId": customerId,
+        "address1": placeAddress1.results.first.formattedAddress,
+        "pincode": int.parse(placeAddress1.results.first.addressComponents.last.longName),
+        "state": state,
+        "type": "CURRENT",
+        "longitude": long,
+        "latitude": lat,
+        "city": city,
+      };
+    } on SocketException {
+      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    }
+    notifyListeners();
+    return currentLocation;
   }
 
   refreshCurrentLocation() {

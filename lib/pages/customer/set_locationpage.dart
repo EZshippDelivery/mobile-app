@@ -306,7 +306,7 @@ class SetLocationPageState extends State<SetLocationPage> {
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           floatingActionButton: snapshot.onMOve
               ? FloatingActionButton.extended(
-                  onPressed: () {
+                  onPressed: () async {
                     longpress = false;
                     snapshot.onMOve = false;
                     snapshot.updateScreen();
@@ -333,25 +333,26 @@ class SetLocationPageState extends State<SetLocationPage> {
                       city = recentAddress[SetLocationPage.listIndex].city;
                       pincode = recentAddress[SetLocationPage.listIndex].pincode.toString();
                     }
-                    Map<String, dynamic> address = {
-                      'address1':
-                          SetLocationPage.slider == 0 ? SetLocationPage.pickup.text : SetLocationPage.delivery.text,
-                      'city': city,
-                      'customerId': Variables.driverId,
-                      'latitude': screenCoordinates!.latitude,
-                      'longitude': screenCoordinates!.longitude,
-                      'pincode': int.parse(pincode),
-                      'state': state,
-                      'type': "OTHER",
-                    };
-                    if (SetLocationPage.slider == 0) {
-                      reference.setMarkers(mounted, context, mapController, pickup: screenCoordinates);
-                      customerController!.setAddress(address, isdelivery: false);
-                      reference.clear(value: false);
+                    Map<String, dynamic> address = await mapsProvider.setLocation(mounted, context,
+                            screenCoordinates!.latitude, screenCoordinates!.longitude, Variables.driverId) ??
+                        {};
+                    if (address.isNotEmpty) {
+                      if (SetLocationPage.slider == 0) {
+                        SetLocationPage.pickup.text = address["address1"];
+                        if (!mounted) return;
+                        reference.setMarkers(mounted, context, mapController, pickup: screenCoordinates);
+                        customerController!.setAddress(address, isdelivery: false);
+                        reference.clear(value: false);
+                      } else {
+                        SetLocationPage.delivery.text = address["address1"];
+                        customerController!.setAddress(address, isdelivery: true);
+                        if (!mounted) return;
+                        reference.setMarkers(mounted, context, mapController, delivery: screenCoordinates);
+                        reference.clear(value: false);
+                      }
                     } else {
-                      customerController!.setAddress(address, isdelivery: true);
-                      reference.setMarkers(mounted, context, mapController, delivery: screenCoordinates);
-                      reference.clear(value: false);
+                      if (!mounted) return;
+                      Variables.showtoast(context, "choose nearby another location", Icons.warning_rounded);
                     }
                   },
                   label: Text(

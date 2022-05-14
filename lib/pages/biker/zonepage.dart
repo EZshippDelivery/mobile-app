@@ -4,9 +4,11 @@ import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class ZonedPage extends StatefulWidget {
   static String routeName = "/set-zone";
-  const ZonedPage({Key? key}) : super(key: key);
+  int id = 0;
+  ZonedPage(this.id, {Key? key}) : super(key: key);
 
   @override
   ZonedPageState createState() => ZonedPageState();
@@ -14,6 +16,7 @@ class ZonedPage extends StatefulWidget {
 
 class ZonedPageState extends State<ZonedPage> {
   int temp = -1;
+  TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,8 +61,16 @@ class ZonedPageState extends State<ZonedPage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Variables.updateOrderMap.zoneId = temp;
+        onPressed: () async {
+          Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
+          Variables.updateOrderMap.zoneId = temp + 1;
+          if (!mounted) return;
+          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+          await Variables.updateOrder(mounted, context, widget.id, 8);
+          Variables.updateOrderMap.barcode = "";
+          Variables.updateOrderMap.zoneId = 0;
+          if (!mounted) return;
+          Variables.pop(context);
           Variables.pop(context);
         },
         child: Text(
@@ -68,5 +79,11 @@ class ZonedPageState extends State<ZonedPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }

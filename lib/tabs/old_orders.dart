@@ -81,7 +81,7 @@ class OldOrdersState extends State<OldOrders> {
             // ]
             ),
         body: Consumer<CustomerController>(builder: (context, reference, child) {
-          if (!reference.loading4) {
+          if (!reference.loading2) {
             if (reference.customerOrders.isNotEmpty) {
               return RefreshIndicator(
                 onRefresh: () {

@@ -49,6 +49,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                 onPressed: () async {
                   bool comment = await showDialog(
                     context: _scaffoldKey.currentContext!,
+                    barrierDismissible: false,
                     builder: (context) => SimpleDialog(
                       title: Text("Cancel Reasons", textAlign: TextAlign.center, style: Variables.font(fontSize: 18)),
                       children: [
@@ -104,10 +105,10 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                   Variables.updateOrderMap.newDriverId = widget.order.bikerId;
                   if (!mounted) return;
                   CustomerController customerController = Provider.of<CustomerController>(context, listen: false);
-                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                   await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
+                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                   if (!mounted) return;
-                  await customerController.getCustomerOrderHistory(mounted, context);
+                  await customerController.getCustomerOrders(mounted, context);
                   if (!mounted) return;
                   Navigator.pop(context);
                   if (!mounted) return;

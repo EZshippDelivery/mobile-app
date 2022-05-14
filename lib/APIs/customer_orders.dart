@@ -11,7 +11,7 @@ class CustomerOrdersList {
   final String customerName;
   final String customerPhone;
   final int deliveryCharge;
-  final int distance;
+  final double distance;
   final String dropAddress;
   final int dropAddressId;
   final String dropFlatNumber;
@@ -95,7 +95,7 @@ class CustomerOrdersList {
     String? customerName,
     String? customerPhone,
     int? deliveryCharge,
-    int? distance,
+    double? distance,
     String? dropAddress,
     int? dropAddressId,
     String? dropFlatNumber,
@@ -229,7 +229,7 @@ class CustomerOrdersList {
       customerName: map['customerName'] ?? '',
       customerPhone: map['customerPhone'] ?? '',
       deliveryCharge: map['deliveryCharge']?.toInt() ?? 0,
-      distance: map['distance']?.toInt() ?? 0,
+      distance: map['distance'] ?? 0,
       dropAddress: map['dropAddress'] ?? '',
       dropAddressId: map['dropAddressId']?.toInt() ?? 0,
       dropFlatNumber: map['dropFlatNumber'] ?? '',

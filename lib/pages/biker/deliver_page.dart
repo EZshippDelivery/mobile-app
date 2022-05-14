@@ -24,7 +24,7 @@ class DeliveredPageState extends State<DeliveredPage> {
     List paymentItems = [
       ["Collect Cash At", widget.reference.collectAt],
       ["Payment Type", widget.reference.paymentType],
-      ["Delivery Charges", "₹ ${widget.reference.codCharge}"],
+      ["Delivery Charges", "₹ ${widget.reference.deliveryCharge}"],
       ["Total Amount", "₹ ${widget.reference.totalCharge}"]
     ];
     return Scaffold(
@@ -266,10 +266,8 @@ class DeliveredPageState extends State<DeliveredPage> {
                         height: MediaQuery.of(context).size.height * 0.3,
                         backgroundColor: Colors.white,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Padding(
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                        Padding(
                             padding: const EdgeInsets.all(5.0),
                             child: ElevatedButton(
                                 style: ButtonStyle(
@@ -288,12 +286,9 @@ class DeliveredPageState extends State<DeliveredPage> {
                                     Variables.showtoast(context, "Write a Signature", Icons.warning_rounded);
                                   }
                                 },
-                                child: const Icon(
-                                  Icons.check_rounded,
-                                )),
-                          ),
-                        ],
-                      )
+                                child: const Icon(Icons.check_rounded)))
+                      ]),
+                      const SizedBox(height: 5)
                     ],
                   ),
                 ),

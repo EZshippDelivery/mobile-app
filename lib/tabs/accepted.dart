@@ -67,7 +67,6 @@ class AcceptedState extends State<Accepted> {
                   onRefresh: () async {
                     orderController.pagenumber = 1;
                     return await orderController.getAcceptedAndinProgressOrders(mounted, context);
-
                   },
                   child: ListView.builder(
                       controller: scrollController,
@@ -78,10 +77,12 @@ class AcceptedState extends State<Accepted> {
                                 padding: const EdgeInsets.all(2.0),
                                 child: ListTile(
                                   tileColor: Colors.white,
-                                  onTap: () {
+                                  onTap: () async {
                                     Variables.index1 = index;
                                     if (!mounted) return;
-                                    Variables.push(context, "/order${Order.routeName}");
+                                    await Variables.push(context, "/order${Order.routeName}");
+                                    if (!mounted) return;
+                                    await orderController.getAcceptedAndinProgressOrders(mounted, context);
                                   },
                                   title: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

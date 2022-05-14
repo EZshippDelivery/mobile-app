@@ -91,7 +91,7 @@ class MyApp extends StatelessWidget {
           CustomerEditProfilePage.routeName: (context) => CustomerEditProfilePage(),
           AddAddressPage.routeName: (context) => const AddAddressPage(),
           SetAddressPage.routeName: (context) => const SetAddressPage(),
-          ZonedPage.routeName: (context) => const ZonedPage(),
+          ZonedPage.routeName: (context) => ZonedPage(Variables.index3),
           EditProfilePage.routeName: (context) => EditProfilePage(),
           DeliveredPage.routeName: (context) =>
               DeliveredPage(reference: Variables.list1, index: Variables.index2, isdetails: Variables.isdetail),

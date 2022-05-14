@@ -24,7 +24,7 @@ class BikerController extends ChangeNotifier {
   Profile? riderProfile;
   Timer? timer, timer1;
 
-  double latitude = 0, longitude = 0;
+  double latitude = 0, longitude = 0, latitude1 = 0, longitude1 = 0;
   bool isOnline = false, isLastPage = false, isLastPage1 = false, isLastPage2 = false;
   bool loading = true, loading2 = true, loading3 = true;
   String fullName = "", name = "";
