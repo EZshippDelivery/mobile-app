@@ -49,35 +49,37 @@ class OldOrdersState extends State<OldOrders> {
   Widget build(BuildContext context) {
     return Scaffold(
         drawer: const CustomerDrawer(),
-        appBar: Variables.app(actions: [
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 15.0),
-          //   child: PopupMenuButton(
-          //       itemBuilder: (BuildContext context) => [
-          //             PopupMenuItem(
-          //                 onTap: () async {
-          //                   Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+        appBar: Variables.app(
+            // actions: [
+            // Padding(
+            //   padding: const EdgeInsets.only(right: 15.0),
+            //   child: PopupMenuButton(
+            //       itemBuilder: (BuildContext context) => [
+            //             PopupMenuItem(
+            //                 onTap: () async {
+            //                   Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
 
-          //                   await customerController.getCustomerOrderHistory(mounted, context);
-          //                   if (!mounted) return;
-          //                   Navigator.pop(context);
-          //                 },
-          //                 padding: const EdgeInsets.only(left: 8),
-          //                 child: Text("Recent", style: Variables.font(fontSize: 15))),
-          //             PopupMenuItem(
-          //                 onTap: () async {
-          //                   customerController.pagenumber = 1;
-          //                   Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-          //                   await customerController.getCustomerOrders(mounted, context);
-          //                   if (!mounted) return;
-          //                   Navigator.pop(context);
-          //                 },
-          //                 padding: const EdgeInsets.only(left: 8),
-          //                 child: Text("All", style: Variables.font(fontSize: 15)))
-          //           ],
-          //       child: const Icon(Icons.filter_list_rounded)),
-          // )
-        ]),
+            //                   await customerController.getCustomerOrderHistory(mounted, context);
+            //                   if (!mounted) return;
+            //                   Navigator.pop(context);
+            //                 },
+            //                 padding: const EdgeInsets.only(left: 8),
+            //                 child: Text("Recent", style: Variables.font(fontSize: 15))),
+            //             PopupMenuItem(
+            //                 onTap: () async {
+            //                   customerController.pagenumber = 1;
+            //                   Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+            //                   await customerController.getCustomerOrders(mounted, context);
+            //                   if (!mounted) return;
+            //                   Navigator.pop(context);
+            //                 },
+            //                 padding: const EdgeInsets.only(left: 8),
+            //                 child: Text("All", style: Variables.font(fontSize: 15)))
+            //           ],
+            //       child: const Icon(Icons.filter_list_rounded)),
+            // )
+            // ]
+            ),
         body: Consumer<CustomerController>(builder: (context, reference, child) {
           if (!reference.loading4) {
             if (reference.customerOrders.isNotEmpty) {
