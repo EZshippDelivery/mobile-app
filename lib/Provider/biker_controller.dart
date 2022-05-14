@@ -45,7 +45,7 @@ class BikerController extends ChangeNotifier {
 
           Variables.returnResponse(context, response, onlinemode: true);
         });
-       
+
         Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
       } else {
         if (timer != null) timer!.cancel();
@@ -55,12 +55,11 @@ class BikerController extends ChangeNotifier {
             jsonEncode(
                 {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
         if (!mounted) return;
-       
+
         Variables.returnResponse(context, response, onlinemode: true);
         Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
 
@@ -80,14 +79,13 @@ class BikerController extends ChangeNotifier {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/true"));
       if (!mounted) return;
-     
+
       List? responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         newOrderList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
         newOrderList = newOrderList.reversed.toList();
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading = false;
@@ -99,13 +97,12 @@ class BikerController extends ChangeNotifier {
       final response =
           await HTTPRequest.postRequest(Variables.uri(path: "/biker/orders/${Variables.driverId}/distance"), body);
       if (!mounted) return 0;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         return responseJson[0]["distance"];
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     return null;
@@ -116,22 +113,15 @@ class BikerController extends ChangeNotifier {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
       if (!mounted) return;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
-        if (responseJson["data"].isNotEmpty) {
-          if (pagenumber1 == 1) {}
-          acceptedList =
-              List.generate(responseJson["data"].length, (index) => NewOrderList.fromMap(responseJson["data"][index]));
-        } else if (pagenumber1 > 1) {
-          acceptedList.addAll(responseJson["data"].map<NewOrderList>((e) => NewOrderList.fromMap(e)).toList());
-        }
+        acceptedList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
         isLastPage = false;
       } else {
         isLastPage = true;
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
@@ -153,7 +143,7 @@ class BikerController extends ChangeNotifier {
       final response = await HTTPRequest.postRequest(
           Variables.uri(path: "/biker/orders/completed/${Variables.driverId}"), body.toJson());
       if (!mounted) return;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
@@ -165,7 +155,6 @@ class BikerController extends ChangeNotifier {
         }
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading3 = false;
@@ -181,6 +170,7 @@ class BikerController extends ChangeNotifier {
         Map<String, dynamic>? map = Variables.returnResponse(context, response);
         if (map != null) {
           driver = Marker(
+              anchor: const Offset(0.5, 0.5),
               markerId: const MarkerId("origin"),
               icon: driverMarker!,
               position: LatLng(map["lastLatitude"], map["lastLongitude"]),
@@ -188,9 +178,7 @@ class BikerController extends ChangeNotifier {
         }
         notifyListeners();
       });
-     
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
   }
@@ -216,14 +204,14 @@ class BikerController extends ChangeNotifier {
     try {
       final response = await HTTPRequest.getRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"));
       if (!mounted) return;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         riderProfile = Profile.fromMap(responseJson);
       }
     } on SocketException {
       if (!mounted) return;
-     
+
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     if (riderProfile != null) {
@@ -241,7 +229,7 @@ class BikerController extends ChangeNotifier {
       var json = UpdateProfile.fromMap1(riderProfile!.toMap(), TextFields.data).toJson();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"), json);
       if (!mounted) return;
-     
+
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (!mounted) return;
@@ -249,7 +237,6 @@ class BikerController extends ChangeNotifier {
         await getProfile(mounted, context);
       }
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();
@@ -277,10 +264,9 @@ class BikerController extends ChangeNotifier {
       };
       final response = await HTTPRequest.postRequest(Variables.uri(path: "/biker/rating"), jsonEncode(body));
       if (!mounted) return;
-     
+
       Variables.returnResponse(context, response, onlinemode: true);
     } on SocketException {
-     
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     notifyListeners();

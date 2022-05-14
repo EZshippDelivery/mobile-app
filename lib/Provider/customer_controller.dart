@@ -173,7 +173,7 @@ class CustomerController extends BikerController {
         Variables.orderscount = responseJson["totalCount"];
         if (responseJson["data"].isNotEmpty) {
           if (pagenumber > 1) {
-            customerOrders.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
+            customerOrders.addAll(responseJson["data"].map<CustomerOrdersList>((e) => CustomerOrdersList.fromMap(e)).toList());
           } else if (pagenumber == 1) {
             customerOrders = List.generate(
                 responseJson["data"].length, (index) => CustomerOrdersList.fromMap(responseJson["data"][index]));
@@ -203,7 +203,7 @@ class CustomerController extends BikerController {
             customerOrders = List.generate(
                 responseJson["data"].length, (index) => CustomerOrdersList.fromMap(responseJson["data"][index]));
           } else if (pagenumber > 1) {
-            customerOrders.addAll(responseJson["data"].map((e) => NewOrderList.fromMap(e)).toList());
+            customerOrders.addAll(responseJson["data"].map((e) => CustomerOrdersList.fromMap(e)).toList());
           }
           isLastPage = false;
         } else {

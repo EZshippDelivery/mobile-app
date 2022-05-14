@@ -70,18 +70,18 @@ class AddAddressPageState extends State<AddAddressPage> {
                     child: Column(children: [
                       Consumer<CustomerController>(builder: (context, reference, child) {
                         return Column(children: [
-                          if (reference.addAddress.type.isNotEmpty)
-                            CircleAvatar(
-                              backgroundColor: Colors.transparent,
-                              radius: avatarRadius,
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
-                                  child: reference.addAddress.type == "HOME"
-                                      ? Image.asset("assets/icon/icons8-home-96.png")
-                                      : reference.addAddress.type == "OFFICE"
-                                          ? Image.asset("assets/icon/icons8-office-96.png")
-                                          : Image.asset("assets/icon/icons8-location-96.png")),
-                            ),
+                          // if (reference.addAddress.type.isNotEmpty)
+                          //   CircleAvatar(
+                          //     backgroundColor: Colors.transparent,
+                          //     radius: avatarRadius,
+                          //     child: ClipRRect(
+                          //         borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
+                          //         child: reference.addAddress.type == "HOME"
+                          //             ? Image.asset("assets/icon/icons8-home-96.png")
+                          //             : reference.addAddress.type == "OFFICE"
+                          //                 ? Image.asset("assets/icon/icons8-office-96.png")
+                          //                 : Image.asset("assets/icon/icons8-location-96.png")),
+                          //   ),
                           ToggleButtons(
                               borderRadius: BorderRadius.circular(25),
                               isSelected: AddAddressPage.addresstypesC,
@@ -106,8 +106,8 @@ class AddAddressPageState extends State<AddAddressPage> {
                           children: [
                             Radio(reference),
                             if (AddAddressPage.selectedradio == 1) ...[
+                              textfields("Flat Number"),
                               textfields("Appartment/Complex Name"),
-                              textfields("Flat Number")
                             ],
                             if (AddAddressPage.selectedradio == 2) textfields("House number"),
                             textfields("Street/Locality Address", ontap: true),

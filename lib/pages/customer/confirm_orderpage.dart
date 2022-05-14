@@ -1,7 +1,6 @@
 import 'package:ezshipp/APIs/create_order.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
-import 'package:ezshipp/pages/customer/book_orderpage.dart';
 import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/customer/set_locationpage.dart';
@@ -14,10 +13,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../Provider/customer_controller.dart';
 import '../../utils/themes.dart';
 
+// ignore: must_be_immutable
 class ConfirmOrderPage extends StatefulWidget {
   static String routeName = "/confirm";
-  static bool check = false;
-  const ConfirmOrderPage({Key? key}) : super(key: key);
+  bool check = false;
+  ConfirmOrderPage({Key? key}) : super(key: key);
 
   @override
   ConfirmOrderPageState createState() => ConfirmOrderPageState();
@@ -91,9 +91,9 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
               Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                 Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
                   return Checkbox(
-                    value: ConfirmOrderPage.check,
+                    value: widget.check,
                     onChanged: (value) {
-                      ConfirmOrderPage.check = value!;
+                      widget.check = value!;
                       reference.updateScreen();
                     },
                     activeColor: Palette.kOrange,
@@ -121,7 +121,7 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!ConfirmOrderPage.check) {
+            if (!widget.check) {
               Variables.showtoast(context, "Accept the Package & Delivery Policies", Icons.warning_rounded);
             } else {
               Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
@@ -140,8 +140,7 @@ class ConfirmOrderPageState extends State<ConfirmOrderPage> {
               mapsProvider.pickmark = null;
               mapsProvider.dropmark = null;
               mapsProvider.info.clear();
-              ConfirmOrderPage.check = false;
-              BookOrderPage.selectedradio = [1, 1, 2];
+              widget.check = false;
               if (!mounted) return;
               await customerController.getCustomerInProgressOrderCount(mounted, context);
               if (!mounted) return;

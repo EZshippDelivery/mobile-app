@@ -39,6 +39,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     tabController = TabController(length: 2, vsync: this);
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
+    orderController = Provider.of<OrderController>(context, listen: false);
     subscribe();
     show(context);
   }

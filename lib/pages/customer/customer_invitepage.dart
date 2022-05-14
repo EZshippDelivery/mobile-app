@@ -53,9 +53,9 @@ class CustomerInvitePage extends StatelessWidget {
     );
   }
 
-  void launchApps(BuildContext context, urlString, app) async {
-    await canLaunchUrl(urlString)
-        ? launchUrl(urlString)
+  void launchApps(BuildContext context, String urlString, String app) async {
+    await canLaunchUrl(Uri.parse(urlString))
+        ? launchUrl(Uri.parse(urlString), mode: LaunchMode.externalApplication)
         : Variables.showtoast(context, "Can't open $app App", Icons.cancel_outlined);
   }
 

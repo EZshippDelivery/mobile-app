@@ -35,14 +35,14 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    Timer.periodic(Duration.zero, (timer) {
       if (widget.order.statusId == 12) showfeedback(context);
       timer.cancel();
     });
     return Scaffold(
       key: _scaffoldKey,
       appBar: Variables.app(actions: [
-        if (widget.order.statusId > 0 && widget.order.statusId < 13 && widget.order.statusId != 10)
+        if (widget.order.statusId > 0 && widget.order.statusId < 12 && widget.order.statusId != 10)
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
@@ -200,7 +200,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
         ]),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 13 && widget.order.statusId != 10
+      floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 12 && widget.order.statusId != 10
           ? FloatingActionButton.extended(
               onPressed: () async {
                 Variables.loadingDialogue(context: context, subHeading: "Please wait ...");

@@ -10,10 +10,11 @@ import 'package:provider/provider.dart';
 
 import '../../Provider/customer_controller.dart';
 
+// ignore: must_be_immutable
 class BookOrderPage extends StatefulWidget {
   static String routeName = "/book-order";
-  static List<int?> selectedradio = [1, 1, 2];
-  const BookOrderPage({Key? key}) : super(key: key);
+  List<int?> selectedradio = [1, 1, 2];
+  BookOrderPage({Key? key}) : super(key: key);
 
   @override
   BookOrderPageState createState() => BookOrderPageState();
@@ -84,18 +85,18 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                         ]),
                       ),
                     ),
-                    Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
-                      return Card(
-                          child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(
-                                  "Payment Details",
-                                  style: Variables.font(fontSize: 18),
-                                ),
-                                radio(true, "CASH", "ONLINE", 0, reference1, cashonly: true),
-                              ])));
-                    }),
+                    // Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
+                    //   return Card(
+                    //       child: Padding(
+                    //           padding: const EdgeInsets.all(8.0),
+                    //           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    //             Text(
+                    //               "Payment Details",
+                    //               style: Variables.font(fontSize: 18),
+                    //             ),
+                    //             radio(true, "CASH", "ONLINE", 0, reference1, cashonly: true),
+                    //           ])));
+                    // }),
                     Consumer<UpdateScreenProvider>(builder: (context, reference1, child) {
                       return Card(
                           child: Padding(
@@ -105,7 +106,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                                   "Item Details",
                                   style: Variables.font(fontSize: 18),
                                 ),
-                                radio(BookOrderPage.selectedradio[0] == 1, "Collect At PickUp", "Collect At Delivery",
+                                radio(widget.selectedradio[0] == 1, "Collect At PickUp", "Collect At Delivery",
                                     1, reference1),
                                 textboxes("Item Description", null),
                                 textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
@@ -138,7 +139,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                                       const SizedBox(width: 10),
                                       radio(true, "Yes", "No", 2, reference1)
                                     ])),
-                                if (BookOrderPage.selectedradio[2] == 1)
+                                if (widget.selectedradio[2] == 1)
                                   textboxes("Cash on Delivery Charges", null, keyboardtype: TextInputType.number)
                               ])));
                     }),
@@ -167,11 +168,11 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                       child: FloatingActionButton.extended(
                           onPressed: () {
                             if (formkey.currentState!.validate()) {
-                              String pay = BookOrderPage.selectedradio[0] == 1 ? "CASH" : "ONLINE";
+                              String pay = "CASH"; //: "ONLINE";
                               reference.createNewOrder.amount =
                                   reference.createNewOrder.deliveryCharge + reference.createNewOrder.codAmount;
                               reference.createNewOrder.bookingType = "SAMEDAY";
-                              reference.createNewOrder.collectAtPickUp = BookOrderPage.selectedradio[1] == 1;
+                              reference.createNewOrder.collectAtPickUp = widget.selectedradio[1] == 1;
                               reference.createNewOrder.customerId = Variables.driverId;
                               reference.createNewOrder.createdBy = Variables.driverId;
                               reference.createNewOrder.lastModifiedBy = Variables.driverId;
@@ -208,10 +209,10 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                 child: Radio<int>(
                     value: 1,
                     visualDensity: VisualDensity.adaptivePlatformDensity,
-                    groupValue: BookOrderPage.selectedradio[index],
+                    groupValue: widget.selectedradio[index],
                     activeColor: Palette.kOrange,
                     onChanged: (value) {
-                      BookOrderPage.selectedradio[index] = value;
+                      widget.selectedradio[index] = value;
                       reference.updateScreen();
                     }),
               ),
@@ -223,13 +224,13 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                 child: Radio<int>(
                     value: 2,
                     visualDensity: VisualDensity.adaptivePlatformDensity,
-                    groupValue: BookOrderPage.selectedradio[index],
+                    groupValue: widget.selectedradio[index],
                     activeColor: Palette.kOrange,
                     onChanged: (value) {
                       if (cashonly) {
                         Variables.showtoast(context, "Online Payment Gateway is not yet Ready", Icons.warning_rounded);
                       } else {
-                        BookOrderPage.selectedradio[index] = value;
+                        widget.selectedradio[index] = value;
                       }
                       reference.updateScreen();
                     }),
@@ -271,13 +272,13 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
           validator: (value) {
             if (labelText.contains("Description")) {
               if (value!.isEmpty) return "Enter $labelText";
-            } else if (labelText.contains("Delivery Charges") && BookOrderPage.selectedradio[2] == 1) {
+            } else if (labelText.contains("Delivery Charges") && widget.selectedradio[2] == 1) {
               if (value!.isEmpty) return "Enter $labelText";
             } else if (labelText.contains("Phone")) {
               if (value!.length != 10) return "Enter valid Phone Number";
-              if (labelText.contains("Receiver") && value == senderPhone.text) {
-                return "Receiver and Sender Phone numbers shoudn't be same";
-              }
+              // if (labelText.contains("Receiver") && value == senderPhone.text) {
+              //   return "Receiver and Sender Phone numbers shoudn't be same";
+              // }
             } else if (labelText.contains("Name")) {
               if (value!.isEmpty) return "Enter $labelText";
             }

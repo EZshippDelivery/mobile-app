@@ -119,18 +119,19 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
                         //         : const Icon(Icons.favorite_border_rounded))
                       ],
                     ),
-                    if (type.isNotEmpty)
-                      CircleAvatar(
-                        backgroundColor: Colors.transparent,
-                        radius: avatarRadius,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
-                            child: type == "HOME"
-                                ? Image.asset("assets/icon/icons8-home-96.png")
-                                : type == "OFFICE"
-                                    ? Image.asset("assets/icon/icons8-office-96.png")
-                                    : Image.asset("assets/icon/icons8-location-96.png")),
-                      ),
+                    // if (type.isNotEmpty)
+                    //   CircleAvatar(
+                    //     backgroundColor: Colors.transparent,
+                    //     radius: avatarRadius,
+                    //     child: ClipRRect(
+                    //         borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
+                    //         child: type == "HOME"
+                    //             ? Image.asset("assets/icon/icons8-home-96.png")
+                    //             : type == "OFFICE"
+                    //                 ? Image.asset("assets/icon/icons8-office-96.png")
+                    //                 : Image.asset("assets/icon/icons8-location-96.png")),
+                    //   ),
+                    const SizedBox(height: 10),
                     ToggleButtons(
                         borderRadius: BorderRadius.circular(25),
                         isSelected: ConfirmAddressPage.addresstypesC[index],
@@ -151,8 +152,8 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
                       return Column(children: [
                         Radio(index, reference),
                         if (ConfirmAddressPage.selectedradio[index] == 1) ...[
+                          textfields("Flat Number", index, controller: controller[3]),
                           textfields("Appartment/Complex Name", index, controller: controller[4]),
-                          textfields("Flat Number", index, controller: controller[3])
                         ],
                         if (ConfirmAddressPage.selectedradio[index] == 2)
                           textfields("House number", index, controller: controller[2]),

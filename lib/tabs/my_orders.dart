@@ -21,6 +21,7 @@ class MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    
     orderController = Provider.of<OrderController>(context, listen: false);
     orderController.pagenumber1 = 1;
     Future.delayed(Duration.zero, () => constructor());

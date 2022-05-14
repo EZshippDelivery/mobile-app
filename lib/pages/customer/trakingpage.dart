@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ezshipp/APIs/customer_orders.dart';
 import 'package:ezshipp/Provider/biker_controller.dart';
+import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -19,6 +20,7 @@ class TrackingPage extends StatefulWidget {
   static String routeName = "/tracking";
   CustomerOrdersList order;
   static double rating = 0;
+  int stepper = 0;
 
   static bool complete = false;
   TrackingPage(this.order, {Key? key}) : super(key: key);
@@ -28,7 +30,7 @@ class TrackingPage extends StatefulWidget {
 }
 
 class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixin {
-  int _stepper = 0;
+  
   bool laststep = false;
   DecorationImage? decorationImage;
   String name = "";
@@ -106,29 +108,29 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                                   child: Variables.text(context, head: "Order Id: ", value: widget.order.orderSeqId)),
                               Variables.dividerName("Order Status", hpadding: 0, vpadding: 5),
                               const SizedBox(height: 5),
-                              Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
-                                if (widget.order.statusId >= 2) {
-                                  _stepper = 1;
-                                } else if (widget.order.statusId >= 3) {
-                                  _stepper = 2;
-                                } else if (widget.order.statusId >= 6) {
-                                  _stepper = 3;
-                                } else if (widget.order.statusId >= 12) {
+                              Consumer2<UpdateScreenProvider, CustomerController>(
+                                  builder: (context, reference, reference1, child) {
+                                if (widget.order.statusId >= 12) {
                                   TrackingPage.complete = true;
+                                } else if (widget.order.statusId >= 6) {
+                                  widget.stepper = 3;
+                                } else if (widget.order.statusId >= 3) {
+                                  widget.stepper = 2;
+                                } else if (widget.order.statusId >= 2) {
+                                  widget.stepper = 1;
                                 }
                                 return SizedBox(
                                   height: 75,
                                   width: MediaQuery.of(context).size.width - 32,
                                   child: Stepper(
-                                    currentStep: _stepper,
+                                    currentStep: widget.stepper,
                                     type: StepperType.horizontal,
                                     margin: EdgeInsets.zero,
                                     elevation: 0,
-                                    // onStepTapped: (value) {
-                                    //   setState(() {
-                                    //     _stepper = value;
-                                    //   });
-                                    // },
+                                    onStepTapped: (value) {
+                                      widget.stepper = value;
+                                      reference.updateScreen();
+                                    },
                                     controlsBuilder: (context, controlDetails) => Container(),
                                     steps: [
                                       step("Order Received",
@@ -237,12 +239,12 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
 
   Step step(String title, String subtitle, int index) {
     return Step(
-        title: _stepper == index ? Text(title, style: Variables.font()) : Container(),
+        title: widget.stepper == index ? Text(title, style: Variables.font()) : Container(),
         content: Container(),
-        isActive: _stepper > index || TrackingPage.complete,
-        state: _stepper > index || TrackingPage.complete
+        isActive: widget.stepper > index || TrackingPage.complete,
+        state: widget.stepper > index || TrackingPage.complete
             ? StepState.complete
-            : _stepper == index
+            : widget.stepper == index
                 ? StepState.editing
                 : StepState.indexed);
   }

@@ -1,4 +1,5 @@
 import 'package:ezshipp/Provider/auth_controller.dart';
+import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,25 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  late CustomerController customerController;
+
+  @override
+  void initState() {
+    super.initState();
+    customerController = Provider.of<CustomerController>(context, listen: false);
+    Future.delayed(Duration.zero, () => constructor());
+  }
+
+  void constructor() async {
+    if (Variables.driverId > 0) {
+      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+      if (!mounted) return;
+      await customerController.getCustomerInProgressOrderCount(mounted, context);
+      if (!mounted) return;
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -387,7 +387,7 @@ class Variables {
       default:
         Variables.showtoast(
             context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"]}',
+            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"].toString()}',
             Icons.warning_rounded);
         break;
     }
