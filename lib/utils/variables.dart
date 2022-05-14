@@ -110,8 +110,8 @@ class Variables {
           TextDecoration? decoration}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
   static Uri uri({required String path, queryParameters}) =>
-      // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-      Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
+      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+  // Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
