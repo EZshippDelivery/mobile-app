@@ -16,8 +16,8 @@ class CustomerOrdersList {
   final int dropAddressId;
   final String dropFlatNumber;
   final String dropLandmark;
-  final int dropLatitude;
-  final int dropLongitude;
+  final double dropLatitude;
+  final double dropLongitude;
   final String externalId;
   final bool feedbackSubmitted;
   final int id;
@@ -32,8 +32,8 @@ class CustomerOrdersList {
   final int pickAddressId;
   final String pickFlatNumber;
   final String pickLandmark;
-  final int pickLatitude;
-  final int pickLongitude;
+  final double pickLatitude;
+  final double pickLongitude;
   final String receiverName;
   final String receiverPhone;
   final String senderName;
@@ -100,8 +100,8 @@ class CustomerOrdersList {
     int? dropAddressId,
     String? dropFlatNumber,
     String? dropLandmark,
-    int? dropLatitude,
-    int? dropLongitude,
+    double? dropLatitude,
+    double? dropLongitude,
     String? externalId,
     bool? feedbackSubmitted,
     int? id,
@@ -116,8 +116,8 @@ class CustomerOrdersList {
     int? pickAddressId,
     String? pickFlatNumber,
     String? pickLandmark,
-    int? pickLatitude,
-    int? pickLongitude,
+    double? pickLatitude,
+    double? pickLongitude,
     String? receiverName,
     String? receiverPhone,
     String? senderName,

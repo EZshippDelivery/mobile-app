@@ -12,9 +12,9 @@ import '../../Provider/customer_controller.dart';
 
 class SetAddressPage extends StatefulWidget {
   static String routeName = "/set-address";
-  static TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
   static int listIndex = 0;
   const SetAddressPage({Key? key}) : super(key: key);
+  static TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
 
   @override
   SetAddressPageState createState() => SetAddressPageState();
@@ -267,7 +267,7 @@ class SetAddressPageState extends State<SetAddressPage> {
 
   @override
   void dispose() {
-    mapController.dispose();
+    // mapController.dispose();
     super.dispose();
   }
 }

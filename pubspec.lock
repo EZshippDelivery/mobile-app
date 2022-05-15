@@ -771,7 +771,7 @@ packages:
     source: hosted
     version: "1.8.2"
   stack_trace:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: stack_trace
       url: "https://pub.dartlang.org"

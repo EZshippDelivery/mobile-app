@@ -65,13 +65,12 @@ class OrderState extends State<Order> {
                   if (reference1.pickmark != null) reference1.pickmark!,
                   if (reference1.dropmark != null) reference1.dropmark!
                 },
-                onMapCreated: (controller) {
-                  // await reference1.directions(context, controller, null,
-                  //     places: [reference1.pickmark!.position, reference1.dropmark!.position]).then((value) {
-                  //   var latLngBounds =
-                  //       LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
-                  //   controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
-                  // });
+                onMapCreated: (controller) async {
+                  await reference1.directions(mounted, context, controller, list).then((value) {
+                    var latLngBounds =
+                        LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
+                    controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
+                  });
                 },
                 polylines: {Polyline(polylineId: const PolylineId("origin"), points: reference1.info, width: 3)},
               );

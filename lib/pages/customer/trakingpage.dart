@@ -30,7 +30,6 @@ class TrackingPage extends StatefulWidget {
 }
 
 class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixin {
-  
   bool laststep = false;
   DecorationImage? decorationImage;
   String name = "";
@@ -85,9 +84,13 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                 markers: {
                   if (reference1.driver != null) reference1.driver!,
                 },
-                onMapCreated: (controller) {
+                onMapCreated: (controller) async {
                   mapController = controller;
-
+                  await reference1.setMarkers(mounted, context, controller,
+                      pickup: LatLng(widget.order.pickLatitude, widget.order.pickLongitude));
+                  if (!mounted) return;
+                  await reference1.setMarkers(mounted, context, controller,
+                      delivery: LatLng(widget.order.dropLatitude, widget.order.dropLongitude));
                   if (reference1.driver != null) {
                     mapController.animateCamera(
                         CameraUpdate.newCameraPosition(CameraPosition(target: reference1.driver!.position, zoom: 17)));
