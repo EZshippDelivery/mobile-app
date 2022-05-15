@@ -158,7 +158,6 @@ class AddAddressPageState extends State<AddAddressPage> {
       );
   @override
   void dispose() {
-    AddAddressPage.controller.dispose();
     super.dispose();
   }
 }
