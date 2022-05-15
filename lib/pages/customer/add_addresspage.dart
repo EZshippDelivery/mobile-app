@@ -107,7 +107,7 @@ class AddAddressPageState extends State<AddAddressPage> {
                             Radio(reference),
                             if (AddAddressPage.selectedradio == 1) ...[
                               textfields("Flat Number"),
-                              textfields("Appartment/Complex Name"),
+                              textfields("Apartment/Complex Name"),
                             ],
                             if (AddAddressPage.selectedradio == 2) textfields("House number"),
                             textfields("Street/Locality Address", ontap: true),
@@ -125,13 +125,13 @@ class AddAddressPageState extends State<AddAddressPage> {
         decoration: InputDecoration(labelText: label),
         keyboardType: TextInputType.streetAddress,
         onTap: ontap
-            ? () {
-                Variables.push(context, SetAddressPage.routeName);
+            ? () async {
+                await Variables.push(context, SetAddressPage.routeName);
               }
             : null,
         onChanged: (value) {
           switch (label) {
-            case "Appartment/Complex Name":
+            case "Apartment/Complex Name":
               customerController.addAddress.complexName = value;
               break;
             case "Flat Number":
@@ -147,7 +147,7 @@ class AddAddressPageState extends State<AddAddressPage> {
           }
         },
         validator: (value) {
-          if (label == "Appartment/Complex Name" ||
+          if (label == "Apartment/Complex Name" ||
               label == "Flat Number" ||
               label == "House number" ||
               label == "Street/Locality Address") {
@@ -189,7 +189,7 @@ class _RadioState extends State<Radio> {
             widget.updateScreen.updateScreen();
           },
           title: Text(
-            "Appartment/Complex",
+            "Apartment/Complex",
             style: Variables.font(fontSize: 15),
           ),
         ),

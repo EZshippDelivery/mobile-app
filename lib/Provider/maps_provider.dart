@@ -247,7 +247,7 @@ class MapsProvider extends BikerController {
     notifyListeners();
   }
 
-  Future<void> setCurrentLocation(bool mounted, BuildContext context, customerId) async {
+  Future<void> setCurrentLocation(bool mounted, BuildContext context, int customerId, {bool addAddress = false}) async {
     try {
       await getCurrentlocations();
       final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
@@ -278,7 +278,11 @@ class MapsProvider extends BikerController {
         "latitude": latitude,
         "city": city,
       };
-      savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
+      if (addAddress) {
+        savedAddress = [GetAllAddresses.fromMap(currentLocation)];
+      } else {
+        savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
+      }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
@@ -312,7 +316,7 @@ class MapsProvider extends BikerController {
         "address1": placeAddress1.results.first.formattedAddress,
         "pincode": int.parse(placeAddress1.results.first.addressComponents.last.longName),
         "state": state,
-        "type": "CURRENT",
+        "type": "OTHER",
         "longitude": long,
         "latitude": lat,
         "city": city,

@@ -102,7 +102,7 @@ class Variables {
   static read({String key = ''}) async => await pref.read(key: key, aOptions: getAndroidOptions());
   static write({String key = "", String value = ""}) async =>
       await pref.write(key: key, value: value, aOptions: getAndroidOptions());
-  static push(BuildContext context, String routeName) async => await Navigator.of(context).pushNamed(routeName);
+  static push(BuildContext context, String routeName) => Navigator.of(context).pushNamed(routeName);
   static pop(BuildContext context, {var value}) => Navigator.of(context).pop(value);
   static TextStyle font(
           {double fontSize = 14,

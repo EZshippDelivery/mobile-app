@@ -153,7 +153,7 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
                         Radio(index, reference),
                         if (ConfirmAddressPage.selectedradio[index] == 1) ...[
                           textfields("Flat Number", index, controller: controller[3]),
-                          textfields("Appartment/Complex Name", index, controller: controller[4]),
+                          textfields("Apartment/Complex Name", index, controller: controller[4]),
                         ],
                         if (ConfirmAddressPage.selectedradio[index] == 2)
                           textfields("House number", index, controller: controller[2]),
@@ -178,7 +178,7 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
         onChanged: (value) {
           if (index == 0) {
             switch (label) {
-              case "Appartment/Complex Name":
+              case "Apartment/Complex Name":
                 customerController.addAddress.complexName = value;
                 break;
               case "Flat Number":
@@ -194,7 +194,7 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
             }
           } else {
             switch (label) {
-              case "Appartment/Complex Name":
+              case "Apartment/Complex Name":
                 customerController.addAddress1.complexName = value;
                 break;
               case "Flat Number":
@@ -211,7 +211,7 @@ class ConfirmAddressPageState extends State<ConfirmAddressPage> {
           }
         },
         validator: (value) {
-          if (label == "Appartment/Complex Name" ||
+          if (label == "Apartment/Complex Name" ||
               label == "Flat Number" ||
               label == "House number" ||
               label == "Street/Locality Address") {
@@ -250,7 +250,7 @@ class _RadioState extends State<Radio> {
             widget.updateScreen.updateScreen();
           },
           title: Text(
-            "Appartment/Complex",
+            "Apartment/Complex",
             style: Variables.font(fontSize: 15),
           ),
         ),

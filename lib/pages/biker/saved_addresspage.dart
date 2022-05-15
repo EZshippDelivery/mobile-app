@@ -105,7 +105,7 @@ class SavedAddressPageState extends State<SavedAddressPage> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Variables.text(context,
-                                              head: "Appartment/House no. :\n",
+                                              head: "Apartment/House no. :\n",
                                               value: reference.getFirstTenAddress[index].apartment,
                                               valueColor: Colors.grey,
                                               vpadding: 5),
