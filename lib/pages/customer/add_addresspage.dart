@@ -6,127 +6,148 @@ import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class AddAddressPage extends StatefulWidget {
   static String routeName = "/add-address";
-  static List<bool> addresstypesC = [false, false, true];
-  static int temp = 2;
+  List<bool> addresstypesC = [false, false, true];
+  int temp = 2;
   static Object? selectedradio;
-  static TextEditingController controller = TextEditingController();
-  const AddAddressPage({Key? key}) : super(key: key);
+
+  AddAddressPage({Key? key}) : super(key: key);
 
   @override
   AddAddressPageState createState() => AddAddressPageState();
 }
 
 class AddAddressPageState extends State<AddAddressPage> {
+  GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  late CustomerController customerController;
+  TextEditingController flatNumber = TextEditingController();
+  TextEditingController apartment = TextEditingController();
+  TextEditingController houseNumber = TextEditingController();
+  TextEditingController street = TextEditingController();
+  TextEditingController landmark = TextEditingController();
+
   double padding = 15;
   double avatarRadius = 45;
-
-  late CustomerController customerController;
-
   List<String> addresstypes = ["Home", "Office", "Others"];
-
-  GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     customerController = Provider.of<CustomerController>(context, listen: false);
     customerController.addAddress.type = "OTHER";
+    AddAddressPage.selectedradio = null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: Variables.app(actions: [
-          Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextButton(
-                onPressed: () async {
-                  if (formkey.currentState!.validate()) {
-                    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                    await customerController.addCustomerAddress(
-                        mounted, context, customerController.addAddress.toJson());
-                    if (!mounted) return;
-                    Variables.showtoast(context, "Address Saved", Icons.check);
-                    AddAddressPage.controller.clear();
-                    if (!mounted) return;
-                    await customerController.getFirstTenAddresses(mounted, context);
-                    if (!mounted) return;
-                    Navigator.pop(context);
-                    Variables.pop(context);
-                  }
-                },
-                child: Text("Save", style: Variables.font(fontSize: 16, color: null)),
-              ))
-        ]),
-        body: SingleChildScrollView(
-            child: Column(children: [
-          Container(
-              padding: EdgeInsets.only(left: padding, top: padding, right: padding, bottom: padding),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Form(
-                    key: formkey,
-                    child: Column(children: [
-                      Consumer<CustomerController>(builder: (context, reference, child) {
-                        return Column(children: [
-                          // if (reference.addAddress.type.isNotEmpty)
-                          //   CircleAvatar(
-                          //     backgroundColor: Colors.transparent,
-                          //     radius: avatarRadius,
-                          //     child: ClipRRect(
-                          //         borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
-                          //         child: reference.addAddress.type == "HOME"
-                          //             ? Image.asset("assets/icon/icons8-home-96.png")
-                          //             : reference.addAddress.type == "OFFICE"
-                          //                 ? Image.asset("assets/icon/icons8-office-96.png")
-                          //                 : Image.asset("assets/icon/icons8-location-96.png")),
-                          //   ),
-                          ToggleButtons(
-                              borderRadius: BorderRadius.circular(25),
-                              isSelected: AddAddressPage.addresstypesC,
-                              children: List.generate(
-                                  addresstypes.length,
-                                  (index) =>
-                                      Text(addresstypes[index], style: Variables.font(fontSize: 15, color: null))),
-                              onPressed: (index) {
-                                if (AddAddressPage.temp == -1) {
-                                  AddAddressPage.temp = index;
-                                } else {
-                                  AddAddressPage.addresstypesC[AddAddressPage.temp] = false;
-                                  AddAddressPage.temp = index;
-                                }
-                                customerController.setAddressType(addresstypes[AddAddressPage.temp].toUpperCase());
-                                AddAddressPage.addresstypesC[AddAddressPage.temp] = true;
-                              })
-                        ]);
-                      }),
-                      Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
-                        return Column(
-                          children: [
-                            Radio(reference),
-                            if (AddAddressPage.selectedradio == 1) ...[
-                              textfields("Flat Number"),
-                              textfields("Apartment/Complex Name"),
+    return WillPopScope(
+      onWillPop: () async {
+        // flatNumber.clear();
+        // apartment.clear();
+        // houseNumber.clear();
+        // street.clear();
+        // landmark.clear();
+        AddAddressPage.selectedradio = null;
+        widget.temp = 2;
+        widget.addresstypesC = [false, false, true];
+        return true;
+      },
+      child: Scaffold(
+          appBar: Variables.app(actions: [
+            Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: TextButton(
+                  onPressed: () async {
+                    if (formkey.currentState!.validate()) {
+                      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                      await customerController.addCustomerAddress(
+                          mounted, context, customerController.addAddress.toJson());
+                      if (!mounted) return;
+                      Variables.showtoast(context, "Address Saved", Icons.check);
+
+                      if (!mounted) return;
+                      await customerController.getFirstTenAddresses(mounted, context);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                      Variables.pop(context);
+                    }
+                  },
+                  child: Text("Save", style: Variables.font(fontSize: 16, color: null)),
+                ))
+          ]),
+          body: SingleChildScrollView(
+              child: Column(children: [
+            Container(
+                padding: EdgeInsets.only(left: padding, top: padding, right: padding, bottom: padding),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Form(
+                      key: formkey,
+                      child: Column(children: [
+                        Consumer<CustomerController>(builder: (context, reference, child) {
+                          return Column(children: [
+                            // if (reference.addAddress.type.isNotEmpty)
+                            //   CircleAvatar(
+                            //     backgroundColor: Colors.transparent,
+                            //     radius: avatarRadius,
+                            //     child: ClipRRect(
+                            //         borderRadius: BorderRadius.all(Radius.circular(avatarRadius)),
+                            //         child: reference.addAddress.type == "HOME"
+                            //             ? Image.asset("assets/icon/icons8-home-96.png")
+                            //             : reference.addAddress.type == "OFFICE"
+                            //                 ? Image.asset("assets/icon/icons8-office-96.png")
+                            //                 : Image.asset("assets/icon/icons8-location-96.png")),
+                            //   ),
+                            ToggleButtons(
+                                borderRadius: BorderRadius.circular(25),
+                                isSelected: widget.addresstypesC,
+                                children: List.generate(
+                                    addresstypes.length,
+                                    (index) =>
+                                        Text(addresstypes[index], style: Variables.font(fontSize: 15, color: null))),
+                                onPressed: (index) {
+                                  if (widget.temp == -1) {
+                                    widget.temp = index;
+                                  } else {
+                                    widget.addresstypesC[widget.temp] = false;
+                                    widget.temp = index;
+                                  }
+                                  customerController.setAddressType(addresstypes[widget.temp].toUpperCase());
+                                  widget.addresstypesC[widget.temp] = true;
+                                })
+                          ]);
+                        }),
+                        Consumer<UpdateScreenProvider>(builder: (context, reference, child) {
+                          return Column(
+                            children: [
+                              Radio(reference),
+                              if (AddAddressPage.selectedradio == 1) ...[
+                                textfields("Flat Number", flatNumber),
+                                textfields("Apartment/Complex Name", apartment),
+                              ],
+                              if (AddAddressPage.selectedradio == 2) textfields("House number", houseNumber),
+                              textfields("Street/Locality Address", street, ontap: true),
+                              textfields("Landmark", landmark)
                             ],
-                            if (AddAddressPage.selectedradio == 2) textfields("House number"),
-                            textfields("Street/Locality Address", ontap: true),
-                            textfields("Landmark")
-                          ],
-                        );
-                      })
-                    ]))
-              ]))
-        ])));
+                          );
+                        })
+                      ]))
+                ]))
+          ]))),
+    );
   }
 
-  dynamic textfields(String label, {bool ontap = false}) => TextFormField(
-        controller: ontap ? AddAddressPage.controller : null,
+  Widget textfields(String label, TextEditingController controller, {bool ontap = false}) => TextFormField(
+        controller: controller,
         decoration: InputDecoration(labelText: label),
         keyboardType: TextInputType.streetAddress,
-        onTap: ontap
-            ? () async {
-                await Variables.push(context, SetAddressPage.routeName);
+        onTap: ontap && controller.text.isEmpty
+            ? () {
+                Navigator.pushNamed(context, SetAddressPage.routeName).then((value) {
+                  controller.text = value.toString() == "null" ? "" : value.toString();
+                  controller.selection = TextSelection.fromPosition(const TextPosition(offset: 0));
+                });
               }
             : null,
         onChanged: (value) {

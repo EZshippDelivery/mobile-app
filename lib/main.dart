@@ -20,7 +20,7 @@ import 'package:ezshipp/pages/customer/order_detailspage.dart';
 // import 'package:ezshipp/pages/biker/orderpage.dart';
 import 'package:ezshipp/pages/biker/order_deliverypage.dart';
 import 'package:ezshipp/pages/biker/profilepage.dart';
-import 'package:ezshipp/pages/biker/saved_addresspage.dart';
+import 'package:ezshipp/pages/customer/saved_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_locationpage.dart';
 import 'package:ezshipp/pages/splash.dart';
@@ -89,8 +89,8 @@ class MyApp extends StatelessWidget {
           BookOrderPage.routeName: (context) => BookOrderPage(),
           ConfirmOrderPage.routeName: (context) => ConfirmOrderPage(),
           CustomerEditProfilePage.routeName: (context) => CustomerEditProfilePage(),
-          AddAddressPage.routeName: (context) => const AddAddressPage(),
-          SetAddressPage.routeName: (context) => const SetAddressPage(),
+          AddAddressPage.routeName: (context) => AddAddressPage(),
+          SetAddressPage.routeName: (context) => SetAddressPage(),
           ZonedPage.routeName: (context) => ZonedPage(Variables.index3),
           EditProfilePage.routeName: (context) => EditProfilePage(),
           DeliveredPage.routeName: (context) =>

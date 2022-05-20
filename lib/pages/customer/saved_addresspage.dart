@@ -40,11 +40,13 @@ class SavedAddressPageState extends State<SavedAddressPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Variables.app(actions: [
-        TextButton(
-            onPressed: () => setState(() => SavedAddressPage.delete = !SavedAddressPage.delete),
-            child: Text(SavedAddressPage.delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
-      ]),
+      appBar: Variables.app(
+          //   actions: [
+          //   TextButton(
+          //       onPressed: () => setState(() => SavedAddressPage.delete = !SavedAddressPage.delete),
+          //       child: Text(SavedAddressPage.delete ? "Cancel" : "Edit", style: Variables.font(fontSize: 15, color: null)))
+          // ]
+          ),
       body: Consumer<CustomerController>(builder: (context, reference, child) {
         if (reference.getFirstTenAddress.isNotEmpty) {
           return ListView.separated(

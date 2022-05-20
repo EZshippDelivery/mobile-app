@@ -1,7 +1,7 @@
 import 'package:ezshipp/pages/aboutpage.dart';
 import 'package:ezshipp/pages/customer/customer_invitepage.dart';
 import 'package:ezshipp/pages/customer/customer_profilepage.dart';
-import 'package:ezshipp/pages/biker/saved_addresspage.dart';
+import 'package:ezshipp/pages/customer/saved_addresspage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';

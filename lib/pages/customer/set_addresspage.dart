@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:ezshipp/APIs/get_top_addresses.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
-import 'package:ezshipp/pages/customer/add_addresspage.dart';
+import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,28 +10,33 @@ import 'package:provider/provider.dart';
 
 import '../../Provider/customer_controller.dart';
 
+// ignore: must_be_immutable
 class SetAddressPage extends StatefulWidget {
   static String routeName = "/set-address";
-  static int listIndex = 0;
-  const SetAddressPage({Key? key}) : super(key: key);
-  static TextEditingController pickup = TextEditingController(), delivery = TextEditingController();
+  int listIndex = 0;
+  bool maptap = false;
+  TextEditingController pickup = TextEditingController();
+  SetAddressPage({Key? key}) : super(key: key);
 
   @override
   SetAddressPageState createState() => SetAddressPageState();
 }
 
 class SetAddressPageState extends State<SetAddressPage> {
-  late MapsProvider mapsProvider;
-
   late GoogleMapController mapController;
+  late MapsProvider mapsProvider;
+  late UpdateScreenProvider updateScreenProvider;
+  late CustomerController customerController;
   LatLng? screenCoordinates;
+  FocusNode focusNode = FocusNode();
+
   List<GetAllAddresses> recentAddress = [];
-  CustomerController? customerController;
 
   @override
   void initState() {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
+    updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
     Future.delayed(Duration.zero, () => constructor());
     customerController = Provider.of<CustomerController>(context, listen: false);
   }
@@ -40,6 +45,7 @@ class SetAddressPageState extends State<SetAddressPage> {
     Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
     mapsProvider.getCurrentlocations();
     await mapsProvider.setCurrentLocation(mounted, context, Variables.driverId, addAddress: true);
+    mapsProvider.pickmark = null;
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -66,22 +72,33 @@ class SetAddressPageState extends State<SetAddressPage> {
                             y: (size.height * devicePixelRatio) ~/ 2.0,
                           ));
                         },
+                        onTap: (value) {
+                          widget.maptap = true;
+                          updateScreenProvider.updateScreen();
+                        },
                         onMapCreated: ((controller) => mapController = controller),
+                        markers: {if (reference.pickmark != null) reference.pickmark!},
                         initialCameraPosition:
-                            CameraPosition(target: LatLng(reference.latitude, reference.longitude), zoom: 14),
+                            CameraPosition(target: LatLng(reference.latitude, reference.longitude), zoom: 10),
                         myLocationEnabled: true,
                         zoomControlsEnabled: false,
                       )
                     : const Center(child: CircularProgressIndicator.adaptive()),
-                if (reference.isclicked)
-                  Positioned(
-                    bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                        ? size.height * 0.1
-                        : (size.height - (size.height * 0.2)) / 2.0,
-                    left: (size.width - 30) / 2.0,
-                    height: 45,
-                    child: Image.asset("assets/icon/pickmarker.png"),
-                  ),
+                Consumer<UpdateScreenProvider>(builder: (context, snapshot, child) {
+                  return Stack(
+                    children: [
+                      if (widget.maptap)
+                        Positioned(
+                          bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                              ? size.height * 0.1
+                              : (size.height - (size.height * 0.2)) / 2.0,
+                          left: (size.width - 30) / 2.0,
+                          height: 45,
+                          child: Image.asset("assets/icon/pickmarker.png"),
+                        )
+                    ],
+                  );
+                }),
                 Column(
                   children: [
                     Card(
@@ -91,7 +108,7 @@ class SetAddressPageState extends State<SetAddressPage> {
                         child: FocusScope(
                             child: Focus(
                                 onFocusChange: (value) => reference.setfocus(0, value),
-                                child: textfields("Location", SetAddressPage.pickup))),
+                                child: textfields("Location", widget.pickup))),
                       ),
                     ),
                   ],
@@ -114,29 +131,30 @@ class SetAddressPageState extends State<SetAddressPage> {
                                           ? recentAddress[index].addressType
                                           : "OTHER";
                                       return InkWell(
-                                          onTap: () {
+                                          onTap: () async {
                                             if (recentAddress.isNotEmpty && index < recentAddress.length) {
-                                              SetAddressPage.pickup.text = recentAddress[index].address1;
-                                              AddAddressPage.controller.text = recentAddress[index].address1;
+                                              widget.pickup.text = recentAddress[index].address1;
                                               screenCoordinates =
                                                   LatLng(recentAddress[index].latitude, recentAddress[index].longitude);
-                                              mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                  CameraPosition(target: screenCoordinates!, zoom: 17)));
+                                              reference.setMarkers(mounted, context, mapController,
+                                                  pickup: screenCoordinates);
                                             } else {
-                                              SetAddressPage.pickup.text = reference.placesList[index].description;
-                                              AddAddressPage.controller.text = reference.placesList[index].description;
-                                              reference
+                                              widget.pickup.text = reference.placesList[index].description;
+                                              await reference
                                                   .getPlaceDetails(
                                                       mounted, context, reference.placesList[index].place_id)
-                                                  .then((value) {
+                                                  .then((value) async {
                                                 var location = reference.placesDetails.result.geometry.location;
                                                 screenCoordinates = LatLng(location.lat, location.lng);
-                                                mapController.animateCamera(CameraUpdate.newCameraPosition(
-                                                    CameraPosition(target: screenCoordinates!, zoom: 17)));
+                                                reference.setMarkers(mounted, context, mapController,
+                                                    pickup: screenCoordinates);
+                                                // await mapController.animateCamera(CameraUpdate.newCameraPosition(
+                                                //     CameraPosition(target: screenCoordinates!, zoom: 17)));
                                               });
                                             }
+                                            focusNode.unfocus();
                                             reference.clear(value: true);
-                                            SetAddressPage.listIndex = index;
+                                            widget.listIndex = index;
                                           },
                                           child: Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -178,9 +196,9 @@ class SetAddressPageState extends State<SetAddressPage> {
             floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
             floatingActionButton: reference.isclicked
                 ? FloatingActionButton.extended(
-                    onPressed: () {
+                    onPressed: () async {
                       String state = "", city = "", pincode = "";
-                      if (SetAddressPage.listIndex >= recentAddress.length) {
+                      if (widget.listIndex >= recentAddress.length) {
                         state = reference.placesDetails.result.addressComponents
                             .where((element) => element.types.contains("administrative_area_level_1"))
                             .first
@@ -198,23 +216,32 @@ class SetAddressPageState extends State<SetAddressPage> {
                                 .longName
                             : "0";
                       } else {
-                        state = recentAddress[SetAddressPage.listIndex].state;
-                        city = recentAddress[SetAddressPage.listIndex].city;
-                        pincode = recentAddress[SetAddressPage.listIndex].pincode.toString();
+                        state = recentAddress[widget.listIndex].state;
+                        city = recentAddress[widget.listIndex].city;
+                        pincode = recentAddress[widget.listIndex].pincode.toString();
                       }
-                      Map<String, dynamic> address = {
-                        'address1': SetAddressPage.pickup.text,
-                        'city': city,
-                        'customerId': Variables.driverId,
-                        'latitude': screenCoordinates!.latitude,
-                        'longitude': screenCoordinates!.longitude,
-                        'pincode': int.parse(pincode),
-                        'state': state,
-                        'type': "OTHER",
-                      };
-                      customerController!.setAddress(address, isdelivery: false);
+                      Map<String, dynamic> address = {};
+                      if (widget.maptap) {
+                        address = await mapsProvider.setLocation(mounted, context, screenCoordinates!.latitude,
+                                screenCoordinates!.longitude, Variables.driverId) ??
+                            {};
+                        widget.maptap = false;
+                      } else {
+                        address = {
+                          'address1': widget.pickup.text,
+                          'city': city,
+                          'customerId': Variables.driverId,
+                          'latitude': mapsProvider.pickmark!.position.latitude,
+                          'longitude': mapsProvider.pickmark!.position.latitude,
+                          'pincode': int.parse(pincode),
+                          'state': state,
+                          'type': "OTHER",
+                        };
+                      }
+                      customerController.setAddress(address, isdelivery: false);
                       reference.clear(value: false);
-                      Variables.pop(context);
+                      if (!mounted) return;
+                      Navigator.pop(context, widget.pickup.text);
                     },
                     label: Text(
                       "Confirm Location",
@@ -231,6 +258,7 @@ class SetAddressPageState extends State<SetAddressPage> {
         child: TextFormField(
             controller: controller,
             keyboardType: TextInputType.streetAddress,
+            focusNode: focusNode,
             onTap: () {
               mapsProvider.refreshCurrentLocation();
               recentAddress = mapsProvider.savedAddress;
@@ -267,7 +295,7 @@ class SetAddressPageState extends State<SetAddressPage> {
 
   @override
   void dispose() {
-    // mapController.dispose();
+    mapController.dispose();
     super.dispose();
   }
 }

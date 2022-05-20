@@ -310,29 +310,6 @@ class SetLocationPageState extends State<SetLocationPage> {
                     longpress = false;
                     snapshot.onMOve = false;
                     snapshot.updateScreen();
-                    String state = "", city = "", pincode = "";
-                    if (SetLocationPage.listIndex >= recentAddress.length) {
-                      state = reference.placesDetails.result.addressComponents
-                          .where((element) => element.types.contains("administrative_area_level_1"))
-                          .first
-                          .longName;
-                      city = reference.placesDetails.result.addressComponents
-                          .where((element) => element.types.contains("administrative_area_level_2"))
-                          .first
-                          .longName;
-                      pincode = reference.placesDetails.result.addressComponents
-                              .where((element) => element.types.contains("postal_code"))
-                              .isNotEmpty
-                          ? reference.placesDetails.result.addressComponents
-                              .where((element) => element.types.contains("postal_code"))
-                              .first
-                              .longName
-                          : "0";
-                    } else {
-                      state = recentAddress[SetLocationPage.listIndex].state;
-                      city = recentAddress[SetLocationPage.listIndex].city;
-                      pincode = recentAddress[SetLocationPage.listIndex].pincode.toString();
-                    }
                     Map<String, dynamic> address = await mapsProvider.setLocation(mounted, context,
                             screenCoordinates!.latitude, screenCoordinates!.longitude, Variables.driverId) ??
                         {};

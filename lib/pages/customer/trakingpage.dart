@@ -83,6 +83,17 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                 initialCameraPosition: const CameraPosition(target: LatLng(17.387140, 78.491684), zoom: 11.0),
                 markers: {
                   if (reference1.driver != null) reference1.driver!,
+                  if (reference1.pickmark != null) reference1.pickmark!,
+                  if (reference1.dropmark != null) reference1.dropmark!
+                },
+                polylines: {
+                  if (reference1.info.isNotEmpty)
+                    Polyline(
+                        endCap: Cap.roundCap,
+                        startCap: Cap.roundCap,
+                        polylineId: const PolylineId("direction"),
+                        points: reference1.info,
+                        width: 3)
                 },
                 onMapCreated: (controller) async {
                   mapController = controller;

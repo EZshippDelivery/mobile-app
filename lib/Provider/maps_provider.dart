@@ -81,15 +81,23 @@ class MapsProvider extends BikerController {
   dynamic returnResponse(bool mounted, BuildContext context, dio.Response response, int details) {
     switch (response.statusCode) {
       case 200:
-        if (details == 0 && response.data["status"].toString().toLowerCase()=="ok") {
+        if (details == 0 && response.data["status"].toString().toLowerCase() == "ok") {
           placesList = List.generate(response.data['predictions']!.length,
               (index) => PlaceSearch.fromMap(response.data['predictions'][index]));
         } else if (details == 1 && response.data["status"].toString().toLowerCase() == "ok") {
           placesDetails = PlaceDetails.fromMap(response.data);
         } else if (details == 2 && response.data["status"].toString().toLowerCase() == "ok") {
           placeAddress = PlaceAddress.fromMap(response.data);
-        } else {
+        } else if (details == 3 && response.data["status"].toString().toLowerCase() == "ok") {
           placeAddress1 = PlaceAddress.fromMap(response.data);
+        } else {
+          if (details == 1) {
+            placesDetails = PlaceDetails.fromMap({});
+          } else if (details == 2) {
+            placeAddress = PlaceAddress.fromMap({});
+          } else if (details == 3) {
+            placeAddress1 = PlaceAddress.fromMap({});
+          }
         }
         break;
       case 400:
