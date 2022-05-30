@@ -6,6 +6,7 @@ import 'package:ezshipp/pages/customer/set_locationpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../Provider/customer_controller.dart';
@@ -106,8 +107,8 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                                   "Item Details",
                                   style: Variables.font(fontSize: 18),
                                 ),
-                                radio(widget.selectedradio[0] == 1, "Collect At PickUp", "Collect At Delivery",
-                                    1, reference1),
+                                radio(widget.selectedradio[0] == 1, "Collect At PickUp", "Collect At Delivery", 1,
+                                    reference1),
                                 textboxes("Item Description", null),
                                 textboxes("Approximate Cost of Item", null, keyboardtype: TextInputType.number),
                                 // Padding(
@@ -167,6 +168,10 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                       padding: const EdgeInsets.only(top: 15.0, bottom: 10),
                       child: FloatingActionButton.extended(
                           onPressed: () {
+                            FocusScopeNode currentFocus = FocusScope.of(context);
+                            if (!currentFocus.hasPrimaryFocus) {
+                              currentFocus.unfocus();
+                            }
                             if (formkey.currentState!.validate()) {
                               String pay = "CASH"; //: "ONLINE";
                               reference.createNewOrder.amount =
@@ -190,6 +195,8 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                                       : 2];
 
                               Variables.push(context, ConfirmOrderPage.routeName);
+                            } else {
+                              Variables.showtoast(context, "Please check entered Details", Icons.info_outline_rounded);
                             }
                           },
                           label: Text("Book Order", style: Variables.font(color: null))),
@@ -244,6 +251,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
         child: TextFormField(
+          inputFormatters: [if (labelText.contains("Phone")) LengthLimitingTextInputFormatter(10)],
           controller: controller,
           keyboardType: isaddress ? TextInputType.multiline : keyboardtype,
           maxLines: isaddress ? null : 1,
