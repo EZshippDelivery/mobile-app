@@ -11,7 +11,7 @@ class AuthController extends ChangeNotifier {
   String userType = "";
   Map? profile;
 
-  registerUser(bool mounted, BuildContext context, body) async {
+  registerUser(bool mounted, BuildContext context, String body) async {
     try {
       Response? response;
       if (Variables.deviceInfo['userType'] != null) {

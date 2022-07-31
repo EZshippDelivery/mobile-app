@@ -22,6 +22,7 @@ class CustomerController extends BikerController {
   List<CustomerOrdersList> customerOrders = [];
   CustomerDetails? customerProfile;
   CreateOrder createNewOrder = CreateOrder.fromMap({});
+  Timer? timer2;
 
   bool loading4 = true;
   String customer = "/customer/";
@@ -166,12 +167,11 @@ class CustomerController extends BikerController {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}/myorders/$pagenumber/20"));
       if (!mounted) return;
-
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         Variables.orderscount = responseJson["totalCount"];
         if (responseJson["data"].isNotEmpty) {
-          if (pagenumber > 1) {
+          if (pagenumber > 1 && customerOrders.length == 20 * (pagenumber - 1)) {
             customerOrders
                 .addAll(responseJson["data"].map<CustomerOrdersList>((e) => CustomerOrdersList.fromMap(e)).toList());
           } else if (pagenumber == 1) {

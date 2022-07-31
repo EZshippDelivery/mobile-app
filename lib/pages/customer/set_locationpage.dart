@@ -7,6 +7,7 @@ import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -353,6 +354,7 @@ class SetLocationPageState extends State<SetLocationPage> {
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 15, 10, 10),
         child: TextFormField(
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[\w\d ]"))],
             controller: controller,
             keyboardType: TextInputType.streetAddress,
             onFieldSubmitted: (text) => mapsProvider.setfocus(sliderValue.toInt(), false),

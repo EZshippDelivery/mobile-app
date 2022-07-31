@@ -3,6 +3,7 @@ import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/pages/aboutpage.dart';
+import 'package:ezshipp/pages/biker/qr_scanner_page.dart';
 import 'package:ezshipp/pages/customer/add_addresspage.dart';
 import 'package:ezshipp/pages/customer/book_orderpage.dart';
 import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
@@ -95,7 +96,8 @@ class MyApp extends StatelessWidget {
           EditProfilePage.routeName: (context) => EditProfilePage(),
           DeliveredPage.routeName: (context) =>
               DeliveredPage(reference: Variables.list1, index: Variables.index2, isdetails: Variables.isdetail),
-          TrackingPage.routeName: (context) => TrackingPage(updateOrderProvider.customerOrders[Variables.index])
+          TrackingPage.routeName: (context) => TrackingPage(updateOrderProvider.customerOrders[Variables.index]),
+          QRScanerPage.routeName: (context) => QRScanerPage(),
         },
       ),
     );

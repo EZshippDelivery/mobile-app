@@ -28,7 +28,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
       receiverPhone = TextEditingController();
   late CustomerController customerController;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
-  ValueNotifier<int> cod = ValueNotifier<int>(0);
+  ValueNotifier<double> cod = ValueNotifier<double>(0);
   // final ContactPicker _contactPicker = ContactPicker();
 
   String imageURL = "";
@@ -152,7 +152,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                         valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16)),
                     ValueListenableBuilder(
                         valueListenable: cod,
-                        builder: (context, int value, widget) => value > 0
+                        builder: (context, double value, widget) => value > 0
                             ? Variables.text1(
                                 head: "Cash on Delivery Charge",
                                 value: "₹ $value",
@@ -160,7 +160,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                             : Container()),
                     ValueListenableBuilder(
                         valueListenable: cod,
-                        builder: (context, int value, widget) => Variables.text1(
+                        builder: (context, double value, widget) => Variables.text1(
                             head: "Total",
                             value: "₹ ${reference.createNewOrder.deliveryCharge + value}",
                             valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16))),
@@ -251,7 +251,10 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
         child: TextFormField(
-          inputFormatters: [if (labelText.contains("Phone")) LengthLimitingTextInputFormatter(10)],
+          inputFormatters: [
+            if (labelText.contains("Phone")) LengthLimitingTextInputFormatter(10),
+            FilteringTextInputFormatter.allow(RegExp(r"[\w\d ]"))
+          ],
           controller: controller,
           keyboardType: isaddress ? TextInputType.multiline : keyboardtype,
           maxLines: isaddress ? null : 1,
@@ -262,7 +265,7 @@ class BookOrderPageState extends State<BookOrderPage> with TickerProviderStateMi
                 cod.value = 0;
                 customerController.createNewOrder.codAmount = 0;
               } else {
-                cod.value = int.parse(value);
+                cod.value = double.parse(value);
                 customerController.createNewOrder.codAmount = int.parse(value);
               }
               customerController.createNewOrder.amount =

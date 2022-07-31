@@ -1,5 +1,6 @@
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
+import 'package:ezshipp/tabs/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ class TextFields extends StatefulWidget {
   double radius;
   UpdateProfileProvider? onchange;
   TextEditingController? controller;
+  ValueNotifier<bool>? valueNotifier = ValueNotifier<bool>(false);
   TextFields(
       {Key? key,
       required this.title,
@@ -29,7 +31,8 @@ class TextFields extends StatefulWidget {
       this.hidepass = false,
       this.radius = 8,
       this.onchange,
-      this.controller})
+      this.controller,
+      this.valueNotifier})
       : super(key: key);
 
   @override
@@ -47,6 +50,12 @@ class TextFieldsState extends State<TextFields> {
   void initState() {
     super.initState();
     authController = Provider.of<AuthController>(context, listen: false);
+    if (widget.title == "Username") {
+      widget.controller!.addListener(() {
+        widget.valueNotifier!.value =
+            widget.controller!.text.contains(RegExp(r'\d')) && !widget.controller!.text.contains(RegExp(r'[a-zA-Z]'));
+      });
+    }
   }
 
   @override
@@ -83,7 +92,7 @@ class TextFieldsState extends State<TextFields> {
               if (title == "Confirm Password") {
                 return title;
               }
-              return "Enter $title";
+              return "Please enter $title";
             } else {
               switch (title) {
                 case "First Name":
@@ -116,7 +125,7 @@ class TextFieldsState extends State<TextFields> {
                     return "Password isn't matched";
                   }
                   break;
-                case "Username":
+                // case "Username":
                 case "Email id":
                   if (value.contains(RegExp(r"\s")) ||
                       !value.contains(RegExp("@")) ||
@@ -149,10 +158,5 @@ class TextFieldsState extends State<TextFields> {
                       ? title
                       : "Enter ${widget.title}")),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

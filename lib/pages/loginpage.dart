@@ -104,7 +104,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     child: TabBarView(
                                         controller: LoginPage.tabController,
                                         physics: const NeverScrollableScrollPhysics(),
-                                        children: const [SignIn(), SignUp()])))
+                                        children: [
+                                      const SignIn(),
+                                      SignUp(
+                                        authController: authController,
+                                      )
+                                    ])))
                           ]),
                           bottomNavigationBar: BottomAppBar(
                               shape: const CircularNotchedRectangle(),
@@ -117,7 +122,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       animController2.forward();
                                       if (Variables.showdialog) {
                                         Variables.showdialog = false;
-                                        show(context).then((value) => authController.setUserType(value));
+                                        // show(context).then((value) => authController.setUserType(value));
                                       }
                                     } else {
                                       animController2.reverse();
@@ -141,13 +146,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (await InternetConnectionChecker().hasConnection) {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
-              if (await readDetails()) authController.storeLoginStatus(true);
+              bool login = await readDetails();
+              if (login) authController.storeLoginStatus(true);
               if (!mounted) return;
-              if (enterKYC && userType.toLowerCase() == "driver") {
+              if (enterKYC && userType.toLowerCase() == "driver" && login) {
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => EnterKYC()));
-              } else if (!enterKYC && userType.toLowerCase() == "driver") {
+              } else if (!enterKYC && userType.toLowerCase() == "driver" && login) {
                 Navigator.popAndPushNamed(context, HomePage.routeName);
-              } else if (!enterKYC && userType.toLowerCase() == "customer") {
+              } else if (!enterKYC && userType.toLowerCase() == "customer" && login) {
                 Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
               } else {
                 Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
@@ -209,10 +215,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
       if (!mounted) return false;
       Navigator.pop(context);
-      if (Variables.driverId == -1 && authController.userType == "") return false;
+      if (Variables.driverId == -1 || authController.userType == "") return false;
       writeDetails();
       userType = authController.userType;
     } catch (e) {
+      if (!mounted) return false;
+      Navigator.pop(context);
       Variables.showtoast(context, "Sign In is not successfull", Icons.cancel_outlined);
     }
     return true;
@@ -249,84 +257,88 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     resendOTP(id, email, phonenumber);
     return await showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
-          return SimpleDialog(
-              contentPadding: const EdgeInsets.all(17),
-              alignment: MediaQuery.of(context).viewInsets.bottom > 0 ? Alignment.topCenter : Alignment.center,
-              children: [
-                SvgPicture.asset("assets/images/otp & two-factor.svg"),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text("OTP Verification",
-                      textAlign: TextAlign.center, style: Variables.font(fontSize: 20, fontWeight: FontWeight.w400)),
-                ),
-                Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text("We have send verification code to \n +91 ${TextFields.data["Phone number"]}",
-                        textAlign: TextAlign.center,
-                        style: Variables.font(fontWeight: FontWeight.w300, fontSize: 16, color: Colors.grey[600]))),
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: TextField(
-                            keyboardType: TextInputType.number,
-                            maxLength: 6,
-                            style: Variables.font(fontSize: 19, fontWeight: FontWeight.bold),
-                            onChanged: (value) {
-                              code = value;
-                            },
-                            decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.only(left: 5),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))))),
-                Column(children: [
-                  Text(
-                    "Didn't recieve any code? ",
-                    style: Variables.font(),
-                    textAlign: TextAlign.center,
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: SimpleDialog(
+                contentPadding: const EdgeInsets.all(17),
+                alignment: MediaQuery.of(context).viewInsets.bottom > 0 ? Alignment.topCenter : Alignment.center,
+                children: [
+                  SvgPicture.asset("assets/images/otp & two-factor.svg"),
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Text("OTP Verification",
+                        textAlign: TextAlign.center, style: Variables.font(fontSize: 20, fontWeight: FontWeight.w400)),
                   ),
-                  ValueListenableBuilder(
-                      valueListenable: isResend,
-                      builder: (context, bool value1, child) {
-                        return TextButton(
-                            onPressed: () {
-                              if (value1) return;
-                              resendOTP(id, email, phonenumber);
-                            },
-                            child: ValueListenableBuilder(
-                                valueListenable: count,
-                                builder: (context, value, child) {
-                                  return Text(
-                                    value1 ? "Try again in $value" : "Resend OTP",
-                                    textAlign: TextAlign.center,
-                                    style: Variables.font(fontSize: 15),
-                                  );
-                                }));
-                      })
-                ]),
-                ElevatedButton(
-                    style: ButtonStyle(
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
-                    onPressed: () async {
-                      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                      var validate = await customerController
-                          .verifyOTP(mounted, context, {"otp": code, "phoneNumber": phonenumber});
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                      if (validate != null) {
+                  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text("We have send verification code to \n +91 ${TextFields.data["Phone number"]}",
+                          textAlign: TextAlign.center,
+                          style: Variables.font(fontWeight: FontWeight.w300, fontSize: 16, color: Colors.grey[600]))),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Align(
+                          alignment: Alignment.center,
+                          child: TextField(
+                              keyboardType: TextInputType.number,
+                              maxLength: 6,
+                              style: Variables.font(fontSize: 19, fontWeight: FontWeight.bold),
+                              onChanged: (value) {
+                                code = value;
+                              },
+                              decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.only(left: 5),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)))))),
+                  Column(children: [
+                    Text(
+                      "Didn't recieve any code? ",
+                      style: Variables.font(),
+                      textAlign: TextAlign.center,
+                    ),
+                    ValueListenableBuilder(
+                        valueListenable: isResend,
+                        builder: (context, bool value1, child) {
+                          return TextButton(
+                              onPressed: () {
+                                if (value1) return;
+                                resendOTP(id, email, phonenumber);
+                              },
+                              child: ValueListenableBuilder(
+                                  valueListenable: count,
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      value1 ? "Try again in $value" : "Resend OTP",
+                                      textAlign: TextAlign.center,
+                                      style: Variables.font(fontSize: 15),
+                                    );
+                                  }));
+                        })
+                  ]),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
+                      onPressed: () async {
+                        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                        var validate = await customerController
+                            .verifyOTP(mounted, context, {"otp": code, "phoneNumber": phonenumber});
                         if (!mounted) return;
-                        if (validate["otpVerified"]) {
-                          Variables.showtoast(context, "Your Phone number is verified", Icons.check);
-                          Variables.pop(context, value: true);
-                        } else {
-                          Variables.showtoast(context, "OTP is incorrect. Please try again", Icons.warning_rounded);
-                          Variables.pop(context, value: false);
+                        Navigator.pop(context);
+                        if (validate != null) {
+                          if (!mounted) return;
+                          if (validate["otpVerified"]) {
+                            Variables.showtoast(context, "Your Phone number is verified", Icons.check);
+                            Variables.pop(context, value: true);
+                          } else {
+                            Variables.showtoast(context, "OTP is incorrect. Please try again", Icons.warning_rounded);
+                            Variables.pop(context, value: false);
+                          }
                         }
-                      }
-                    },
-                    child: Text("Verify", style: Variables.font()))
-              ]);
+                      },
+                      child: Text("Verify", style: Variables.font()))
+                ]),
+          );
         });
   }
 

@@ -27,10 +27,19 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late MapsProvider mapsProvider;
+  late CustomerController customerController;
   @override
   void initState() {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
+    customerController = Provider.of<CustomerController>(context, listen: false);
+    Future.delayed(const Duration(seconds: 3), () {
+      customerController.timer2 = Timer.periodic(const Duration(seconds: 10), (timer) async {
+        await customerController.getCustomerOrders(mounted, context);
+
+        debugPrint("Customer Orders Updated");
+      });
+    });
   }
 
   @override
@@ -39,180 +48,194 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
       if (widget.order.statusId == 12) showfeedback(context);
       timer.cancel();
     });
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: Variables.app(actions: [
-        if (widget.order.statusId > 0 && widget.order.statusId < 12 && widget.order.statusId != 10)
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton(
-                onPressed: () async {
-                  bool comment = await showDialog(
-                    context: _scaffoldKey.currentContext!,
-                    barrierDismissible: false,
-                    builder: (context) => SimpleDialog(
-                      title: Text("Cancel Reasons", textAlign: TextAlign.center, style: Variables.font(fontSize: 18)),
-                      children: [
-                        ...ListTile.divideTiles(
-                          context: context,
-                          tiles: List.generate(
-                              Variables.cancelReasons.length,
-                              (index) => ListTile(
-                                    onTap: () async {
-                                      Variables.updateOrderMap.cancelReason = Variables.cancelReasons[index][1];
-                                      Variables.updateOrderMap.cancelReasonId = Variables.cancelReasons[index][0];
+    return WillPopScope(
+      onWillPop: () async {
+        if (customerController.timer2 != null) {
+          customerController.timer2!.cancel();
+          customerController.timer2 = null;
+        }
+        return true;
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: Variables.app(actions: [
+          if (widget.order.statusId > 0 && widget.order.statusId < 12 && widget.order.statusId != 10)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton(
+                  onPressed: () async {
+                    bool comment = await showDialog(
+                      context: _scaffoldKey.currentContext!,
+                      barrierDismissible: false,
+                      builder: (context) => SimpleDialog(
+                        title: Text("Cancel Reasons", textAlign: TextAlign.center, style: Variables.font(fontSize: 18)),
+                        children: [
+                          ...ListTile.divideTiles(
+                            context: context,
+                            tiles: List.generate(
+                                Variables.cancelReasons.length,
+                                (index) => ListTile(
+                                      onTap: () async {
+                                        Variables.updateOrderMap.cancelReason = Variables.cancelReasons[index][1];
+                                        Variables.updateOrderMap.cancelReasonId = Variables.cancelReasons[index][0];
 
-                                      Variables.pop(context,
-                                          value: Variables.cancelReasons[index][3] == 1 ? true : false);
-                                    },
-                                    title: Text(Variables.cancelReasons[index][1]),
-                                  )),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (comment) {
-                    String? value1;
-                    Variables.updateOrderMap.orderComments = await showDialog(
-                        context: _scaffoldKey.currentContext!,
-                        builder: (context) => AlertDialog(
-                                content: Form(
-                                    key: formkey,
-                                    child: TextFormField(
-                                        onChanged: (value) => value1 = value,
-                                        validator: (value) {
-                                          if (value!.isEmpty) {
-                                            return "Enter  Feedback";
-                                          }
-                                          return null;
-                                        },
-                                        decoration:
-                                            const InputDecoration(hintText: "Enter Feedback", labelText: "Feedback*"))),
-                                actions: [
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        if (formkey.currentState!.validate()) {
-                                          Variables.pop(context, value: value1);
-                                        }
+                                        Variables.pop(context,
+                                            value: Variables.cancelReasons[index][3] == 1 ? true : false);
                                       },
-                                      child: Text(
-                                        "Send",
-                                        style: Variables.font(fontSize: 15, color: null),
-                                      ))
-                                ]));
-                  }
-                  Variables.updateOrderMap.driverId = widget.order.bikerId;
-                  Variables.updateOrderMap.newDriverId = widget.order.bikerId;
-                  if (!mounted) return;
-                  CustomerController customerController = Provider.of<CustomerController>(context, listen: false);
-                  await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
-                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                  if (!mounted) return;
-                  await customerController.getCustomerOrders(mounted, context);
-                  if (!mounted) return;
-                  Navigator.pop(context);
-                  if (!mounted) return;
-                  Variables.pop(context);
-                },
-                child: Text("Cancel", style: Variables.font(color: null, fontSize: 16))),
-          )
-      ]),
-      body: SingleChildScrollView(
-        child: Column(children: [
-          Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("ORDER DETAILS",
-                  style: Variables.font(color: Palette.kOrange, fontWeight: FontWeight.bold, fontSize: 19))),
-          Card(
-              margin: const EdgeInsets.all(5),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 4),
-                  child: Column(children: [
-                    Variables.text(context,
-                        value: " ${widget.order.orderSeqId}", headFontSize: 15, valueFontSize: 17, vpadding: 3),
-                    const Divider(),
-                    Variables.text1(
-                        head: "Ordered at",
-                        value: Variables.datetime(widget.order.orderCreatedTime, timeNeed: true),
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Payment Type",
-                        value: widget.order.paymentType,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Item",
-                        value: widget.order.item,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Sender Name",
-                        value: widget.order.senderName,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Sender Phone",
-                        value: widget.order.senderPhone,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Receiver Name",
-                        value: widget.order.receiverName,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Receiver Phone",
-                        value: widget.order.receiverPhone,
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Distance",
-                        value: widget.order.distance.toString(),
-                        valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                    Variables.text1(
-                        head: "Order Status",
-                        value: widget.order.statusId == 2 ? "Biker ${widget.order.status}" : widget.order.status,
-                        valueStyle: Variables.font(
-                            color:
-                                widget.order.statusId > 0 && widget.order.statusId < 13 && widget.order.statusId != 10
+                                      title: Text(Variables.cancelReasons[index][1]),
+                                    )),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (comment) {
+                      String? value1;
+                      Variables.updateOrderMap.orderComments = await showDialog(
+                          context: _scaffoldKey.currentContext!,
+                          builder: (context) => AlertDialog(
+                                  content: Form(
+                                      key: formkey,
+                                      child: TextFormField(
+                                          onChanged: (value) => value1 = value,
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return "Enter  Feedback";
+                                            }
+                                            return null;
+                                          },
+                                          decoration: const InputDecoration(
+                                              hintText: "Enter Feedback", labelText: "Feedback*"))),
+                                  actions: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          if (formkey.currentState!.validate()) {
+                                            Variables.pop(context, value: value1);
+                                          }
+                                        },
+                                        child: Text(
+                                          "Send",
+                                          style: Variables.font(fontSize: 15, color: null),
+                                        ))
+                                  ]));
+                    }
+                    Variables.updateOrderMap.driverId = widget.order.bikerId;
+                    Variables.updateOrderMap.newDriverId = widget.order.bikerId;
+                    if (!mounted) return;
+                    CustomerController customerController = Provider.of<CustomerController>(context, listen: false);
+                    await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
+                    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                    if (!mounted) return;
+                    await customerController.getCustomerOrders(mounted, context);
+                    if (!mounted) return;
+                    Navigator.pop(context);
+                    if (!mounted) return;
+                    Variables.pop(context);
+                  },
+                  child: Text("Cancel", style: Variables.font(color: null, fontSize: 16))),
+            )
+        ]),
+        body: SingleChildScrollView(
+          child: Column(children: [
+            Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("ORDER DETAILS",
+                    style: Variables.font(color: Palette.kOrange, fontWeight: FontWeight.bold, fontSize: 19))),
+            Card(
+                margin: const EdgeInsets.all(5),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 4),
+                    child: Column(children: [
+                      Variables.text(context,
+                          value: " ${widget.order.orderSeqId}", headFontSize: 15, valueFontSize: 17, vpadding: 3),
+                      const Divider(),
+                      Variables.text1(
+                          head: "Ordered at",
+                          value: Variables.datetime(widget.order.orderCreatedTime, timeNeed: true),
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Payment Type",
+                          value: widget.order.paymentType,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Item",
+                          value: widget.order.item,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Sender Name",
+                          value: widget.order.senderName,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Sender Phone",
+                          value: widget.order.senderPhone,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Receiver Name",
+                          value: widget.order.receiverName,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Receiver Phone",
+                          value: widget.order.receiverPhone,
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Variables.text1(
+                          head: "Distance",
+                          value: widget.order.distance.toString(),
+                          valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                          headStyle: Variables.font(fontSize: 15)),
+                      Consumer<CustomerController>(builder: (context, snapshot, child) {
+                        widget.order = snapshot.customerOrders[Variables.index];
+                        return Variables.text1(
+                            head: "Order Status",
+                            value: widget.order.statusId == 2 ? "Biker ${widget.order.status}" : widget.order.status,
+                            valueStyle: Variables.font(
+                                color: widget.order.statusId > 0 &&
+                                        widget.order.statusId < 13 &&
+                                        widget.order.statusId != 10
                                     ? Colors.green
                                     : Colors.red,
-                            fontSize: 16),
-                        headStyle: Variables.font(fontSize: 15)),
-                  ]))),
-          Variables.text1(
-              head: "Delivery Charges",
-              value: "₹ ${widget.order.deliveryCharge.toString()}",
-              valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-              headStyle: Variables.font(fontSize: 15)),
-          if (widget.order.codCharge > 0)
+                                fontSize: 16),
+                            headStyle: Variables.font(fontSize: 15));
+                      }),
+                    ]))),
             Variables.text1(
-                head: "COD Charges",
-                value: "₹ ${widget.order.codCharge.toString()}",
+                head: "Delivery Charges",
+                value: "₹ ${widget.order.deliveryCharge.toString()}",
                 valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
                 headStyle: Variables.font(fontSize: 15)),
-          Variables.text1(
-              head: "Total",
-              value: "₹ ${widget.order.totalCharge.toString()}",
-              valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
-              headStyle: Variables.font(fontSize: 15)),
-        ]),
+            if (widget.order.codCharge > 0)
+              Variables.text1(
+                  head: "COD Charges",
+                  value: "₹ ${widget.order.codCharge.toString()}",
+                  valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                  headStyle: Variables.font(fontSize: 15)),
+            Variables.text1(
+                head: "Total",
+                value: "₹ ${widget.order.totalCharge.toString()}",
+                valueStyle: Variables.font(color: Colors.grey.shade700, fontSize: 16),
+                headStyle: Variables.font(fontSize: 15)),
+          ]),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: widget.order.statusId > 1 && widget.order.statusId < 12 && widget.order.statusId != 10
+            ? FloatingActionButton.extended(
+                onPressed: () async {
+                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                  await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
+
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  Variables.push(context, TrackingPage.routeName);
+                },
+                label: Text("Track Your Order", style: Variables.font(color: null)),
+                icon: const Icon(Icons.location_on_sharp))
+            : null,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: widget.order.statusId > 2 && widget.order.statusId < 12 && widget.order.statusId != 10
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
-                if (!mounted) return;
-                Navigator.pop(context);
-                Variables.push(context, TrackingPage.routeName);
-              },
-              label: Text("Track Your Order", style: Variables.font(color: null)),
-              icon: const Icon(Icons.location_on_sharp))
-          : null,
     );
   }
 

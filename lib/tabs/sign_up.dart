@@ -1,7 +1,9 @@
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,7 +17,8 @@ import '../Provider/update_screenprovider.dart';
 class SignUp extends StatefulWidget {
   static final formkey2 = GlobalKey<FormState>(debugLabel: "_signUp");
   static bool check = false;
-  const SignUp({Key? key}) : super(key: key);
+  AuthController authController;
+  SignUp({Key? key, required this.authController}) : super(key: key);
 
   @override
   SignUpState createState() => SignUpState();
@@ -48,6 +51,31 @@ class SignUpState extends State<SignUp> {
                               onTap: () => reference1.inkwell(context),
                               child: reference1.getProfileImage(
                                   canEdit: true, size: MediaQuery.of(context).size.width / 2.5))),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: DropdownButtonFormField<String>(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) {
+                            if (value == null) {
+                              return "Please select role";
+                            }
+                            return null;
+                          },
+                          hint: const Text("Select role"),
+                          items: const [
+                            DropdownMenuItem(value: "driver", child: Text("Delivery Person")),
+                            DropdownMenuItem(value: "Customer", child: Text("Customer"))
+                          ],
+                          onChanged: (value) {
+                            widget.authController.setUserType(value);
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(13),
+                            prefixIcon: const Icon(CupertinoIcons.person_alt_circle),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8 * 3)),
+                          ),
+                        ),
+                      ),
                       TextFields(
                           title: "First Name", icon: const Icon(Icons.person_outline_rounded), onchange: reference1),
                       TextFields(

@@ -1,7 +1,7 @@
 name: ezshipp
 description: A Delivery app for eZShipp
 
-publish_to: 'none' 
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -26,7 +26,7 @@ dependencies:
   http: ^0.13.4
   google_fonts: ^2.1.0
   intl: ^0.17.0
-  google_maps_flutter: ^2.1.1 
+  google_maps_flutter: ^2.1.1
   flutter_polyline_points: ^1.0.0
   dio: ^4.0.4
   provider: ^6.0.1
@@ -44,8 +44,8 @@ dependencies:
   connectivity_plus: ^2.2.0
   flutter_rating_bar: ^4.0.0
   collection: ^1.16.0
-  
-  
+  qr_code_scanner: ^1.0.0
+  google_ml_kit: ^0.11.0
 
 dev_dependencies:
   flutter_test:
@@ -65,14 +65,3 @@ flutter:
     - assets/images/
     - assets/icon/
     - assets/icon/share/
-
-  
-  
-
-  
-  
-
-  
-  
-  
-  

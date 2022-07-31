@@ -1,18 +1,22 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
+import 'package:ezshipp/utils/textformater.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class EnterKYC extends StatefulWidget {
-GlobalKey<FormState> formkey4 = GlobalKey<FormState>();
+  GlobalKey<FormState> formkey4 = GlobalKey<FormState>();
   EnterKYC({Key? key}) : super(key: key);
 
   @override
@@ -34,82 +38,101 @@ class EnterKYCState extends State<EnterKYC> {
             padding: const EdgeInsets.all(8.0),
             child: Text("Complete KYC", style: Variables.font(fontSize: 20)),
           ),
-          Stepper(
-            steps: steps(),
-            currentStep: currentStep,
-            onStepTapped: (value) => setState(() => currentStep = value),
-            onStepContinue: () async {
-              if (currentStep == 0) {
-                if (widget.formkey4.currentState!.validate()) setState(() => currentStep += 1);
-              } else if (currentStep == 2) {
-                if (license! && vehicle!) {
-                  Timer timer = Timer.periodic(
-                      const Duration(seconds: 3), (time) => Navigator.of(context, rootNavigator: true).pop(true));
-                  showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => SimpleDialog(
-                              title: Text(
-                                "Accepted",
-                                style: Variables.font(fontSize: 22),
-                                textAlign: TextAlign.center,
-                              ),
-                              children: [
-                                Image.asset(
-                                  "assets/icon/check_circle.gif",
-                                  height: 100,
-                                ),
-                                Text(
-                                  "Visit office to complete Human verification of KYC",
-                                  style: Variables.font(color: Colors.grey.shade700, fontSize: 17),
+          Consumer<UpdateScreenProvider>(builder: (context, snapshot, child) {
+            return Stepper(
+              steps: steps(),
+              currentStep: currentStep,
+              onStepTapped: (value) {
+                currentStep = value;
+                snapshot.updateScreen();
+              },
+              onStepContinue: () async {
+                if (currentStep == 0) {
+                  if (widget.formkey4.currentState!.validate()) {
+                    currentStep += 1;
+                    snapshot.updateScreen();
+                  }
+                } else if (currentStep == 2) {
+                  if (license! && vehicle!) {
+                    Timer.periodic(const Duration(seconds: 2), (time) {
+                      time.cancel();
+                      Navigator.of(context, rootNavigator: true).pop(true);
+                      Navigator.pushNamed(context, HomePage.routeName);
+                    });
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => SimpleDialog(
+                                title: Text(
+                                  "Accepted",
+                                  style: Variables.font(fontSize: 22),
                                   textAlign: TextAlign.center,
                                 ),
-                                Text(
-                                  "Lets Go!",
-                                  style: Variables.font(color: Colors.grey.shade700, fontSize: 17),
-                                  textAlign: TextAlign.center,
-                                )
-                              ])).then((value) {
-                    timer.cancel();
-
-                    Navigator.pushNamed(context, HomePage.routeName);
-                  });
-                  await Variables.write(key: "enterKYC", value: false.toString());
+                                children: [
+                                  Image.asset(
+                                    "assets/icon/check_circle.gif",
+                                    height: 100,
+                                  ),
+                                  Text(
+                                    "Visit office to complete KYC",
+                                    style: Variables.font(color: Colors.grey.shade700, fontSize: 17),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  Text(
+                                    "Lets Go!",
+                                    style: Variables.font(color: Colors.grey.shade700, fontSize: 17),
+                                    textAlign: TextAlign.center,
+                                  )
+                                ]));
+                    await Variables.write(key: "enterKYC", value: false.toString());
+                  } else {
+                    Variables.showtoast(context,
+                        "Your KYC is not verified Properly.\nMake sure every image is verified", Icons.warning_rounded);
+                  }
                 } else {
-                  Variables.showtoast(context, "Your KYC is not verified Properly.\nMake sure every image is verified",
-                      Icons.warning_rounded);
+                  currentStep += 1;
+                  snapshot.updateScreen();
                 }
-              } else {
-                setState(() => currentStep += 1);
-              }
-            },
-            onStepCancel: () {
-              if (currentStep == 0) {
-              } else {
-                setState(() => currentStep -= 1);
-              }
-            },
-          )
+              },
+              onStepCancel: () {
+                if (currentStep == 0) {
+                } else {
+                  currentStep -= 1;
+                  snapshot.updateScreen();
+                }
+              },
+            );
+          })
         ]),
       ),
     );
   }
 
   Future<bool> scantext({String value = "", String name = ""}) async {
-    List<OcrText> texts = [];
     Directory documentDirectory = await getApplicationDocumentsDirectory();
     try {
-      texts = await FlutterMobileVision.read(
-          multiple: true,
-          showText: false,
-          waitTap: true,
-          forceCloseCameraOnTap: true,
-          fps: 5.0,
-          imagePath: "${documentDirectory.path}/$name");
-      for (OcrText ocr in texts) {
-        if (ocr.value == value) return true;
+      final image = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (image != null) {
+        Variables.loadingDialogue(context: context);
+        final file = File("$documentDirectory/$name");
+        file.writeAsBytesSync(await image.readAsBytes());
+        if (name.contains("Front")) {
+          final textRecognizer = GoogleMlKit.vision.textRecognizer();
+          final recognizedText = await textRecognizer.processImage(InputImage.fromFilePath(image.path));
+          for (TextBlock block in recognizedText.blocks) {
+            if (block.text.contains(value)) {
+              if (!mounted) return false;
+              Navigator.pop(context);
+              return true;
+            }
+          }
+        }
       }
+      if (!mounted) return false;
+      Navigator.pop(context);
     } on Exception {
+      if (!mounted) return false;
+      Navigator.pop(context);
       return false;
     }
     return false;
@@ -231,18 +254,22 @@ class EnterKYCState extends State<EnterKYC> {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: TextFormField(
-        inputFormatters: [FilteringTextInputFormatter(RegExp(r'[\S]'), allow: true)],
+        inputFormatters: [
+          FilteringTextInputFormatter(RegExp(r'[\S]'), allow: true),
+          LengthLimitingTextInputFormatter(title == "License Number" ? 16 : 10),
+          UpperCaseTextFormatter()
+        ],
         keyboardType: keboardType,
         onChanged: (value) => setState(() => TextFields.data[title] = value),
         validator: (value) {
           switch (title) {
             case "License Number":
-              if (TextFields.data[title]!.length < 16 || TextFields.data[title]!.length > 16) {
+              if (TextFields.data[title]!.length != 16) {
                 return "Enter valid $title";
               }
               break;
             case "Vehicle Reg. Number":
-              if (TextFields.data[title]!.length < 10 || TextFields.data[title]!.length > 10) {
+              if (TextFields.data[title]!.length != 10) {
                 return "Enter valid $title";
               }
               break;

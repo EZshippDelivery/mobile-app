@@ -43,6 +43,7 @@ class Variables {
   static int index = 0, index1 = 0, index2 = 0, index3 = 0;
   static late NewOrderList list, list1;
   static int orderscount = 0;
+  static Map<String, dynamic>? responseJson;
 
   static AndroidOptions getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
@@ -110,8 +111,13 @@ class Variables {
           Color? color = Palette.deepgrey,
           TextDecoration? decoration}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
-  static Uri uri({required String path, queryParameters}) =>
-      Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+  static Uri uri({required String path, queryParameters}) => Uri(
+      scheme: "https",
+      host: "backendapi.ezshipp.com",
+      port: 2020,
+      path: "/api/v1$path",
+      queryParameters: queryParameters);
+  // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
   // Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
@@ -165,7 +171,7 @@ class Variables {
             ])),
       );
 
-  static text1(
+  static Widget text1(
           {String head = "Order ID:",
           String value = "XXXXXXXXX",
           double vpadding = 3.0,
@@ -193,10 +199,11 @@ class Variables {
         ),
       );
 
-  static AppBar app({actions, color, elevation = 3}) => AppBar(
+  static AppBar app({actions, color, elevation = 3, IconThemeData? iconTheme}) => AppBar(
       elevation: elevation.toDouble(),
       actions: actions,
       backgroundColor: color,
+      iconTheme: iconTheme,
       title: Image.asset(
         "assets/images/Logo.png",
         height: 40,
@@ -364,14 +371,14 @@ class Variables {
         Variables.updateOrderMap.driverId = driverId;
         Variables.updateOrderMap.newDriverId = driverId;
         if (!mounted) return;
-        await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
+        responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
         if (!mounted) return;
         Navigator.pop(context);
       }
     } else {
       Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
       if (!mounted) return;
-      await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
+      responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
       if (!mounted) return;
       Navigator.pop(context);
     }
@@ -442,7 +449,7 @@ class Variables {
 
   static Future<Object> loadingDialogue({
     BuildContext? context,
-    String? subHeading,
+    String subHeading = "Please wait...",
   }) async {
     Future? action = await showDialog(
         context: context!,
@@ -465,7 +472,7 @@ class Variables {
                   width: 10,
                 ),
                 Text(
-                  subHeading!,
+                  subHeading,
                   style: Variables.font(color: Palette.deepgrey),
                 )
               ],

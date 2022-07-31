@@ -18,6 +18,7 @@ class NewOrders extends StatefulWidget {
 class NewOrdersState extends State<NewOrders> {
   int length = 1;
   late OrderController orderController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class NewOrdersState extends State<NewOrders> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Consumer<OrderController>(builder: (context, reference, child) {
         if (!reference.loading) {
           if (reference.newOrderList.isEmpty) {
@@ -97,7 +99,7 @@ class NewOrdersState extends State<NewOrders> {
                           Timer? timer = Timer.periodic(const Duration(seconds: 3),
                               (time) => Navigator.of(context, rootNavigator: true).pop(close));
                           showDialog(
-                              context: context,
+                              context: _scaffoldKey.currentContext!,
                               builder: (context) => SimpleDialog(
                                       title: Text(
                                         "Rejected",
@@ -143,16 +145,18 @@ class NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      await Variables.updateOrder(mounted, context, reference.newOrderList[index].id,
-                          direction == DismissDirection.startToEnd ? 3 : 14);
+                      await Variables.updateOrder(mounted, _scaffoldKey.currentContext!,
+                          reference.newOrderList[index].id, direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }
                       if (direction == DismissDirection.startToEnd) {
-                        Timer? timer = Timer.periodic(
-                            const Duration(seconds: 1), (time) => Navigator.of(context, rootNavigator: true).pop(true));
+                        Timer? timer = Timer.periodic(const Duration(seconds: 1), (time) {
+                          Navigator.of(context).pop(true);
+                          time.cancel();
+                        });
                         showDialog(
-                            context: context,
+                            context: _scaffoldKey.currentContext!,
                             builder: (context) => SimpleDialog(
                                     title: Text(
                                       "Accepted",
@@ -167,10 +171,7 @@ class NewOrdersState extends State<NewOrders> {
                                       Text("Lets Go!",
                                           style: Variables.font(color: Colors.grey.shade700, fontSize: 18),
                                           textAlign: TextAlign.center)
-                                    ])).then((value) {
-                          timer?.cancel();
-                          timer = null;
-                        });
+                                    ]));
                       }
                     },
                     child: Card(
@@ -216,7 +217,10 @@ class NewOrdersState extends State<NewOrders> {
                             margin: const EdgeInsets.all(8),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Variables.text(context,
+                                    head: "Sender Name: ", value: reference.newOrderList[index].senderName),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [

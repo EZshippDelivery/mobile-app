@@ -4,6 +4,7 @@ import 'package:ezshipp/pages/customer/set_addresspage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -142,7 +143,8 @@ class AddAddressPageState extends State<AddAddressPage> {
         controller: controller,
         decoration: InputDecoration(labelText: label),
         keyboardType: TextInputType.streetAddress,
-        onTap: ontap && controller.text.isEmpty
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[\w\d ]"))],
+        onTap: ontap && street.text.isEmpty
             ? () {
                 Navigator.pushNamed(context, SetAddressPage.routeName).then((value) {
                   controller.text = value.toString() == "null" ? "" : value.toString();

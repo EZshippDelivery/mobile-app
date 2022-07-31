@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:ezshipp/APIs/customer_orders.dart';
@@ -63,12 +64,35 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
     }
   }
 
+  getlivedirections() {
+    if (mapsProvider.timer1 != null) {
+      mapsProvider.timer1 = Timer.periodic(const Duration(seconds: 15), (timer) async {
+        await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
+        if (widget.order.statusId < 6) {
+          if (!mounted) return;
+          await mapsProvider.setMarkers(mounted, context, mapController,
+              delivery: LatLng(widget.order.pickLatitude, widget.order.pickLongitude));
+          if (!mounted) return;
+          await mapsProvider.directions(mounted, context, mapController, null,
+              places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
+        } else {
+          if (!mounted) return;
+          await mapsProvider.setMarkers(mounted, context, mapController,
+              delivery: LatLng(widget.order.dropLatitude, widget.order.dropLongitude));
+          if (!mounted) return;
+          await mapsProvider.directions(mounted, context, mapController, null,
+              places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
         Variables.pop(context);
-        mapsProvider.timer1!.cancel();
+        if (mapsProvider.timer1 != null) mapsProvider.timer1!.cancel();
         return Future.value(true);
       },
       child: Scaffold(
@@ -83,7 +107,6 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                 initialCameraPosition: const CameraPosition(target: LatLng(17.387140, 78.491684), zoom: 11.0),
                 markers: {
                   if (reference1.driver != null) reference1.driver!,
-                  if (reference1.pickmark != null) reference1.pickmark!,
                   if (reference1.dropmark != null) reference1.dropmark!
                 },
                 polylines: {
@@ -97,11 +120,7 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                 },
                 onMapCreated: (controller) async {
                   mapController = controller;
-                  await reference1.setMarkers(mounted, context, controller,
-                      pickup: LatLng(widget.order.pickLatitude, widget.order.pickLongitude));
-                  if (!mounted) return;
-                  await reference1.setMarkers(mounted, context, controller,
-                      delivery: LatLng(widget.order.dropLatitude, widget.order.dropLongitude));
+
                   if (reference1.driver != null) {
                     mapController.animateCamera(
                         CameraUpdate.newCameraPosition(CameraPosition(target: reference1.driver!.position, zoom: 17)));
@@ -124,6 +143,7 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
                               const SizedBox(height: 5),
                               Consumer2<UpdateScreenProvider, CustomerController>(
                                   builder: (context, reference, reference1, child) {
+                                widget.order = reference1.customerOrders[Variables.index];
                                 if (widget.order.statusId >= 12) {
                                   TrackingPage.complete = true;
                                 } else if (widget.order.statusId >= 6) {

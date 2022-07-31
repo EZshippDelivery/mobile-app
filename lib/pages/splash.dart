@@ -101,7 +101,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       'deviceMake': build.manufacturer,
       'deviceModel': build.model,
       'deviceId': build.androidId,
-      'OS': build.version.baseOS!.isEmpty ? "android" : build.version.baseOS ?? "android",
+      'OS': "android",
       "deviceType": "ANDROID",
       "deviceToken": await fcm.getToken() ?? "",
       "userType": "DRIVER"
@@ -111,7 +111,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   Future<Map<String, String>> _readIosDeviceInfo(IosDeviceInfo data) async {
     return <String, String>{
       'deviceType': "IOS",
-      'OS': data.systemName.isEmpty ? 'ios' : data.systemName,
+      'OS': "IOS",
       'deviceModel': data.model,
       'deviceId': data.identifierForVendor,
       'deviceMake:': data.utsname.machine,

@@ -14,7 +14,15 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   GlobalKey<FormState> formkey3 = GlobalKey<FormState>(debugLabel: "_resetPassword");
+  TextEditingController username = TextEditingController();
+  ValueNotifier<bool> iconChange = ValueNotifier<bool>(false);
+
   String code = "";
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   store() async {
     var islogin = Variables.write(key: "password", value: TextFields.data["Password"].toString());
@@ -71,7 +79,16 @@ class _SignInState extends State<SignIn> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                TextFields(title: "Username", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress),
+                ValueListenableBuilder<bool>(
+                    valueListenable: iconChange,
+                    builder: (context, value, child) {
+                      return TextFields(
+                          title: "Username",
+                          icon: !value ? const Icon(Icons.email_rounded) : const Icon(Icons.phone),
+                          type: TextInputType.emailAddress,
+                          controller: username,
+                          valueNotifier: iconChange);
+                    }),
                 TextFields(
                     title: "Password",
                     icon: const Icon(Icons.lock_outline),

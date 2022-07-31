@@ -11,7 +11,7 @@ class HTTPRequest {
     headers.addAll(Variables.headers);
     return await post(uri, body: body, headers: issignup ? Variables.headers : headers);
   }
-
+// "https://backendapi.exshipp.com:2020//register/signin"
   static Future<Response> putRequest(Uri uri, body) async {
     headers.addAll(Variables.headers);
     return await put(uri, body: body, headers: headers);

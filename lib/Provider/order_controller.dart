@@ -11,22 +11,23 @@ import '../utils/variables.dart';
 class OrderController extends BikerController {
   bool loading4 = true;
 
-  updateOrder(bool mounted, BuildContext context, String body, int orderid) async {
+  Future<Map<String, dynamic>?> updateOrder(bool mounted, BuildContext context, String body, int orderid) async {
     Map<String, dynamic>? responseJson;
     try {
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
 
-      if (!mounted) return;
+      if (!mounted) return null;
       responseJson = Variables.returnResponse(context, response);
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading4 = false;
     notifyListeners();
-    if (!mounted) return;
+    if (!mounted) return null;
     if (responseJson != null) {
-      
+      return responseJson;
     }
+    return null;
   }
 
   findOrderbyBarcode(bool mounted, BuildContext context, String value, int statusId) async {
@@ -64,13 +65,12 @@ class OrderController extends BikerController {
 
   update(var data) {
     var obj = NewOrderList.fromMap(data);
-    if (acceptedList.isNotEmpty) {
-      for (var i in acceptedList) {
-        if (i.orderSeqId == obj.orderSeqId) {
-          acceptedList[acceptedList.indexOf(i)] = obj;
-        }
+    acceptedList.map((e) {
+      if (e.orderSeqId == obj.orderSeqId) {
+        e = obj;
       }
-    }
+      return e;
+    }).toList();
     notifyListeners();
   }
 }

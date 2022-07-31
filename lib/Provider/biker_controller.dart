@@ -161,9 +161,9 @@ class BikerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  livebikerTracking(bool mounted, BuildContext context, int driverId, int orderId) {
+  livebikerTracking(bool mounted, BuildContext context, int driverId, int orderId) async {
     try {
-      timer1 = Timer.periodic(const Duration(seconds: 5), (time) async {
+    
         final response = await HTTPRequest.getRequest(
             Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
         if (!mounted) return;
@@ -177,7 +177,6 @@ class BikerController extends ChangeNotifier {
               infoWindow: const InfoWindow(title: "Driver Location"));
         }
         notifyListeners();
-      });
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }

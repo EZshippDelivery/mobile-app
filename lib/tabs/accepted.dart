@@ -72,34 +72,39 @@ class AcceptedState extends State<Accepted> {
                       controller: scrollController,
                       itemCount: reference.acceptedList.length,
                       itemBuilder: (context, index) {
-                        return Card(
-                            child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: ListTile(
-                                  tileColor: Colors.white,
-                                  onTap: () async {
-                                    Variables.index1 = index;
-                                    if (!mounted) return;
-                                    await Variables.push(context, "/order${Order.routeName}");
-                                    if (!mounted) return;
-                                    await orderController.getAcceptedAndinProgressOrders(mounted, context);
-                                  },
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Variables.text(context,
-                                          head: "Order ID: ", value: reference.acceptedList[index].orderSeqId),
-                                      Text(Variables.datetime(reference.acceptedList[index].acceptedTime.isEmpty
-                                          ? reference.acceptedList[index].orderCreatedTime
-                                          : reference.acceptedList[index].acceptedTime))
-                                    ],
-                                  ),
-                                  subtitle: Variables.text(context,
-                                      head: "Status: ",
-                                      value: reference.acceptedList[index].status,
-                                      valueColor: Palette.kOrange),
-                                )));
-                      })))
+                        return Column(
+                          children: [
+                            Card(
+                                child: Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: ListTile(
+                                      tileColor: Colors.white,
+                                      onTap: () async {
+                                        Variables.index1 = index;
+                                        if (!mounted) return;
+                                        await Variables.push(context, "/order${Order.routeName}");
+                                        if (!mounted) return;
+                                        await orderController.getAcceptedAndinProgressOrders(mounted, context);
+                                      },
+                                      title: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Variables.text(context,
+                                              head: "Order ID: ", value: reference.acceptedList[index].orderSeqId),
+                                          Text(Variables.datetime(reference.acceptedList[index].acceptedTime.isEmpty
+                                              ? reference.acceptedList[index].orderCreatedTime
+                                              : reference.acceptedList[index].acceptedTime))
+                                        ],
+                                      ),
+                                      subtitle: Variables.text(context,
+                                          head: "Status: ",
+                                          value: reference.acceptedList[index].status,
+                                          valueColor: Palette.kOrange),
+                                    ))),
+                            if (index == reference.acceptedList.length - 1) const SizedBox(height: 40)
+                          ],
+                        );
+                      }))),
       ]);
     });
   }

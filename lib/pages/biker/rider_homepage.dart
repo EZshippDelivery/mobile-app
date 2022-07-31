@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/biker/qr_scanner_page.dart';
 import 'package:ezshipp/tabs/my_orders.dart';
 import 'package:ezshipp/tabs/new_orders.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -150,13 +151,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   if (HomePage.bikerTabController.index == 1)
                     IconButton(
                         onPressed: () async {
-                          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                          await orderController.findOrderbyBarcode(
-                              mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 9);
-                          if (!mounted) return;
-                          await orderController.getAcceptedAndinProgressOrders(mounted, context);
-                          if (!mounted) return;
-                          Navigator.pop(context);
+                          Variables.push(context, QRScanerPage.routeName);
+                          // Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                          // await orderController.findOrderbyBarcode(
+                          //     mounted, context, await Variables.scantext(context, controller, fromhomepage: true), 9);
+                          // if (!mounted) return;
+                          // await orderController.getAcceptedAndinProgressOrders(mounted, context);
+                          // if (!mounted) return;
+                          // Navigator.pop(context);
                         },
                         icon: const Icon(Icons.qr_code_scanner_rounded))
                 ]),
