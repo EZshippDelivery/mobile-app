@@ -166,7 +166,7 @@ class OrderState extends State<Order> {
                                                         context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                  primary: Colors.green,
+                                                  backgroundColor: Colors.green,
                                                   shape:
                                                       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                               child: Row(
@@ -231,7 +231,7 @@ class OrderState extends State<Order> {
                                                         context, "Unable to open Phone App", Icons.cancel_outlined);
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                  primary: Colors.green,
+                                                  backgroundColor: Colors.green,
                                                   shape:
                                                       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                               child: Row(
@@ -337,7 +337,7 @@ class OrderState extends State<Order> {
                                             Variables.pop(context);
                                           },
                                           style: ElevatedButton.styleFrom(
-                                              primary: Palette.kOrange,
+                                              backgroundColor: Palette.kOrange,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                           child: Row(children: [
                                             const Icon(Icons.cancel_outlined),

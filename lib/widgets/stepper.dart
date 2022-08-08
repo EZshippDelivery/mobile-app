@@ -526,8 +526,7 @@ class _StepperState extends State<Stepper> with TickerProviderStateMixin {
               child: TextButton(
                 onPressed: widget.onStepCancel,
                 style: TextButton.styleFrom(
-                  primary: cancelColor,
-                  padding: buttonPadding,
+                  foregroundColor: cancelColor, padding: buttonPadding,
                   shape: buttonShape,
                 ),
                 child: Text(localizations.cancelButtonLabel),

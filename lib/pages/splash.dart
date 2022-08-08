@@ -22,13 +22,44 @@ class SplashScreen extends StatefulWidget {
   @override
   SplashScreenState createState() => SplashScreenState();
 }
-
+Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
 class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController animcontroller;
   late Animation<double> _anim;
-  FirebaseMessaging fcm = FirebaseMessaging.instance;
+  late FirebaseMessaging _messaging;
+
   late AuthController authController;
   List types = ["Delivery Person", "Customer"];
+
+  void registerNotification() async {
+    // 1. Initialize the Firebase app
+
+    // 2. Instantiate Firebase Messaging
+    _messaging = FirebaseMessaging.instance;
+
+    // 3. On iOS, this helps to take the user permissions
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+      // TODO: handle the received notifications
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        // Parse the message received
+        
+      });
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
+  
 
   settimer() async {
     await Variables.read(key: "color_index") == null
@@ -81,12 +112,29 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   Future<void> initPlatformState() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     Map<String, String>? deviceData = <String, String>{};
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint('A new onMessageOpenedApp event was published!');
+      Navigator.pushNamedAndRemoveUntil(context, HomePage.routeName, (route) => false);
+    });
+
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    debugPrint('User granted permission: ${settings.authorizationStatus}');
     try {
       if (Platform.isAndroid) {
         deviceData = await _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
       } else if (Platform.isIOS) {
         deviceData = await _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
       }
+      debugPrint(deviceData["deviceToken"]);
     } on PlatformException {
       deviceData = <String, String>{'Error:': 'Failed to get platform version.'};
     }
@@ -103,7 +151,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       'deviceId': build.androidId,
       'OS': "android",
       "deviceType": "ANDROID",
-      "deviceToken": await fcm.getToken() ?? "",
+      "deviceToken": await _messaging.getToken() ?? "",
       "userType": "DRIVER"
     };
   }
@@ -115,7 +163,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       'deviceModel': data.model,
       'deviceId': data.identifierForVendor,
       'deviceMake:': data.utsname.machine,
-      "deviceToken": await fcm.getToken() ?? "",
+      "deviceToken": await _messaging.getToken() ?? "",
       "userType": "DRIVER"
     };
   }

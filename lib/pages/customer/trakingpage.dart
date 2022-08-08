@@ -62,29 +62,28 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
     } else {
       name = widget.order.bikerName[0];
     }
+    getlivedirections();
   }
 
   getlivedirections() {
-    if (mapsProvider.timer1 != null) {
-      mapsProvider.timer1 = Timer.periodic(const Duration(seconds: 15), (timer) async {
-        await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
-        if (widget.order.statusId < 6) {
-          if (!mounted) return;
-          await mapsProvider.setMarkers(mounted, context, mapController,
-              delivery: LatLng(widget.order.pickLatitude, widget.order.pickLongitude));
-          if (!mounted) return;
-          await mapsProvider.directions(mounted, context, mapController, null,
-              places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
-        } else {
-          if (!mounted) return;
-          await mapsProvider.setMarkers(mounted, context, mapController,
-              delivery: LatLng(widget.order.dropLatitude, widget.order.dropLongitude));
-          if (!mounted) return;
-          await mapsProvider.directions(mounted, context, mapController, null,
-              places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
-        }
-      });
-    }
+    mapsProvider.timer1 ??= Timer.periodic(const Duration(seconds: 15), (timer) async {
+      await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
+      if (widget.order.statusId < 6) {
+        if (!mounted) return;
+        await mapsProvider.setMarkers(mounted, context, mapController,
+            delivery: LatLng(widget.order.pickLatitude, widget.order.pickLongitude));
+        if (!mounted) return;
+        await mapsProvider.directions(mounted, context, mapController, null,
+            places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
+      } else {
+        if (!mounted) return;
+        await mapsProvider.setMarkers(mounted, context, mapController,
+            delivery: LatLng(widget.order.dropLatitude, widget.order.dropLongitude));
+        if (!mounted) return;
+        await mapsProvider.directions(mounted, context, mapController, null,
+            places: [mapsProvider.driver!.position, mapsProvider.dropmark!.position]);
+      }
+    });
   }
 
   @override
@@ -92,7 +91,10 @@ class TrackingPageState extends State<TrackingPage> with TickerProviderStateMixi
     return WillPopScope(
       onWillPop: () {
         Variables.pop(context);
-        if (mapsProvider.timer1 != null) mapsProvider.timer1!.cancel();
+        if (mapsProvider.timer1 != null) {
+          mapsProvider.timer1!.cancel();
+          mapsProvider.timer1 = null;
+        }
         return Future.value(true);
       },
       child: Scaffold(
