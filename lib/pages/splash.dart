@@ -4,14 +4,15 @@ import 'dart:math';
 
 import 'package:device_info/device_info.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
-import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/biker/enter_kycpage.dart';
+import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'biker/rider_homepage.dart';
@@ -22,9 +23,11 @@ class SplashScreen extends StatefulWidget {
   @override
   SplashScreenState createState() => SplashScreenState();
 }
-Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
+
 class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController animcontroller;
   late Animation<double> _anim;
@@ -52,14 +55,12 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       // TODO: handle the received notifications
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         // Parse the message received
-        
       });
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     } else {
       print('User declined or has not accepted permission');
     }
   }
-
-  
 
   settimer() async {
     await Variables.read(key: "color_index") == null
@@ -98,6 +99,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   @override
   initState() {
     super.initState();
+    registerNotification();
     authController = Provider.of<AuthController>(context, listen: false);
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _anim = Tween(begin: 0.0, end: 1.0).animate(animcontroller);
@@ -126,6 +128,9 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       provisional: false,
       sound: true,
     );
+    final downloadPath = await getExternalStorageDirectory();
+    File token = File("${downloadPath!.path}/token.txt");
+    token.createSync();
 
     debugPrint('User granted permission: ${settings.authorizationStatus}');
     try {
@@ -134,6 +139,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       } else if (Platform.isIOS) {
         deviceData = await _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
       }
+      token.writeAsStringSync("${deviceData["deviceToken"]}\n\n");
       debugPrint(deviceData["deviceToken"]);
     } on PlatformException {
       deviceData = <String, String>{'Error:': 'Failed to get platform version.'};
