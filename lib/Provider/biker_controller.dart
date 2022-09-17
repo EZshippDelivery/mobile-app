@@ -113,7 +113,6 @@ class BikerController extends ChangeNotifier {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
       if (!mounted) return;
-
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         acceptedList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
@@ -225,6 +224,7 @@ class BikerController extends ChangeNotifier {
 
   updateProfile(bool mounted, BuildContext context) async {
     try {
+      
       var json = UpdateProfile.fromMap1(riderProfile!.toMap(), TextFields.data).toJson();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"), json);
       if (!mounted) return;
@@ -232,7 +232,7 @@ class BikerController extends ChangeNotifier {
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (!mounted) return;
-        Variables.showtoast(context, "Updating profile successfull", Icons.check);
+        if(responseJson["status"] == 1){Variables.showtoast(context, "Updating profile successfull", Icons.check);}
         await getProfile(mounted, context);
       }
     } on SocketException {

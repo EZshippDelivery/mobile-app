@@ -150,7 +150,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               if (login) authController.storeLoginStatus(true);
               if (!mounted) return;
               if (enterKYC && userType.toLowerCase() == "driver" && login) {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => EnterKYC()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
               } else if (!enterKYC && userType.toLowerCase() == "driver" && login) {
                 Navigator.popAndPushNamed(context, HomePage.routeName);
               } else if (!enterKYC && userType.toLowerCase() == "customer" && login) {
@@ -167,6 +167,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 Variables.deviceInfo["userType"] = "DRIVER";
               }
               Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+              if (!mounted) return;
               Map? response = await authController.registerUser(
                   mounted, context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
               if (!mounted) return;
@@ -174,18 +175,26 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               if (response != null) await writeDetails();
               if (authController.userType == "Customer" && response != null) {
                 if (!mounted) return;
-                if (await showdialog(
-                    context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!, response["id"])) {
+                bool answer = (await showdialog(context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!,
+                        response["data"]["id"])) ??
+                    false;
+                if (answer) {
                   animController2.reverse();
+                  if (!mounted) return;
+                  Variables.showtoast(context, "You have registered successfully", Icons.check);
                   LoginPage.tabController.index = 0;
                 }
               } else if (response != null) {
                 animController2.reverse();
+                if (!mounted) return;
+                Variables.showtoast(context, "You have registered successfully", Icons.check);
                 LoginPage.tabController.index = 0;
               }
             } else if (!SignUp.check) {
+              if (!mounted) return;
               Variables.showtoast(context, "Accept Terms & Conditions", Icons.warning_rounded);
             } else {
+              if (!mounted) return;
               Variables.showtoast(context, "Please enter valid details", Icons.warning_rounded);
             }
           }
@@ -211,8 +220,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Future<bool> readDetails() async {
     try {
       Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-      await authController.authenticateUser(
+      bool condition = await authController.authenticateUser(
           mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
+      if (condition) {
+        if (authController.deviceToken != Variables.deviceInfo["deviceToken"]) {
+          if (!mounted) return false;
+          await authController.tokenUpdate(mounted, context);
+        }
+      }
       if (!mounted) return false;
       Navigator.pop(context);
       if (Variables.driverId == -1 || authController.userType == "") return false;
@@ -254,7 +269,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   showdialog(BuildContext context, String phonenumber, String email, int id) async {
     var code;
-    resendOTP(id, email, phonenumber);
+    await resendOTP(id, email, phonenumber);
     return await showDialog(
         context: context,
         barrierDismissible: false,
@@ -300,9 +315,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         valueListenable: isResend,
                         builder: (context, bool value1, child) {
                           return TextButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 if (value1) return;
-                                resendOTP(id, email, phonenumber);
+                                await resendOTP(id, email, phonenumber);
                               },
                               child: ValueListenableBuilder(
                                   valueListenable: count,
@@ -328,7 +343,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         if (validate != null) {
                           if (!mounted) return;
                           if (validate["otpVerified"]) {
-                            Variables.showtoast(context, "Your Phone number is verified", Icons.check);
+                            Variables.showtoast(context, "Your Phone number is verified.", Icons.check);
                             Variables.pop(context, value: true);
                           } else {
                             Variables.showtoast(context, "OTP is incorrect. Please try again", Icons.warning_rounded);
@@ -342,7 +357,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         });
   }
 
-  void resendOTP(id, email, phonenumber) async {
+  Future<void> resendOTP(id, email, phonenumber) async {
     Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
     await customerController.challengeOTP(
         mounted, context, jsonEncode({"authType": "SMS", "customerId": id, "email": email, "phone": phonenumber}));

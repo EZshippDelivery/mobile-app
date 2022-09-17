@@ -4,8 +4,6 @@ import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import "package:qr_code_scanner/qr_code_scanner.dart" as qr;
 
@@ -60,6 +58,7 @@ class _QRScanerPageState extends State<QRScanerPage> {
           cutOutBottomOffset: (size.height * 0.5) * 0.2),
       onQRViewCreated: (p0) {
         _controller = p0;
+        p0.resumeCamera();
         _controller!.scannedDataStream.listen((event) async {
           if (event.code != null) {
             Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
@@ -78,9 +77,10 @@ class _QRScanerPageState extends State<QRScanerPage> {
   Widget iconButtons(Size size) {
     return Positioned(
         bottom: size.width / 2,
-        left: size.width / 5,
+        left: size.width / 2.3,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
           children: [
             Consumer<UpdateScreenProvider>(builder: (context, snapshot, child) {
               return customContainer(
@@ -96,24 +96,24 @@ class _QRScanerPageState extends State<QRScanerPage> {
                 ),
               ));
             }),
-            SizedBox(width: size.width / 3.5),
-            customContainer(
-                child: IconButton(
-                    onPressed: () async {
-                      final textRecognizer = GoogleMlKit.vision.barcodeScanner([BarcodeFormat.all]);
-                      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-                      if (image != null) {
-                        final inputImage = InputImage.fromFilePath(image.path);
-                        final recognisedText = await textRecognizer.processImage(inputImage);
-                        for (var barcode in recognisedText) {
-                          debugPrint(barcode.displayValue!.toString());
-                        }
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.image_rounded,
-                      color: Colors.white,
-                    )))
+            // SizedBox(width: size.width / 3.5),
+            // customContainer(
+            //     child: IconButton(
+            //         onPressed: () async {
+            //           // final textRecognizer = GoogleMlKit.vision.barcodeScanner([BarcodeFormat.all]);
+            //           final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+            //           if (image != null) {
+            //             // final inputImage = InputImage.fromFilePath(image.path);
+            //             // final recognisedText = await textRecognizer.processImage(inputImage);
+            //             // for (var barcode in recognisedText) {
+            //             //   debugPrint(barcode.displayValue!.toString());
+            //             // }
+            //           }
+            //         },
+            //         icon: const Icon(
+            //           Icons.image_rounded,
+            //           color: Colors.white,
+            //         )))
           ],
         ));
   }

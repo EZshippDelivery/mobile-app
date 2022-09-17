@@ -118,7 +118,7 @@ class Variables {
       path: "/api/v1$path",
       queryParameters: queryParameters);
   // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-  // Uri(scheme: "http", host: "192.168.0.105", port: 1000, path: "/api/v1$path", queryParameters: queryParameters);
+  // Uri(scheme: "http", host: "192.168.0.105", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -384,10 +384,11 @@ class Variables {
     }
   }
 
-  static returnResponse(BuildContext context, Response response, {onlinemode = false}) {
+  static returnResponse(BuildContext context, Response response, {onlinemode = false, bool fromSignUp = false}) {
     var responseJson = onlinemode ? response.body : json.decode(response.body);
     switch (response.statusCode) {
       case 200:
+      case 201:
         return responseJson;
       case 400:
       case 401:
@@ -400,10 +401,34 @@ class Variables {
         break;
       case 500:
       default:
-        Variables.showtoast(
-            context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}\n\n${responseJson["message"]}',
-            Icons.warning_rounded);
+        if (responseJson["message"] == null) {
+          if (fromSignUp) {
+            Variables.showtoast(
+                context, "User with this Email/Phone number is already registered", Icons.cancel_outlined);
+          } else {
+            Variables.showtoast(
+                context,
+                'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+                Icons.warning_rounded);
+          }
+        } else {
+          String message = "";
+          switch (responseJson["message"]) {
+            /** user already exists error. */
+            case "100":
+              message = "User already existed";
+              break;
+            /** user already exists error. */
+            case "103":
+              message = "This mobile number is already registered";
+              break;
+            /** email already exists error. */
+            case "101":
+              message = "This email address is already registered";
+              break;
+          }
+          Variables.showtoast(context, 'Server Error: $message', Icons.warning_rounded);
+        }
         break;
     }
   }
@@ -484,6 +509,25 @@ class Variables {
       return action;
     } else {
       return AlertDialogAction.cancel;
+    }
+  }
+
+  static String statusCode(int statusID) {
+    switch (statusID) {
+      case 3:
+        return "Start";
+      case 4:
+        return "At Pickup";
+      case 5:
+        return "Pick";
+      case 6:
+        return "Start";
+      case 9:
+        return "At Delivery";
+      case 11:
+        return "Complete";
+      default:
+        return "";
     }
   }
 }

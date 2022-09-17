@@ -411,7 +411,7 @@ class OrderState extends State<Order> {
                                               primary: Palette.kOrange,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                           child: Row(children: [
-                                            list.statusId == 5 && list.statusId == 11
+                                            list.statusId != 5 && list.statusId != 11
                                                 ? Image.asset(
                                                     "assets/icon/icons8-pointer-64.png",
                                                     height: 22,
@@ -420,17 +420,7 @@ class OrderState extends State<Order> {
                                                 : const Icon(Icons.check_rounded),
                                             const SizedBox(width: 5),
                                             Text(
-                                              list.statusId == 3
-                                                  ? "Start"
-                                                  : list.statusId == 4
-                                                      ? "Enroute PickUp"
-                                                      : list.statusId == 5
-                                                          ? "Picked"
-                                                          : list.statusId >= 5 && list.statusId < 11
-                                                              ? "Enroute Delivery"
-                                                              : list.statusId == 11
-                                                                  ? "Complete"
-                                                                  : "",
+                                              Variables.statusCode(list.statusId),
                                               style: Variables.font(color: Colors.white, fontSize: 15),
                                             )
                                           ]))

@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info/device_info.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/pages/biker/enter_kycpage.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
+import 'package:ezshipp/utils/notification_service.dart';
 import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -24,14 +25,11 @@ class SplashScreen extends StatefulWidget {
   SplashScreenState createState() => SplashScreenState();
 }
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
-}
-
 class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController animcontroller;
   late Animation<double> _anim;
-  late FirebaseMessaging _messaging;
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  late NotificationService notificationService;
 
   late AuthController authController;
   List types = ["Delivery Person", "Customer"];
@@ -40,10 +38,9 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     // 1. Initialize the Firebase app
 
     // 2. Instantiate Firebase Messaging
-    _messaging = FirebaseMessaging.instance;
 
     // 3. On iOS, this helps to take the user permissions
-    NotificationSettings settings = await _messaging.requestPermission(
+    NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       badge: true,
       provisional: false,
@@ -51,16 +48,20 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-      // TODO: handle the received notifications
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        // Parse the message received
+      // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onMessage.listen((message) async {
+        debugPrint("Got some notification");
+        debugPrint("Messsage data: ${message.data}");
+        if (message.notification != null) {
+          await notificationService.showNotifications(0, message.notification!.title!, message.notification!.body!);
+        }
       });
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     } else {
-      print('User declined or has not accepted permission');
+      debugPrint('User declined or has not accepted permission');
     }
   }
+
+  
 
   settimer() async {
     await Variables.read(key: "color_index") == null
@@ -81,6 +82,12 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       } else {
         islogin = false;
       }
+      if (islogin) {
+        if (authController.deviceToken != Variables.deviceInfo["deviceToken"]) {
+          if (!mounted) return false;
+          await authController.tokenUpdate(mounted, context);
+        }
+      }
       userType = await Variables.read(key: "usertype") ?? "";
     }
     Timer(
@@ -90,7 +97,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             islogin
                 ? userType.toLowerCase() == "driver"
                     ? enterKYC
-                        ? MaterialPageRoute(builder: (context) => EnterKYC())
+                        ? MaterialPageRoute(builder: (context) => const EnterKYC())
                         : MaterialPageRoute(builder: (context) => const HomePage())
                     : MaterialPageRoute(builder: (context) => const CustomerHomePage())
                 : MyRoutes.routelogin()));
@@ -99,6 +106,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   @override
   initState() {
     super.initState();
+    notificationService = NotificationService(context);
     registerNotification();
     authController = Provider.of<AuthController>(context, listen: false);
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
@@ -114,25 +122,16 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   Future<void> initPlatformState() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     Map<String, String>? deviceData = <String, String>{};
+
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('A new onMessageOpenedApp event was published!');
       Navigator.pushNamedAndRemoveUntil(context, HomePage.routeName, (route) => false);
     });
 
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
     final downloadPath = await getExternalStorageDirectory();
     File token = File("${downloadPath!.path}/token.txt");
     token.createSync();
 
-    debugPrint('User granted permission: ${settings.authorizationStatus}');
     try {
       if (Platform.isAndroid) {
         deviceData = await _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
@@ -152,12 +151,12 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
 
   Future<Map<String, String>> _readAndroidBuildData(AndroidDeviceInfo build) async {
     return <String, String>{
-      'deviceMake': build.manufacturer,
-      'deviceModel': build.model,
-      'deviceId': build.androidId,
+      'deviceMake': build.manufacturer!,
+      'deviceModel': build.model!,
+      'deviceId': build.id!,
       'OS': "android",
       "deviceType": "ANDROID",
-      "deviceToken": await _messaging.getToken() ?? "",
+      "deviceToken": await messaging.getToken() ?? "",
       "userType": "DRIVER"
     };
   }
@@ -166,10 +165,10 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     return <String, String>{
       'deviceType': "IOS",
       'OS': "IOS",
-      'deviceModel': data.model,
-      'deviceId': data.identifierForVendor,
-      'deviceMake:': data.utsname.machine,
-      "deviceToken": await _messaging.getToken() ?? "",
+      'deviceModel': data.model!,
+      'deviceId': data.identifierForVendor!,
+      'deviceMake:': data.utsname.machine!,
+      "deviceToken": await messaging.getToken() ?? "",
       "userType": "DRIVER"
     };
   }

@@ -2,34 +2,36 @@ import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/firebase_options.dart';
 import 'package:ezshipp/pages/aboutpage.dart';
+import 'package:ezshipp/pages/biker/contact_page.dart';
+import 'package:ezshipp/pages/biker/deliver_page.dart';
+import 'package:ezshipp/pages/biker/editprofilepage.dart';
+// import 'package:ezshipp/pages/biker/orderpage.dart';
+import 'package:ezshipp/pages/biker/order_deliverypage.dart';
+import 'package:ezshipp/pages/biker/profilepage.dart';
 import 'package:ezshipp/pages/biker/qr_scanner_page.dart';
+import 'package:ezshipp/pages/biker/rider_homepage.dart';
+import 'package:ezshipp/pages/biker/zonepage.dart';
 import 'package:ezshipp/pages/customer/add_addresspage.dart';
 import 'package:ezshipp/pages/customer/book_orderpage.dart';
 import 'package:ezshipp/pages/customer/confirm_addresspage.dart';
 import 'package:ezshipp/pages/customer/confirm_orderpage.dart';
-import 'package:ezshipp/pages/biker/contact_page.dart';
 import 'package:ezshipp/pages/customer/customer_editprofilepage.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/customer/customer_invitepage.dart';
 import 'package:ezshipp/pages/customer/customer_profilepage.dart';
-import 'package:ezshipp/pages/biker/deliver_page.dart';
-import 'package:ezshipp/pages/biker/editprofilepage.dart';
-import 'package:ezshipp/pages/biker/rider_homepage.dart';
-import 'package:ezshipp/pages/loginpage.dart';
 import 'package:ezshipp/pages/customer/order_detailspage.dart';
-// import 'package:ezshipp/pages/biker/orderpage.dart';
-import 'package:ezshipp/pages/biker/order_deliverypage.dart';
-import 'package:ezshipp/pages/biker/profilepage.dart';
 import 'package:ezshipp/pages/customer/saved_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_addresspage.dart';
 import 'package:ezshipp/pages/customer/set_locationpage.dart';
-import 'package:ezshipp/pages/splash.dart';
 import 'package:ezshipp/pages/customer/trakingpage.dart';
-import 'package:ezshipp/pages/biker/zonepage.dart';
+import 'package:ezshipp/pages/loginpage.dart';
+import 'package:ezshipp/pages/splash.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -39,10 +41,18 @@ import 'Provider/auth_controller.dart';
 import 'Provider/biker_controller.dart';
 import 'Provider/order_controller.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((value) => runApp(MultiProvider(
         providers: [
@@ -60,6 +70,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+  
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +78,7 @@ class MyApp extends StatelessWidget {
     CustomerController updateOrderProvider = Provider.of<CustomerController>(context, listen: false);
     return OverlaySupport.global(
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'EZShipp',
         theme: MyTheme.lighttheme(context),

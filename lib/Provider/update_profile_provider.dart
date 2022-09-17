@@ -53,10 +53,10 @@ class UpdateProfileProvider extends CustomerController {
                         : null))));
   }
 
-  void inkwell(BuildContext context) async {
+  void inkwell(BuildContext context, {bool showOptions = true}) async {
     XFile? image;
     try {
-      image = await ImagePicker().pickImage(source: await showoptions(context));
+      if (showOptions) image = await ImagePicker().pickImage(source: await showoptions(context));
     } catch (e) {
       Variables.showtoast(context, "removed profile image", Icons.check);
     } finally {

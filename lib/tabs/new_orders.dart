@@ -145,14 +145,14 @@ class NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      await Variables.updateOrder(mounted, _scaffoldKey.currentContext!,
-                          reference.newOrderList[index].id, direction == DismissDirection.startToEnd ? 3 : 14);
+                      Variables.updateOrder(mounted, _scaffoldKey.currentContext!, reference.newOrderList[index].id,
+                          direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }
                       if (direction == DismissDirection.startToEnd) {
-                        Timer? timer = Timer.periodic(const Duration(seconds: 1), (time) {
-                          Navigator.of(context).pop(true);
+                        Timer.periodic(const Duration(seconds: 1), (time) {
+                          Navigator.of(context).pop();
                           time.cancel();
                         });
                         showDialog(

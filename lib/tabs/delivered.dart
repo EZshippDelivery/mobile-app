@@ -31,7 +31,9 @@ class _DeliveredState extends State<Delivered> {
         }
       }
     });
-    Future.delayed(Duration.zero, () => constructor());
+    if (mounted) {
+      Future.delayed(Duration.zero, () => constructor());
+    }
   }
 
   void constructor() async {
@@ -91,35 +93,46 @@ class _DeliveredState extends State<Delivered> {
             )),
           if (reference.deliveredList.isNotEmpty)
             Flexible(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: reference.deliveredList.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: ListTile(
-                        tileColor: Colors.white,
-                        onTap: () =>
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => Order(index: index))),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Variables.text(context,
-                                head: "Order ID: ", value: reference.deliveredList[index].orderSeqId),
-                            Text(Variables.datetime(reference.deliveredList[index].acceptedTime.isEmpty
-                                ? reference.deliveredList[index].orderCreatedTime
-                                : reference.deliveredList[index].acceptedTime))
-                          ],
-                        ),
-                        subtitle: Variables.text(context,
-                            head: "Status: ",
-                            value: reference.deliveredList[index].status,
-                            valueColor: Palette.kOrange),
-                      ),
-                    ),
-                  );
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  orderController.pagenumber1 = 1;
+                  return await orderController.getAllCompletedOrders(
+                      mounted, context, orderController.start.toString(), orderController.end.toString());
                 },
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    controller: scrollController,
+                    itemCount: reference.deliveredList.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          Card(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: ListTile(
+                                    tileColor: Colors.white,
+                                    onTap: () => Navigator.of(context)
+                                        .push(MaterialPageRoute(builder: (context) => Order(index: index))),
+                                    title: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Variables.text(context,
+                                            head: "Order ID: ", value: reference.deliveredList[index].orderSeqId),
+                                        Text(Variables.datetime(reference.deliveredList[index].acceptedTime.isEmpty
+                                            ? reference.deliveredList[index].orderCreatedTime
+                                            : reference.deliveredList[index].acceptedTime))
+                                      ],
+                                    ),
+                                    subtitle: Variables.text(context,
+                                        head: "Status: ",
+                                        value: reference.deliveredList[index].status,
+                                        valueColor: Palette.kOrange),
+                                  ))),
+                          if (index == reference.deliveredList.length - 1) const SizedBox(height: 64)
+                        ],
+                      );
+                    }),
               ),
             )
         ],

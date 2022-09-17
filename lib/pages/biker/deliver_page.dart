@@ -242,11 +242,12 @@ class DeliveredPageState extends State<DeliveredPage> {
         context: context,
         builder: (context) => Center(
               child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.45,
+                height: MediaQuery.of(context).size.height * 0.5,
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: Material(
                   color: Colors.grey[200],
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         children: [
@@ -263,9 +264,10 @@ class DeliveredPageState extends State<DeliveredPage> {
                       ),
                       Signature(
                         controller: signatureController,
-                        height: MediaQuery.of(context).size.height * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.33,
                         backgroundColor: Colors.white,
                       ),
+                      const Spacer(),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                         Padding(
                             padding: const EdgeInsets.all(5.0),

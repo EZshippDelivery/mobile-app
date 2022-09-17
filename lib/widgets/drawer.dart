@@ -44,9 +44,7 @@ class DrawerWidgetState extends State<DrawerWidget> {
                       const SizedBox(width: 10),
                       InkWell(
                           onTap: () => Variables.push(context, ProfilePage.routeName),
-                          child: Hero(
-                              tag: "Driver Profile",
-                              child: reference.getProfileImage(size: size.width / 3.7, canEdit: true))),
+                          child: Hero(tag: "Driver Profile", child: reference.getProfileImage(size: size.width / 3.7))),
                       const SizedBox(width: 10),
                       Expanded(
                           child: TextButton(

@@ -36,7 +36,7 @@ class CustomerProfilePageState extends State<CustomerProfilePage> {
                 clipper: Clipper(cut: 30),
                 child: Container(
                     color: Palette.kOrange,
-                    height: size.height / 2.5,
+                    height: size.height * 0.45,
                     margin: const EdgeInsets.only(bottom: 3),
                     padding: const EdgeInsets.only(bottom: 20),
                     child: ClipPath(
@@ -54,7 +54,7 @@ class CustomerProfilePageState extends State<CustomerProfilePage> {
                                       Hero(
                                           tag: "Customer Profile",
                                           child: reference.getProfileImage(size: size.width / 3.1, isNotEqual: true)),
-                                      const SizedBox(height: 5),
+                                      const SizedBox(height: 3),
                                       Padding(
                                         padding: const EdgeInsets.all(3),
                                         child: Text(reference.fullName,

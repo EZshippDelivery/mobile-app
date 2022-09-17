@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ezshipp/Provider/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import '../utils/http_requests.dart';
 import '../utils/variables.dart';
 
-class AuthController extends ChangeNotifier {
+class AuthController extends UserController {
   String userType = "";
   Map? profile;
 
@@ -19,9 +20,8 @@ class AuthController extends ChangeNotifier {
         response = await HTTPRequest.postRequest(uri, body, true);
       }
       if (!mounted) return;
-
       if (response != null) {
-        profile = Variables.returnResponse(context, response);
+        profile = Variables.returnResponse(context, response, fromSignUp: true);
       } else {
         Variables.showtoast(context, "Sign Up is not successfull", Icons.cancel_outlined);
       }
@@ -43,6 +43,8 @@ class AuthController extends ChangeNotifier {
       if (map != null) {
         Variables.token = map["accessToken"];
         userType = map["userType"];
+        deviceToken = map["deviceToken"] ?? "";
+        userId = map["userId"];
         Variables.driverId = userType.toLowerCase() == "driver" ? map["bikerId"] : map["customerId"];
       } else {
         Variables.token = '';

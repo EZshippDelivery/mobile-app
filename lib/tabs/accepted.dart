@@ -30,10 +30,25 @@ class AcceptedState extends State<Accepted> {
         }
       }
     });
+    if (mounted) {
+      Future.delayed(Duration.zero, () => constructor());
+    }
+  }
+
+  constructor() async {
+    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await orderController.getAcceptedAndinProgressOrders(mounted, context);
+    if (!mounted) {
+      debugPrint("This is not mounted");
+      return;
+    }
+
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("printed context $context");
     return Consumer<OrderController>(builder: (context, reference, child) {
       return Column(children: [
         if (reference.acceptedList.isEmpty)
@@ -69,10 +84,13 @@ class AcceptedState extends State<Accepted> {
                     return await orderController.getAcceptedAndinProgressOrders(mounted, context);
                   },
                   child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       controller: scrollController,
                       itemCount: reference.acceptedList.length,
                       itemBuilder: (context, index) {
                         return Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Card(
                                 child: Padding(
@@ -101,7 +119,7 @@ class AcceptedState extends State<Accepted> {
                                           value: reference.acceptedList[index].status,
                                           valueColor: Palette.kOrange),
                                     ))),
-                            if (index == reference.acceptedList.length - 1) const SizedBox(height: 40)
+                            if (index == reference.acceptedList.length - 1) const SizedBox(height: 64)
                           ],
                         );
                       }))),

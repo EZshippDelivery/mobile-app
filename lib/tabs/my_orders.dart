@@ -1,10 +1,10 @@
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/tabs/accepted.dart';
 import 'package:ezshipp/tabs/delivered.dart';
-import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../Provider/order_controller.dart';
 
 class MyOrders extends StatefulWidget {
@@ -25,15 +25,8 @@ class MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
 
     orderController = Provider.of<OrderController>(context, listen: false);
     orderController.pagenumber1 = 1;
-    Future.delayed(Duration.zero, () => constructor());
+    // Future.delayed(Duration.zero, () => constructor());
     tabController = TabController(length: 2, vsync: this);
-  }
-
-  constructor() async {
-    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    await orderController.getAcceptedAndinProgressOrders(mounted, context);
-    if (!mounted) return;
-    Navigator.pop(context);
   }
 
   @override
@@ -44,12 +37,15 @@ class MyOrdersState extends State<MyOrders> with TickerProviderStateMixin {
         return false;
       },
       child: Scaffold(
-        body: Consumer<OrderController>(builder: (context, reference, child) {
-          if (!reference.loading2) {
-            return TabBarView(controller: tabController, children: const [Accepted(), Delivered()]);
-          }
-          return const Center(child: CircularProgressIndicator.adaptive());
-        }),
+        body: TabBarView(
+            // physics: AlwaysScrollableScrollPhysics(),
+            controller: tabController,
+            children: const [Accepted(), Delivered()]),
+        // Consumer<OrderController>(builder: (context, reference, child) {
+
+        //     return TabBarView(controller: tabController, children: const [Accepted(), Delivered()]);
+
+        // }),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: Material(
           elevation: 4,

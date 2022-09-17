@@ -86,7 +86,7 @@ class UpdateProfile {
       lastName: update['Last Name'] ?? '',
       license: previous['licenseNumber'] ?? '',
       licenseUrl: previous['licenseUrl'] ?? '',
-      phoneNumber: update['Phone Number']?.toInt() ?? 0,
+      phoneNumber: int.parse(update["Phone number"] ?? "0"),
       shiftId: shiftId,
       vehicleRegn: previous['numberPlate'] ?? '',
     );

@@ -48,9 +48,9 @@ class SignUpState extends State<SignUp> {
                       Padding(
                           padding: const EdgeInsets.only(top: 10.0, bottom: 25),
                           child: InkWell(
-                              onTap: () => reference1.inkwell(context),
+                              onTap: () => reference1.inkwell(context, showOptions: false),
                               child: reference1.getProfileImage(
-                                  canEdit: true, size: MediaQuery.of(context).size.width / 2.5))),
+                                   size: MediaQuery.of(context).size.width / 2.5))),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: DropdownButtonFormField<String>(

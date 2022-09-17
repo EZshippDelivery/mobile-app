@@ -50,8 +50,8 @@ class EditProfilePageState extends State<EditProfilePage> {
                   Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: InkWell(
-                      onTap: () => updateProfileProvider.inkwell(context),
-                      child: updateProfileProvider.getProfileImage(),
+                      onTap: () => updateProfileProvider.inkwell(context, showOptions: false),
+                      child: updateProfileProvider.getProfileImage(size: 130),
                     ),
                   ),
                   TextFields(
@@ -85,6 +85,10 @@ class EditProfilePageState extends State<EditProfilePage> {
                       heroTag: "save_@",
                       onPressed: () async {
                         if (widget.formkey3.currentState!.validate()) {
+                          TextFields.data["First Name"] = firstname.text;
+                          TextFields.data["Last Name"] = lastname.text;
+                          TextFields.data["Email id"] = email.text;
+                          TextFields.data["Phone number"] = phone.text;
                           Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                           await updateProfileProvider.updateProfile(mounted, context);
                           if (!mounted) return;

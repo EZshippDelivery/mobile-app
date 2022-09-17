@@ -10,7 +10,7 @@ import 'package:ezshipp/widgets/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../Provider/order_controller.dart';
 import '../../Provider/update_profile_provider.dart';
@@ -43,7 +43,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
     subscribe();
-    show(context);
+    
   }
 
   void subscribe() {
@@ -52,11 +52,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (event == InternetConnectionStatus.connected) {
         Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
         await updateProfileProvider.getProfile(mounted, context);
-        setonline();
         if (!mounted) return;
         await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
+        await setonline();
         if (!mounted) return;
         Navigator.pop(context);
+        show(context);
       } else if (event == InternetConnectionStatus.disconnected) {
         Variables.overlayNotification();
       }
@@ -72,7 +73,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (!mounted) return;
     await mapsProvider.offLineMode(mounted, context, value != null ? value.toLowerCase() == "true" : true,
         fromhomepage: true);
-    if (updateProfileProvider.newOrderList.isNotEmpty) await Variables.write(key: "FirstTime", value: "false");
+    if (updateProfileProvider.newOrderList.isNotEmpty && firstTime) {
+      firstTime = false;
+      await Variables.write(key: "FirstTime", value: "false");
+    } else {
+      firstTime = true;
+    }
   }
 
   show(BuildContext context) {
