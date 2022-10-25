@@ -42,7 +42,7 @@ class OrderController extends BikerController {
         Variables.updateOrderMap.driverId = body.bikerId;
         Variables.updateOrderMap.newDriverId = Variables.driverId;
         Variables.updateOrderMap.barcode = value;
-        Variables.getLiveLocation(statusId: statusId);
+        await Variables.getLiveLocation(context,statusId: statusId);
         if (!mounted) return;
         Variables.updateOrderMap.distance = (await getDistance(
             mounted,

@@ -116,7 +116,6 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     initPlatformState();
     // setlogin();
     settimer();
-    Variables.getLiveLocation();
   }
 
   Future<void> initPlatformState() async {

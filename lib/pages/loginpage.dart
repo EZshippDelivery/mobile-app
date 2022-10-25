@@ -146,17 +146,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (await InternetConnectionChecker().hasConnection) {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
-              bool login = await readDetails();
-              if (login) authController.storeLoginStatus(true);
-              if (!mounted) return;
-              if (enterKYC && userType.toLowerCase() == "driver" && login) {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
-              } else if (!enterKYC && userType.toLowerCase() == "driver" && login) {
-                Navigator.popAndPushNamed(context, HomePage.routeName);
-              } else if (!enterKYC && userType.toLowerCase() == "customer" && login) {
-                Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
+              bool answer = await Variables.getLiveLocation(context);
+              if (answer) {
+                bool login = await readDetails();
+                if (login) authController.storeLoginStatus(true);
+                if (!mounted) return;
+                if (enterKYC && userType.toLowerCase() == "driver" && login) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
+                } else if (!enterKYC && userType.toLowerCase() == "driver" && login) {
+                  Navigator.popAndPushNamed(context, HomePage.routeName);
+                } else if (!enterKYC && userType.toLowerCase() == "customer" && login) {
+                  Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
+                } else {
+                  Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
+                }
               } else {
-                Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
+                Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
               }
             }
           } else if (LoginPage.tabController.index == 1) {

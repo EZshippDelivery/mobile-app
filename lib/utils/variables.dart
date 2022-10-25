@@ -324,8 +324,9 @@ class Variables {
     return "";
   }
 
-  static Future<void> getLiveLocation({int? statusId}) async {
+  static Future<bool> getLiveLocation(BuildContext context, {int? statusId}) async {
     bool serviceEnabled;
+    bool confirm = false;
     LocationPermission permission;
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -334,26 +335,93 @@ class Variables {
     }
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+      confirm = await showLocationDialog(context);
+      if (confirm) {
+        permission = await Geolocator.requestPermission();
+        // if (permission == LocationPermission.denied) {
+        //   Variables.showtoast(context,'Location permissions are denied',Icons.cancel_outlined);
+        // }
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+      Variables.showtoast(context, 'Location permissions are permanently denied, we cannot request permissions.',
+          Icons.cancel_outlined);
     }
-    var currentlocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    Variables.updateOrderMap.latitude = currentlocation.latitude;
-    Variables.updateOrderMap.longitude = currentlocation.longitude;
-    if (statusId != null) Variables.updateOrderMap.statusId = statusId;
+    var bool2 = permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+    if (confirm && bool2) {
+      var currentlocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      Variables.updateOrderMap.latitude = currentlocation.latitude;
+      Variables.updateOrderMap.longitude = currentlocation.longitude;
+      if (statusId != null) Variables.updateOrderMap.statusId = statusId;
+    }
+    return bool2;
   }
+
+  static Future<bool> showLocationDialog(BuildContext context) async => (await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
+            content: Stack(
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  IconButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      icon: const Icon(Icons.cancel_outlined, color: Colors.grey, size: 27),
+                      splashRadius: 15)
+                ]),
+                Column(mainAxisSize: MainAxisSize.min, children: [
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Image.asset("assets/images/location_marker_icon.png", height: 150, width: 200),
+                  ),
+                  Text("Use Your Location", style: Variables.font(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text("To see maps for automatically tracked activities.",
+                            style: Variables.font(), textAlign: TextAlign.center),
+                        Text("Allow EZshipp to use your location all of the time.",
+                            style: Variables.font(), textAlign: TextAlign.center)
+                      ])),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                              "EZshipp collects location data to track bikers locations, pick your order and deliver your order at doorstep.",
+                              style: Variables.font(),
+                              textAlign: TextAlign.center),
+                          // Text("pick your order and deliver your order at doorstep.",
+                          //     style: Variables.font(), textAlign: TextAlign.center)
+                        ],
+                      )),
+                ]),
+              ],
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actionsPadding: const EdgeInsets.only(bottom: 15),
+            actions: [
+              SizedBox(
+                height: 45,
+                child: FloatingActionButton.extended(
+                    heroTag: "allow_location",
+                    onPressed: () => Navigator.pop(context, true),
+                    label: Text("Allow", style: Variables.font(color: Palette.kOrange)),
+                    backgroundColor: Palette.deepgrey),
+              )
+            ],
+          )))!;
 
   static dynamic updateOrder(bool mounted, BuildContext context, int orderId, statusId,
       [bool iscustomer = false]) async {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
     CustomerController value2 = Provider.of<CustomerController>(context, listen: false);
-    await Variables.getLiveLocation(statusId: statusId);
+    await Variables.getLiveLocation(context, statusId: statusId);
     Map body = {
       "latitude": Variables.updateOrderMap.latitude,
       "longitude": Variables.updateOrderMap.longitude,
