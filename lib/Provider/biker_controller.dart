@@ -116,6 +116,7 @@ class BikerController extends ChangeNotifier {
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         acceptedList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
+        acceptedList.sort(((a, b) => a.acceptedTime.compareTo(b.acceptedTime)));
         isLastPage = false;
       } else {
         isLastPage = true;
@@ -162,20 +163,19 @@ class BikerController extends ChangeNotifier {
 
   livebikerTracking(bool mounted, BuildContext context, int driverId, int orderId) async {
     try {
-    
-        final response = await HTTPRequest.getRequest(
-            Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
-        if (!mounted) return;
-        Map<String, dynamic>? map = Variables.returnResponse(context, response);
-        if (map != null) {
-          driver = Marker(
-              anchor: const Offset(0.5, 0.5),
-              markerId: const MarkerId("origin"),
-              icon: driverMarker!,
-              position: LatLng(map["lastLatitude"], map["lastLongitude"]),
-              infoWindow: const InfoWindow(title: "Driver Location"));
-        }
-        notifyListeners();
+      final response = await HTTPRequest.getRequest(
+          Variables.uri(path: "/biker/orders/getLiveLocationByDriverId/$driverId/$orderId"));
+      if (!mounted) return;
+      Map<String, dynamic>? map = Variables.returnResponse(context, response);
+      if (map != null) {
+        driver = Marker(
+            anchor: const Offset(0.5, 0.5),
+            markerId: const MarkerId("origin"),
+            icon: driverMarker!,
+            position: LatLng(map["lastLatitude"], map["lastLongitude"]),
+            infoWindow: const InfoWindow(title: "Driver Location"));
+      }
+      notifyListeners();
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
@@ -224,7 +224,6 @@ class BikerController extends ChangeNotifier {
 
   updateProfile(bool mounted, BuildContext context) async {
     try {
-      
       var json = UpdateProfile.fromMap1(riderProfile!.toMap(), TextFields.data).toJson();
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/biker/profile/${Variables.driverId}"), json);
       if (!mounted) return;
@@ -232,7 +231,9 @@ class BikerController extends ChangeNotifier {
       var responseJson = Variables.returnResponse(context, response);
       if (responseJson != null) {
         if (!mounted) return;
-        if(responseJson["status"] == 1){Variables.showtoast(context, "Updating profile successfull", Icons.check);}
+        if (responseJson["status"] == 1) {
+          Variables.showtoast(context, "Updating profile successfull", Icons.check);
+        }
         await getProfile(mounted, context);
       }
     } on SocketException {

@@ -2,6 +2,7 @@ import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/Provider/user_controller.dart';
 import 'package:ezshipp/firebase_options.dart';
 import 'package:ezshipp/pages/aboutpage.dart';
 import 'package:ezshipp/pages/biker/contact_page.dart';
@@ -48,6 +49,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   debugPrint("Handling a background message: ${message.messageId}");
 }
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +65,7 @@ Future<void> main() async {
           ChangeNotifierProvider<OrderController>(create: (context) => OrderController()),
           ChangeNotifierProvider<AuthController>(create: (context) => AuthController()),
           ChangeNotifierProvider<MapsProvider>(create: (context) => MapsProvider()),
+          ChangeNotifierProvider<UserController>(create: (context) => UserController()),
         ],
         child: const MyApp(),
       )));
@@ -70,7 +73,6 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-  
 
   @override
   Widget build(BuildContext context) {

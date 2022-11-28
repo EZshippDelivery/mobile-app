@@ -31,6 +31,7 @@ class SetLocationPageState extends State<SetLocationPage> {
   LatLng? screenCoordinates;
   List<GetAllAddresses> recentAddress = [];
   CustomerController? customerController;
+  UpdateScreenProvider? updateScreenProvider;
 
   bool longpress = false;
 
@@ -38,16 +39,21 @@ class SetLocationPageState extends State<SetLocationPage> {
   void initState() {
     super.initState();
     mapsProvider = Provider.of<MapsProvider>(context, listen: false);
-    Future.delayed(Duration.zero, () => constructor());
     customerController = Provider.of<CustomerController>(context, listen: false);
+    updateScreenProvider = Provider.of<UpdateScreenProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () => constructor());
   }
 
   constructor() async {
-    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    mapsProvider.getCurrentlocations();
-    await mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
+    // Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await mapsProvider.getCurrentlocations();
     if (!mounted) return;
-    Navigator.pop(context);
+    await mapsProvider.getTopAddresses(mounted, context, Variables.driverId);
+    mapsProvider.pickmark = null;
+    mapsProvider.dropmark = null;
+    updateScreenProvider!.onMOve = false;
+    mapsProvider.info.clear();
+    // Navigator.pop(context);
   }
 
   @override
@@ -224,8 +230,9 @@ class SetLocationPageState extends State<SetLocationPage> {
                                                 .first
                                                 .longName;
                                             city = reference.placesDetails.result.addressComponents
-                                                .where(
-                                                    (element) => element.types.contains("administrative_area_level_2"))
+                                                .where((element) =>
+                                                    element.types.contains("administrative_area_level_2") ||
+                                                    element.types.contains("locality"))
                                                 .first
                                                 .longName;
                                             pincode = reference.placesDetails.result.addressComponents

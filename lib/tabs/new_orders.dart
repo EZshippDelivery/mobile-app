@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
@@ -145,14 +146,14 @@ class NewOrdersState extends State<NewOrders> {
                           color: Colors.white,
                         )),
                     onDismissed: (direction) async {
-                      Variables.updateOrder(mounted, _scaffoldKey.currentContext!, reference.newOrderList[index].id,
-                          direction == DismissDirection.startToEnd ? 3 : 14);
+                      await Variables.updateOrder(mounted, _scaffoldKey.currentContext!,
+                          reference.newOrderList[index].id, direction == DismissDirection.startToEnd ? 3 : 14);
                       if (direction == DismissDirection.endToStart || direction == DismissDirection.startToEnd) {
                         reference.newOrderList.removeAt(index);
                       }
                       if (direction == DismissDirection.startToEnd) {
                         Timer.periodic(const Duration(seconds: 1), (time) {
-                          Navigator.of(context).pop();
+                          Navigator.of(navigatorKey.currentContext!).pop();
                           time.cancel();
                         });
                         showDialog(
@@ -196,7 +197,7 @@ class NewOrdersState extends State<NewOrders> {
                                   ),
                                   FittedBox(
                                     child: Text(
-                                      "${reference.newOrderList[index].pickDistance} km",
+                                      "${reference.newOrderList[index].pickToDropDistance} km",
                                       style: Variables.font(color: Palette.kOrange),
                                     ),
                                   )

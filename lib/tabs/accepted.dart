@@ -98,7 +98,7 @@ class AcceptedState extends State<Accepted> {
                                     child: ListTile(
                                       tileColor: Colors.white,
                                       onTap: () async {
-                                        Variables.index1 = index;
+                                        Variables.index1 = reference.acceptedList[index].orderSeqId;
                                         if (!mounted) return;
                                         await Variables.push(context, "/order${Order.routeName}");
                                         if (!mounted) return;

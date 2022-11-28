@@ -267,12 +267,14 @@ class MapsProvider extends BikerController {
       placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
           i.addressComponents.first.types.contains("premise")));
       placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
+
       String state = placeAddress.results.first.addressComponents
           .where((element) => element.types.contains("administrative_area_level_1"))
           .first
           .longName;
       String city = placeAddress.results.first.addressComponents
-          .where((element) => element.types.contains("administrative_area_level_2"))
+          .where(
+              (element) => element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
           .first
           .longName;
 
@@ -315,7 +317,7 @@ class MapsProvider extends BikerController {
           .first
           .longName;
       String city = placeAddress1.results.first.addressComponents
-          .where((element) => element.types.contains("administrative_area_level_2"))
+          .where((element) => element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
           .first
           .longName;
 

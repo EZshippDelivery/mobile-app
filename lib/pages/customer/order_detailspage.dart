@@ -222,19 +222,21 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
           ]),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: widget.order.statusId > 1 && widget.order.statusId < 12 && widget.order.statusId != 10
-            ? FloatingActionButton.extended(
-                onPressed: () async {
-                  Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-                  await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
+        floatingActionButton: Consumer<CustomerController>(builder: (context, snapshot, child) {
+          return widget.order.statusId > 1 && widget.order.statusId < 12 && widget.order.statusId != 10
+              ? FloatingActionButton.extended(
+                  onPressed: () async {
+                    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+                    await mapsProvider.livebikerTracking(mounted, context, widget.order.bikerId, widget.order.id);
 
-                  if (!mounted) return;
-                  Navigator.pop(context);
-                  Variables.push(context, TrackingPage.routeName);
-                },
-                label: Text("Track Your Order", style: Variables.font(color: null)),
-                icon: const Icon(Icons.location_on_sharp))
-            : null,
+                    if (!mounted) return;
+                    Navigator.pop(context);
+                    Variables.push(context, TrackingPage.routeName);
+                  },
+                  label: Text("Track Your Order", style: Variables.font(color: null)),
+                  icon: const Icon(Icons.location_on_sharp))
+              : const SizedBox();
+        }),
       ),
     );
   }

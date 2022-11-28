@@ -33,6 +33,28 @@ class AuthController extends UserController {
     if (profile != null) return profile;
   }
 
+  Future<Map<String, dynamic>?> checkUserVerified(
+      bool mounted, BuildContext context, String email, String phone) async {
+    Map<String, dynamic>? map = {};
+    try {
+      Response? response;
+      if (Variables.deviceInfo['userType'] != null) {
+        var uri = Variables.uri(path: '/register/checkVerifiedUser/$email/$phone');
+        response = await HTTPRequest.getRequest(uri);
+      }
+      if (!mounted) return null;
+      if (response != null) {
+        map = Variables.returnResponse(context, response);
+      } else {
+        Variables.showtoast(context, "Sign Up is not successfull", Icons.cancel_outlined);
+      }
+    } on SocketException catch (e) {
+      Variables.showtoast(
+          context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    }
+    return map;
+  }
+
   authenticateUser(bool mounted, BuildContext context, Map<String, dynamic> body) async {
     Map<String, dynamic>? map;
     try {
@@ -57,7 +79,7 @@ class AuthController extends UserController {
     }
     notifyListeners();
     if (map != null) {
-      return true;
+      return map;
     } else {
       return false;
     }

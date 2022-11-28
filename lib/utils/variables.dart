@@ -40,10 +40,13 @@ class Variables {
   static int driverId = -1;
   static final pref = FlutterSecureStorage(aOptions: getAndroidOptions());
 
-  static int index = 0, index1 = 0, index2 = 0, index3 = 0;
+  static int index = 0, index2 = 0, index3 = 0;
+  static String index1 = "";
   static late NewOrderList list, list1;
   static int orderscount = 0;
   static Map<String, dynamic>? responseJson;
+
+  static bool otpNotVerified = true;
 
   static AndroidOptions getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
@@ -118,7 +121,7 @@ class Variables {
       path: "/api/v1$path",
       queryParameters: queryParameters);
   // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-  // Uri(scheme: "http", host: "192.168.0.105", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+  // Uri(scheme: "http", host: "192.168.0.101", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -348,7 +351,7 @@ class Variables {
           Icons.cancel_outlined);
     }
     var bool2 = permission == LocationPermission.always || permission == LocationPermission.whileInUse;
-    if (confirm && bool2) {
+    if (bool2) {
       var currentlocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       Variables.updateOrderMap.latitude = currentlocation.latitude;
       Variables.updateOrderMap.longitude = currentlocation.longitude;
@@ -452,7 +455,8 @@ class Variables {
     }
   }
 
-  static returnResponse(BuildContext context, Response response, {onlinemode = false, bool fromSignUp = false}) {
+  static returnResponse(BuildContext context, Response response,
+      {onlinemode = false, bool fromSignUp = false, bool mounted = true}) {
     var responseJson = onlinemode ? response.body : json.decode(response.body);
     switch (response.statusCode) {
       case 200:
@@ -470,14 +474,13 @@ class Variables {
       case 500:
       default:
         if (responseJson["message"] == null) {
-          if (fromSignUp) {
-            Variables.showtoast(
-                context, "User with this Email/Phone number is already registered", Icons.cancel_outlined);
-          } else {
+          if (!fromSignUp) {
             Variables.showtoast(
                 context,
                 'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
                 Icons.warning_rounded);
+          } else {
+            Variables.showtoast(context, "User doen't exist to reset Password", Icons.warning_amber_rounded);
           }
         } else {
           String message = "";
@@ -494,8 +497,12 @@ class Variables {
             case "101":
               message = "This email address is already registered";
               break;
+            case "105":
+              Variables.otpNotVerified = true;
+              break;
           }
-          Variables.showtoast(context, 'Server Error: $message', Icons.warning_rounded);
+
+          // if (message.isNotEmpty) Variables.showtoast(context, 'Server Error: $message', Icons.warning_rounded);
         }
         break;
     }

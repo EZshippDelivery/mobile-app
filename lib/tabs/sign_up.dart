@@ -25,9 +25,12 @@ class SignUp extends StatefulWidget {
 }
 
 class SignUpState extends State<SignUp> {
+  late UpdateProfileProvider updateProfileProvider;
   @override
   void initState() {
     super.initState();
+    updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () => updateProfileProvider.setName(null));
   }
 
   @override
@@ -49,8 +52,7 @@ class SignUpState extends State<SignUp> {
                           padding: const EdgeInsets.only(top: 10.0, bottom: 25),
                           child: InkWell(
                               onTap: () => reference1.inkwell(context, showOptions: false),
-                              child: reference1.getProfileImage(
-                                   size: MediaQuery.of(context).size.width / 2.5))),
+                              child: reference1.getProfileImage(size: MediaQuery.of(context).size.width / 2.5))),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: DropdownButtonFormField<String>(

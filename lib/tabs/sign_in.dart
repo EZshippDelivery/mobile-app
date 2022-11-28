@@ -1,6 +1,8 @@
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../Provider/user_controller.dart';
 import '../utils/variables.dart';
 
 // ignore: must_be_immutable
@@ -13,15 +15,19 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  GlobalKey<FormState> formkey3 = GlobalKey<FormState>(debugLabel: "_resetPassword");
+  GlobalKey<FormState> formkey3 = GlobalKey<FormState>(debugLabel: "_changePassword");
+  GlobalKey<FormState> formkey4 = GlobalKey<FormState>(debugLabel: "_resetPassword");
   TextEditingController username = TextEditingController();
+  TextEditingController username1 = TextEditingController();
   ValueNotifier<bool> iconChange = ValueNotifier<bool>(false);
+  late UserController userController;
 
   String code = "";
 
   @override
   void initState() {
     super.initState();
+    userController = Provider.of<UserController>(context, listen: false);
   }
 
   store() async {
@@ -30,41 +36,55 @@ class _SignInState extends State<SignIn> {
   }
 
   alertdialog(context) {
-    return (context) => SimpleDialog(
-          title: const Text("Need Help!"),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: Text(
-                "Enter your registered email address to reset your password",
-                style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
+    username1.text = "";
+    return (context) => StatefulBuilder(builder: (context, snapshot) {
+          return SimpleDialog(
+            title: const Text("Need Help!"),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: Text(
+                  "Enter your registered email address/phone number to reset your password",
+                  style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
+                ),
               ),
-            ),
-            TextFields(
-                title: "Email id", icon: const Icon(Icons.email_rounded), type: TextInputType.emailAddress, radius: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10.0)),
-                    child: const Text("Cancel")),
-                ElevatedButton(
-                    onPressed: () async {
-                      if (TextFields.data["Email id"]!.contains(RegExp(r"\s")) ||
-                          TextFields.data["Email id"]!.contains(RegExp("@"))) {
-                        await resetPassword(context);
-                        Navigator.of(context).pop();
-                      } else {
-                        Variables.showtoast(context, "Enter valid Email id", Icons.warning_rounded);
-                      }
-                    },
-                    child: const Text("Send")),
-              ],
-            )
-          ],
-        );
+              Form(
+                key: formkey4,
+                child: ValueListenableBuilder<bool>(
+                    valueListenable: iconChange,
+                    builder: (context, value, child) {
+                      return TextFields(
+                          title: "Username",
+                          icon: !value ? const Icon(Icons.email_rounded) : const Icon(Icons.phone),
+                          type: TextInputType.name,
+                          valueNotifier: iconChange,
+                          controller: username1,
+                          radius: 4);
+                    }),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10.0)),
+                      child: const Text("Cancel")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        if (formkey4.currentState!.validate()) {
+                          await resetPassword(context);
+                          Navigator.of(context).pop();
+                        } else {
+                          Variables.showtoast(context, "Enter valid Username", Icons.warning_rounded);
+                        }
+                      },
+                      child: const Text("Send")),
+                ],
+              )
+            ],
+          );
+        });
   }
 
   @override
@@ -100,7 +120,8 @@ class _SignInState extends State<SignIn> {
                     "Forgot Password?",
                     style: Variables.font(color: null),
                   ),
-                  onPressed: () => showDialog(context: context, builder: alertdialog(context)),
+                  onPressed: () =>
+                      showDialog(context: context, barrierDismissible: false, builder: alertdialog(context)),
                 ),
                 SizedBox(
                   height: maxH * (0.35),
@@ -112,57 +133,80 @@ class _SignInState extends State<SignIn> {
   }
 
   Future<void> resetPassword(context) async {
-    await showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text("Reset Password"),
-        contentPadding: const EdgeInsets.all(10),
-        children: [
-          Form(
-            key: formkey3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    "Reset your password",
-                    style: Variables.font(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.grey[600]),
-                  ),
+    dynamic message = await userController.resetPassword(mounted, context, TextFields.data["Username"]!);
+    if (message is Map<String, dynamic>) {
+      if (message['code'] == 200) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => SimpleDialog(
+            title: const Text("Reset Password"),
+            contentPadding: const EdgeInsets.all(10),
+            children: [
+              Form(
+                key: formkey3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        "Reset your password",
+                        style: Variables.font(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.grey[600]),
+                      ),
+                    ),
+                    TextFields(title: "Reset Code", icon: const Icon(Icons.password), radius: 4),
+                    TextFields(
+                        title: "New Password",
+                        icon: const Icon(Icons.lock_outline),
+                        type: TextInputType.visiblePassword,
+                        hidepass: true,
+                        radius: 4),
+                    TextFields(
+                        title: "Confirm Password",
+                        icon: const Icon(Icons.lock_outline),
+                        type: TextInputType.visiblePassword,
+                        hidepass: true,
+                        radius: 4),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
+                        onPressed: () async {
+                          if (formkey3.currentState!.validate()) {
+                            if (message["data"] == TextFields.data["Reset Code"]) {
+                              dynamic response = await userController.changePassword(
+                                  context,
+                                  mounted,
+                                  TextFields.data["Username"]!,
+                                  TextFields.data["Password"]!,
+                                  TextFields.data["Reset Code"]!);
+                              if (response is Map<String, dynamic>) {
+                                if (!mounted) return;
+                                Variables.showtoast(context, response["message"], Icons.info);
+                              }
+                              await store();
+                              if (!mounted) return;
+                              Navigator.of(context).pop();
+                            } else {
+                              Variables.showtoast(context, "Reset code is incorrect", Icons.warning_amber_rounded);
+                            }
+                          }
+                        },
+                        child: const Text("Reset"),
+                      ),
+                    ),
+                  ],
                 ),
-                TextFields(
-                    title: "New Password",
-                    icon: const Icon(Icons.lock_outline),
-                    type: TextInputType.visiblePassword,
-                    hidepass: true,
-                    radius: 4),
-                TextFields(
-                    title: "Confirm Password",
-                    icon: const Icon(Icons.lock_outline),
-                    type: TextInputType.visiblePassword,
-                    hidepass: true,
-                    radius: 4),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)))),
-                    onPressed: () async {
-                      if (formkey3.currentState!.validate()) {
-                        await store();
-                        if (!mounted) return;
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Text("Reset"),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
+              )
+            ],
+          ),
+        );
+      } else {
+        Variables.showtoast(context, message['message'], Icons.cancel_outlined);
+      }
+    }
   }
 }

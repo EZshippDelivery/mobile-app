@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/pages/biker/enter_kycpage.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/utils/notification_service.dart';
@@ -61,8 +62,6 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     }
   }
 
-  
-
   settimer() async {
     await Variables.read(key: "color_index") == null
         ? Variables.write(key: "color_index", value: Random().nextInt(Colors.primaries.length).toString())
@@ -78,7 +77,13 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       final password = await Variables.read(key: "password") ?? "";
       if (!mounted) return;
       if (username.isNotEmpty && password.isNotEmpty) {
-        islogin = await authController.authenticateUser(mounted, context, {"password": password, "username": username});
+        var login =
+            await authController.authenticateUser(mounted, context, {"password": password, "username": username});
+        if (login is Map<String, dynamic>?) {
+          islogin = login!["otpVerified"];
+        } else {
+          islogin = login;
+        }
       } else {
         islogin = false;
       }
@@ -109,6 +114,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     notificationService = NotificationService(context);
     registerNotification();
     authController = Provider.of<AuthController>(context, listen: false);
+
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _anim = Tween(begin: 0.0, end: 1.0).animate(animcontroller);
     CurvedAnimation(curve: Curves.fastOutSlowIn, parent: animcontroller);
@@ -122,9 +128,14 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     Map<String, String>? deviceData = <String, String>{};
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       debugPrint('A new onMessageOpenedApp event was published!');
-      Navigator.pushNamedAndRemoveUntil(context, HomePage.routeName, (route) => false);
+      final login = await Variables.read(key: "islogin");
+      if (login == "true") {
+        Navigator.pushNamedAndRemoveUntil(navigatorKey.currentContext!, HomePage.routeName, (route) => false);
+      } else {
+        Navigator.pushAndRemoveUntil(navigatorKey.currentContext!, MyRoutes.routelogin(), (route) => false);
+      }
     });
 
     final downloadPath = await getExternalStorageDirectory();

@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:ezshipp/APIs/register.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
+import 'package:ezshipp/Provider/update_profile_provider.dart';
 import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/tabs/sign_in.dart';
@@ -36,10 +37,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   late AuthController authController;
   late CustomerController customerController;
+  late UpdateProfileProvider updateProfileProvider;
   late Timer timer;
 
   ValueNotifier<bool> isResend = ValueNotifier<bool>(false);
-  ValueNotifier<int> count = ValueNotifier<int>(45); //OTP Timer
+  ValueNotifier<int> count = ValueNotifier<int>(60); //OTP Timer
 
   int typeIndex = 0;
   String code = "";
@@ -54,6 +56,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     super.initState();
     authController = Provider.of<AuthController>(context, listen: false);
     customerController = Provider.of<CustomerController>(context, listen: false);
+    updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () => updateProfileProvider.setName(null));
+
     animController = AnimationController(vsync: this, duration: const Duration(seconds: 1));
     animController2 = AnimationController(vsync: this, duration: const Duration(milliseconds: 750));
     _anim = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: animController, curve: Curves.fastOutSlowIn));
@@ -146,21 +151,25 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (await InternetConnectionChecker().hasConnection) {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
+              if (!mounted) return;
               bool answer = await Variables.getLiveLocation(context);
               if (answer) {
                 bool login = await readDetails();
                 if (login) authController.storeLoginStatus(true);
-                if (!mounted) return;
-                if (enterKYC && userType.toLowerCase() == "driver" && login) {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
-                } else if (!enterKYC && userType.toLowerCase() == "driver" && login) {
-                  Navigator.popAndPushNamed(context, HomePage.routeName);
-                } else if (!enterKYC && userType.toLowerCase() == "customer" && login) {
-                  Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
-                } else {
-                  Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
+                if (login) {
+                  if (!mounted) return;
+                  if (enterKYC && userType.toLowerCase() == "driver") {
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EnterKYC()));
+                  } else if (!enterKYC && userType.toLowerCase() == "driver") {
+                    Navigator.popAndPushNamed(context, HomePage.routeName);
+                  } else if (!enterKYC && userType.toLowerCase() == "customer") {
+                    Navigator.popAndPushNamed(context, CustomerHomePage.routeName);
+                  } else {
+                    Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
+                  }
                 }
               } else {
+                if (!mounted) return;
                 Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
               }
             }
@@ -173,15 +182,34 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               }
               Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
               if (!mounted) return;
-              Map? response = await authController.registerUser(
-                  mounted, context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+              Map<String, dynamic>? value = await authController.checkUserVerified(
+                  mounted, context, TextFields.data["Email id"]!, TextFields.data["Phone number"]!);
+              if (value != null) {
+                Variables.otpNotVerified = value["mobile"]!;
+                Variables.driverId = value["customerId"];
+              }
+              Map? response;
+              if (!Variables.otpNotVerified && Variables.driverId == -1) {
+                if (!mounted) return;
+                response = await authController.registerUser(
+                    mounted, context, Register.from2Maps(Variables.deviceInfo, TextFields.data).toJson());
+                if (!mounted) return;
+                if (response == null) {
+                  Map<String, dynamic>? value = await authController.checkUserVerified(
+                      mounted, context, TextFields.data["Email id"]!, TextFields.data["Phone number"]!);
+                  if (value != null) {
+                    Variables.otpNotVerified = value["mobile"]!;
+                    Variables.driverId = value["customerId"];
+                  }
+                }
+              }
               if (!mounted) return;
               Navigator.pop(context);
               if (response != null) await writeDetails();
-              if (authController.userType == "Customer" && response != null) {
+              if (authController.userType == "Customer" && (response != null || !Variables.otpNotVerified)) {
                 if (!mounted) return;
                 bool answer = (await showdialog(context, TextFields.data["Phone number"]!, TextFields.data["Email id"]!,
-                        response["data"]["id"])) ??
+                        response != null ? response["data"]["id"] : Variables.driverId)) ??
                     false;
                 if (answer) {
                   animController2.reverse();
@@ -210,7 +238,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: const Icon(Icons.keyboard_arrow_right_rounded));
 
   writeDetails() async {
-    await Variables.write(key: "username", value: TextFields.data["Email id"].toString());
+    await Variables.write(
+        key: "username",
+        value: TextFields.data["Email id"].toString().isEmpty
+            ? TextFields.data["Username"].toString()
+            : TextFields.data["Email id"].toString());
     await Variables.write(key: "password", value: TextFields.data["Password"].toString());
     await Variables.write(key: "usertype", value: authController.userType);
     await Variables.write(key: "FirstTime", value: "true");
@@ -225,12 +257,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Future<bool> readDetails() async {
     try {
       Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-      bool condition = await authController.authenticateUser(
-          mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Email id"]});
-      if (condition) {
-        if (authController.deviceToken != Variables.deviceInfo["deviceToken"]) {
+      var condition = await authController.authenticateUser(
+          mounted, context, {"password": TextFields.data["Password"], "username": TextFields.data["Username"]});
+      if (condition is bool) {
+        if (condition) {
+          if (authController.deviceToken != Variables.deviceInfo["deviceToken"]) {
+            if (!mounted) return false;
+            await authController.tokenUpdate(mounted, context);
+          }
+        }
+      } else if (condition is Map<String, dynamic>?) {
+        if (!condition!["otpVerified"] && condition["userType"] == "CUSTOMER") {
           if (!mounted) return false;
-          await authController.tokenUpdate(mounted, context);
+          Navigator.pop(context);
+          var newVariable = await showdialog(
+              context, condition["phone"]!.toString(), condition["email"]!.toString(), condition["customerId"]);
+          return (newVariable) ?? false;
         }
       }
       if (!mounted) return false;
@@ -285,7 +327,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 contentPadding: const EdgeInsets.all(17),
                 alignment: MediaQuery.of(context).viewInsets.bottom > 0 ? Alignment.topCenter : Alignment.center,
                 children: [
-                  SvgPicture.asset("assets/images/otp & two-factor.svg"),
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Spacer(),
+                    IconButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        icon: Icon(Icons.cancel, color: Colors.grey[800]))
+                  ]),
+                  SvgPicture.asset("assets/images/otp f& two-factor.svg"),
                   Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Text("OTP Verification",
@@ -293,7 +341,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   Padding(
                       padding: const EdgeInsets.all(5.0),
-                      child: Text("We have send verification code to \n +91 ${TextFields.data["Phone number"]}",
+                      child: Text("We have send verification code to \n +91 $phonenumber",
                           textAlign: TextAlign.center,
                           style: Variables.font(fontWeight: FontWeight.w300, fontSize: 16, color: Colors.grey[600]))),
                   Padding(
@@ -352,7 +400,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             Variables.pop(context, value: true);
                           } else {
                             Variables.showtoast(context, "OTP is incorrect. Please try again", Icons.warning_rounded);
-                            Variables.pop(context, value: false);
                           }
                         }
                       },

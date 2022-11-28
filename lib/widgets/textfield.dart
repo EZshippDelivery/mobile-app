@@ -60,9 +60,7 @@ class TextFieldsState extends State<TextFields> {
   @override
   Widget build(BuildContext context) {
     String title = widget.title;
-    if (widget.title == "Username") {
-      title = "Email id";
-    } else if (widget.title == "New Password") {
+    if (widget.title == "New Password") {
       title = "Password";
     }
     return Padding(
@@ -87,6 +85,7 @@ class TextFieldsState extends State<TextFields> {
           },
           validator: (value) {
             String title = widget.title;
+
             if (value!.isEmpty) {
               if (title == "Confirm Password") {
                 return title;
@@ -124,16 +123,24 @@ class TextFieldsState extends State<TextFields> {
                     return "Password isn't matched";
                   }
                   break;
-                // case "Username":
+                case "Username":
+                  bool space = !value.contains(RegExp(r"\s"));
+                  bool email = (value.contains(RegExp("@")) && value.contains(RegExp(r".+@.+\..+")));
+                  bool number = (value.contains(RegExp(r"\d{10}")) && value.length == 10);
+                  if (!(space && (email || number))) {
+                    return "Enter valid Username";
+                  }
+                  break;
                 case "Email id":
-                  if (value.contains(RegExp(r"\s")) ||
-                      !value.contains(RegExp("@")) ||
-                      !value.contains(RegExp(r".+@.+\..+"))) {
+                  bool space = !value.contains(RegExp(r"\s"));
+                  bool email = (value.contains(RegExp("@")) && value.contains(RegExp(r".+@.+\..+")));
+                  if (!(space && email)) {
                     return "Enter valid Email id";
                   }
                   break;
                 case "Phone number":
-                  if (value.length != 10) {
+                  bool number = (value.contains(RegExp(r"\d{10}")) && value.length == 10);
+                  if (!number) {
                     return "Enter valid Phone number";
                   }
                   break;

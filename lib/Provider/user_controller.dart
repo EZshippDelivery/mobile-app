@@ -32,4 +32,33 @@ class UserController extends ChangeNotifier {
           context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
   }
+
+  resetPassword(bool mounted, BuildContext context, String username) async {
+    try {
+      var uri = Variables.uri(path: '/users/password/reset/$username');
+      dynamic response = await HTTPRequest.getRequest(uri);
+      if (!mounted) return;
+      if (response != null) {
+        return Variables.returnResponse(context, response,fromSignUp: true);
+      }
+    } on SocketException catch (e) {
+      Variables.showtoast(
+          context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    }
+  }
+
+  changePassword(BuildContext context, bool mounted, String username, String password, String resetCode) async {
+    try {
+      Map<String, dynamic> body = {"newPassword": password, "oldPassword": resetCode, "username": username};
+      var uri = Variables.uri(path: '/users/password/change');
+      dynamic response = await HTTPRequest.postRequest(uri, jsonEncode(body));
+      if (!mounted) return;
+      if (response != null) {
+        return Variables.returnResponse(context, response);
+      }
+    } on SocketException catch (e) {
+      Variables.showtoast(
+          context, 'No Internet connection\n${e.message}', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    }
+  }
 }

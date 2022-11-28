@@ -1,5 +1,6 @@
 import 'package:ezshipp/main.dart';
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
+import 'package:ezshipp/utils/routes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -29,9 +30,12 @@ class NotificationService {
   void initializeNotification([mounted = true]) async {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: (payload) async {
       String userType = await Variables.read(key: "usertype");
-      if (userType.toLowerCase() == 'driver') {
+      final login = await Variables.read(key: "islogin");
+      if(login=="true"){if (userType.toLowerCase() == 'driver') {
         if (!mounted) return;
         navigatorKey.currentState!.pushNamedAndRemoveUntil(HomePage.routeName, (route) => false);
+      }}else{
+        navigatorKey.currentState!.pushAndRemoveUntil(MyRoutes.routelogin(), (route) => false);
       }
     });
   }
