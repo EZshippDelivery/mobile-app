@@ -1,7 +1,9 @@
+import 'dart:developer';
 import "dart:io";
 
 import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +12,11 @@ import "package:qr_code_scanner/qr_code_scanner.dart" as qr;
 // ignore: must_be_immutable
 class QRScanerPage extends StatefulWidget {
   static String routeName = "/qrscanner";
+  static bool zoned = false;
+  static bool onlyOnce = true;
   bool flash = true;
-  QRScanerPage({Key? key}) : super(key: key);
+  int id, zonedId;
+  QRScanerPage({Key? key, this.id = 0, this.zonedId = 0}) : super(key: key);
 
   @override
   State<QRScanerPage> createState() => _QRScanerPageState();
@@ -26,6 +31,7 @@ class _QRScanerPageState extends State<QRScanerPage> {
   void initState() {
     super.initState();
     orderController = Provider.of<OrderController>(context, listen: false);
+    QRScanerPage.onlyOnce = true;
   }
 
   @override
@@ -60,14 +66,33 @@ class _QRScanerPageState extends State<QRScanerPage> {
         _controller = p0;
         p0.resumeCamera();
         _controller!.scannedDataStream.listen((event) async {
-          if (event.code != null) {
-            Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-            if (event.code!.length == 6) await orderController.findOrderbyBarcode(mounted, context, event.code!, 9);
-            if (!mounted) return;
-            await orderController.getAcceptedAndinProgressOrders(mounted, context);
-            if (!mounted) return;
-            Navigator.pop(context);
-            Navigator.pop(context);
+          log("${event.code}", name: "BarCode");
+          if (event.code != null && QRScanerPage.onlyOnce) {
+            QRScanerPage.onlyOnce = false;
+            if (QRScanerPage.zoned) {
+              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+              if (event.code!.length == 6) await orderController.findOrderbyBarcode(mounted, context, event.code!, 9);
+              if (!mounted) return;
+              await orderController.getAcceptedAndinProgressOrders();
+              if (!mounted) return;
+              Navigator.popUntil(context, (route) {
+                
+
+                return route.isFirst;
+              });
+            } else {
+              Variables.updateOrderMap.barcode = event.code!;
+              Variables.updateOrderMap.zoneId = widget.zonedId + 1;
+              if (!mounted) return;
+              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+              await Variables.updateOrder(mounted, context, widget.id, 8);
+              Variables.updateOrderMap.barcode = "";
+              Variables.updateOrderMap.zoneId = 0;
+              if (!mounted) return;
+              Navigator.popUntil(context, (route) {
+                return route.isFirst;
+              });
+            }
           }
         });
       },

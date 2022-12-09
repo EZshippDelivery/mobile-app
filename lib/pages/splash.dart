@@ -80,7 +80,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
         var login =
             await authController.authenticateUser(mounted, context, {"password": password, "username": username});
         if (login is Map<String, dynamic>?) {
-          islogin = login!["otpVerified"];
+          islogin = login!["userType"].toLowerCase() == 'driver' ? true : login["otpVerified"];
         } else {
           islogin = login;
         }

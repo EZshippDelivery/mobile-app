@@ -1,4 +1,5 @@
 import 'package:ezshipp/Provider/order_controller.dart';
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,7 @@ class AcceptedState extends State<Accepted> {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!orderController.isLastPage1) {
           orderController.pagenumber += 1;
-          orderController.getAcceptedAndinProgressOrders(mounted, context);
+          orderController.getAcceptedAndinProgressOrders();
         }
       }
     });
@@ -36,14 +37,9 @@ class AcceptedState extends State<Accepted> {
   }
 
   constructor() async {
-    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    await orderController.getAcceptedAndinProgressOrders(mounted, context);
-    if (!mounted) {
-      debugPrint("This is not mounted");
-      return;
-    }
-
-    Navigator.pop(context);
+    Variables.loadingDialogue(context: navigatorKey.currentContext, subHeading: "Please wait ...");
+    await orderController.getAcceptedAndinProgressOrders();
+    Navigator.pop(navigatorKey.currentContext!);
   }
 
   @override
@@ -81,7 +77,7 @@ class AcceptedState extends State<Accepted> {
               child: RefreshIndicator(
                   onRefresh: () async {
                     orderController.pagenumber = 1;
-                    return await orderController.getAcceptedAndinProgressOrders(mounted, context);
+                    return await orderController.getAcceptedAndinProgressOrders();
                   },
                   child: ListView.builder(
                       shrinkWrap: true,
@@ -102,7 +98,7 @@ class AcceptedState extends State<Accepted> {
                                         if (!mounted) return;
                                         await Variables.push(context, "/order${Order.routeName}");
                                         if (!mounted) return;
-                                        await orderController.getAcceptedAndinProgressOrders(mounted, context);
+                                        await orderController.getAcceptedAndinProgressOrders();
                                       },
                                       title: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,7 +125,7 @@ class AcceptedState extends State<Accepted> {
 
   @override
   void dispose() {
-    scrollController.dispose();
+    // scrollController.dispose();
     super.dispose();
   }
 }

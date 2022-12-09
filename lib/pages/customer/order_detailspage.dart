@@ -35,7 +35,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     customerController = Provider.of<CustomerController>(context, listen: false);
     Future.delayed(const Duration(seconds: 3), () {
       customerController.timer2 = Timer.periodic(const Duration(seconds: 10), (timer) async {
-        await customerController.getCustomerOrders(mounted, context);
+        await customerController.getCustomerOrders();
 
         debugPrint("Customer Orders Updated");
       });
@@ -125,7 +125,7 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                     await Variables.updateOrder(mounted, _scaffoldKey.currentContext!, widget.order.id, 13, true);
                     Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                     if (!mounted) return;
-                    await customerController.getCustomerOrders(mounted, context);
+                    await customerController.getCustomerOrders();
                     if (!mounted) return;
                     Navigator.pop(context);
                     if (!mounted) return;

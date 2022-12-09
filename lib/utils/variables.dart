@@ -114,14 +114,23 @@ class Variables {
           Color? color = Palette.deepgrey,
           TextDecoration? decoration}) =>
       GoogleFonts.notoSans(fontSize: fontSize, color: color, fontWeight: fontWeight, decoration: decoration);
-  static Uri uri({required String path, queryParameters}) => Uri(
-      scheme: "https",
-      host: "backendapi.ezshipp.com",
-      port: 2020,
-      path: "/api/v1$path",
-      queryParameters: queryParameters);
-  // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
-  // Uri(scheme: "http", host: "192.168.0.101", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+  static String urlSchema = "https";
+  static String urlhost = "backendapi.ezshipp.com";
+  static Uri uri({required String path, queryParameters}) {
+    // Uri(
+    //     scheme: "https",
+    //     host: "backendapi.ezshipp.com",
+    //     port: 2020,
+    //     path: "/api/v1$path",
+    //     queryParameters: queryParameters);
+    // Uri(scheme: "http", host: "65.2.152.100", port: 2020, path: "/api/v1$path", queryParameters: queryParameters);
+    return Uri(
+        scheme: Variables.urlSchema,
+        host: Variables.urlhost,
+        port: 2020,
+        path: "/api/v1$path",
+        queryParameters: queryParameters);
+  }
 
   static text(BuildContext context,
           {String head = "Order ID:",
@@ -455,8 +464,7 @@ class Variables {
     }
   }
 
-  static returnResponse(BuildContext context, Response response,
-      {onlinemode = false, bool fromSignUp = false, bool mounted = true}) {
+  static returnResponse(BuildContext context, Response response, {onlinemode = false, bool fromSignUp = false}) {
     var responseJson = onlinemode ? response.body : json.decode(response.body);
     switch (response.statusCode) {
       case 200:

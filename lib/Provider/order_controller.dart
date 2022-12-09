@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:ezshipp/Provider/biker_controller.dart';
@@ -14,6 +15,7 @@ class OrderController extends BikerController {
   Future<Map<String, dynamic>?> updateOrder(bool mounted, BuildContext context, String body, int orderid) async {
     Map<String, dynamic>? responseJson;
     try {
+      log(body, name: "updateOrder");
       final response = await HTTPRequest.putRequest(Variables.uri(path: "/order/$orderid"), body);
 
       if (!mounted) return null;
@@ -42,7 +44,7 @@ class OrderController extends BikerController {
         Variables.updateOrderMap.driverId = body.bikerId;
         Variables.updateOrderMap.newDriverId = Variables.driverId;
         Variables.updateOrderMap.barcode = value;
-        await Variables.getLiveLocation(context,statusId: statusId);
+        await Variables.getLiveLocation(context, statusId: statusId);
         if (!mounted) return;
         Variables.updateOrderMap.distance = (await getDistance(
             mounted,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -108,12 +109,12 @@ class BikerController extends ChangeNotifier {
     return null;
   }
 
-  getAcceptedAndinProgressOrders(bool mounted, BuildContext context) async {
+  getAcceptedAndinProgressOrders( ) async {
     try {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
-      if (!mounted) return;
-      var responseJson = Variables.returnResponse(context, response);
+      
+      var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
         acceptedList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
         acceptedList.sort(((a, b) => a.acceptedTime.compareTo(b.acceptedTime)));
@@ -122,7 +123,7 @@ class BikerController extends ChangeNotifier {
         isLastPage = true;
       }
     } on SocketException {
-      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
     notifyListeners();
@@ -134,17 +135,17 @@ class BikerController extends ChangeNotifier {
     } else {
       start = value ?? start;
     }
-    await getAllCompletedOrders(mounted, context, start.toString(), this.end.toString());
+    await getAllCompletedOrders( start.toString(), this.end.toString());
   }
 
-  getAllCompletedOrders(bool mounted, BuildContext context, String startdate, String enddate) async {
+  getAllCompletedOrders(String startdate, String enddate) async {
     try {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
       final response = await HTTPRequest.postRequest(
           Variables.uri(path: "/biker/orders/completed/${Variables.driverId}"), body.toJson());
-      if (!mounted) return;
+     
 
-      var responseJson = Variables.returnResponse(context, response);
+      var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
         if (responseJson["data"].isNotEmpty) {
           deliveredList =
@@ -155,7 +156,7 @@ class BikerController extends ChangeNotifier {
         }
       }
     } on SocketException {
-      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading3 = false;
     notifyListeners();

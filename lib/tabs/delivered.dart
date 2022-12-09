@@ -1,3 +1,4 @@
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/pages/biker/orderpage.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
@@ -26,8 +27,7 @@ class _DeliveredState extends State<Delivered> {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!orderController.isLastPage2) {
           orderController.pagenumber1 += 1;
-          orderController.getAllCompletedOrders(
-              mounted, context, orderController.start.toString(), orderController.end.toString());
+          orderController.getAllCompletedOrders(orderController.start.toString(), orderController.end.toString());
         }
       }
     });
@@ -37,11 +37,10 @@ class _DeliveredState extends State<Delivered> {
   }
 
   void constructor() async {
-    Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    await orderController.getAllCompletedOrders(
-        mounted, context, orderController.start.toString(), orderController.end.toString());
-    if (!mounted) return;
-    Navigator.pop(context);
+    Variables.loadingDialogue(context: navigatorKey.currentContext, subHeading: "Please wait ...");
+    await orderController.getAllCompletedOrders(orderController.start.toString(), orderController.end.toString());
+
+    Navigator.pop(navigatorKey.currentContext!);
   }
 
   @override
@@ -97,7 +96,7 @@ class _DeliveredState extends State<Delivered> {
                 onRefresh: () async {
                   orderController.pagenumber1 = 1;
                   return await orderController.getAllCompletedOrders(
-                      mounted, context, orderController.start.toString(), orderController.end.toString());
+                      orderController.start.toString(), orderController.end.toString());
                 },
                 child: ListView.builder(
                     shrinkWrap: true,

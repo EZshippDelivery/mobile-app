@@ -43,7 +43,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
     subscribe();
-    
   }
 
   void subscribe() {
@@ -157,6 +156,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   if (HomePage.bikerTabController.index == 1)
                     IconButton(
                         onPressed: () async {
+                          QRScanerPage.zoned = true;
                           Variables.push(context, QRScanerPage.routeName);
                           // Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
                           // await orderController.findOrderbyBarcode(
@@ -203,7 +203,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    HomePage.bikerTabController.dispose();
+    // HomePage.bikerTabController.dispose();
     controller.dispose();
     subscription.cancel();
     super.dispose();

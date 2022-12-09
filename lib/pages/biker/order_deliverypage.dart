@@ -110,8 +110,8 @@ class OrderState extends State<Order> {
                                               onPressed: () async {
                                                 Variables.index3 = list.id;
                                                 await Variables.push(context, ZonedPage.routeName);
-                                                if (!mounted) return;
-                                                Variables.pop(context);
+                                                // if (!mounted) return;
+                                                // Variables.pop(context);
                                               },
                                               child: Text(
                                                 "Zone At Hub",
@@ -405,7 +405,6 @@ class OrderState extends State<Order> {
                                                 if (list.statusId == 9) {
                                                   await Variables.updateOrder(mounted, context, list.id, 11);
                                                 }
-
                                                 // launchApps(
                                                 // "https://www.google.com/maps/dir/?api=1&origin=${Variables.updateOrderMap.latitude},${Variables.updateOrderMap.longitude} &destination=${list.dropLatitude},${list.dropLongitude}");
                                               } else if (list.statusId == 11) {
@@ -415,7 +414,7 @@ class OrderState extends State<Order> {
                                               }
 
                                               if (!mounted) return;
-                                              await reference.getAcceptedAndinProgressOrders(mounted, context);
+                                              await reference.getAcceptedAndinProgressOrders();
                                             },
                                             style: ElevatedButton.styleFrom(
                                                 backgroundColor: Palette.kOrange,

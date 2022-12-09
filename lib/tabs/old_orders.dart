@@ -30,7 +30,7 @@ class OldOrdersState extends State<OldOrders> {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent) {
         if (!customerController.isLastPage) {
           customerController.pagenumber += 1;
-          customerController.getCustomerOrders(mounted, context);
+          customerController.getCustomerOrders();
         }
       }
     });
@@ -38,7 +38,7 @@ class OldOrdersState extends State<OldOrders> {
 
   void constructor() async {
     Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    await customerController.getCustomerOrders(mounted, context);
+    await customerController.getCustomerOrders();
     if (!mounted) return;
     await customerController.getCustomerInProgressOrderCount(mounted, context);
     if (!mounted) return;
@@ -86,7 +86,7 @@ class OldOrdersState extends State<OldOrders> {
               return RefreshIndicator(
                 onRefresh: () {
                   customerController.pagenumber1 = 1;
-                  return customerController.getCustomerOrders(mounted, context);
+                  return customerController.getCustomerOrders();
                 },
                 child: ListView.builder(
                   controller: scrollController,

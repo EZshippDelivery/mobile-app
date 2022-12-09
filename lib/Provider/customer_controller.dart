@@ -12,6 +12,7 @@ import '../APIs/create_order.dart';
 import '../APIs/get_customerprofile.dart';
 import '../APIs/get_top_addresses.dart';
 import '../APIs/update_customer_profile.dart';
+import '../main.dart';
 import '../utils/http_requests.dart';
 import '../utils/variables.dart';
 import '../widgets/textfield.dart';
@@ -162,12 +163,12 @@ class CustomerController extends BikerController {
     notifyListeners();
   }
 
-  getCustomerOrders(bool mounted, BuildContext context) async {
+  getCustomerOrders() async {
     try {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}/myorders/$pagenumber/20"));
-      if (!mounted) return;
-      var responseJson = Variables.returnResponse(context, response);
+      
+      var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
         Variables.orderscount = responseJson["totalCount"];
         if (responseJson["data"].isNotEmpty) {
@@ -184,7 +185,7 @@ class CustomerController extends BikerController {
         }
       }
     } on SocketException {
-      Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
     notifyListeners();

@@ -1,4 +1,6 @@
+import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/widgets/textfield.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -123,6 +125,31 @@ class _SignInState extends State<SignIn> {
                   onPressed: () =>
                       showDialog(context: context, barrierDismissible: false, builder: alertdialog(context)),
                 ),
+                if (kReleaseMode == false)
+                  Row(
+                    children: [
+                      Consumer<UpdateScreenProvider>(builder: (context, snapshot, data) {
+                        return DropdownButton(
+                            items: const [
+                              DropdownMenuItem(value: "https", child: Text("HTTPS")),
+                              DropdownMenuItem(value: "http", child: Text("HTTP"))
+                            ],
+                            value: Variables.urlSchema,
+                            onChanged: (value) {
+                              snapshot.updateScreen();
+                              Variables.urlSchema = value!;
+                            });
+                      }),
+                      Expanded(
+                        child: TextFormField(
+                          controller: TextEditingController.fromValue(TextEditingValue(text: Variables.urlhost)),
+                          onChanged: (value) {
+                            Variables.urlhost = value;
+                          },
+                        ),
+                      )
+                    ],
+                  ),
                 SizedBox(
                   height: maxH * (0.35),
                 ),

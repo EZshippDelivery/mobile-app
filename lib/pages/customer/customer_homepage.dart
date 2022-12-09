@@ -43,7 +43,7 @@ class CustomerHomePageState extends State<CustomerHomePage> with TickerProviderS
       if (!mounted) return;
       await customerController.getFirstTenAddresses(mounted, context);
       if (!mounted) return;
-      await orderController.getAcceptedAndinProgressOrders(mounted, context);
+      await orderController.getAcceptedAndinProgressOrders( );
       if (!mounted) return;
       await customerController.getCustomerInProgressOrderCount(mounted, context);
       if (!mounted) return;

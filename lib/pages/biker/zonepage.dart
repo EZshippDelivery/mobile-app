@@ -1,4 +1,5 @@
 import 'package:ezshipp/Provider/update_screenprovider.dart';
+import 'package:ezshipp/pages/biker/qr_scanner_page.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,13 @@ class ZonedPage extends StatefulWidget {
 class ZonedPageState extends State<ZonedPage> {
   int temp = -1;
   TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Variables.centers.map((e) => e[2] = false).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,16 +70,18 @@ class ZonedPageState extends State<ZonedPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
-          Variables.updateOrderMap.zoneId = temp + 1;
-          if (!mounted) return;
-          Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-          await Variables.updateOrder(mounted, context, widget.id, 8);
-          Variables.updateOrderMap.barcode = "";
-          Variables.updateOrderMap.zoneId = 0;
-          if (!mounted) return;
-          Variables.pop(context);
-          Variables.pop(context);
+          // Variables.updateOrderMap.barcode = await Variables.scantext(context, controller);
+          // Variables.updateOrderMap.zoneId = temp + 1;
+          // if (!mounted) return;
+          // Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+          // await Variables.updateOrder(mounted, context, widget.id, 8);
+          // Variables.updateOrderMap.barcode = "";
+          // Variables.updateOrderMap.zoneId = 0;
+          // if (!mounted) return;
+          // Variables.pop(context);
+          // Variables.pop(context);
+          QRScanerPage.zoned = false;
+          Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanerPage(id: widget.id, zonedId: temp)));
         },
         child: Text(
           "Drop",
