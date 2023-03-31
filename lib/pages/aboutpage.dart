@@ -2,6 +2,7 @@ import 'package:ezshipp/utils/themes.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
   static String routeName = "/about";
@@ -18,7 +19,11 @@ class AboutPage extends StatelessWidget {
               Image.asset("assets/images/Logo.png"),
               Padding(padding: const EdgeInsets.all(8), child: Text("eZShipp", style: Variables.font(fontSize: 16))),
               TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await canLaunchUrl(Uri.parse(Variables.urlShare))
+                        ? launchUrl(Uri.parse(Variables.urlShare), mode: LaunchMode.externalApplication)
+                        : Variables.showtoast(context, "Cant Open browser App", Icons.warning_rounded);
+                  },
                   child: Text(
                     "www.ezshipp.com",
                     style: Variables.font(color: Palette.kOrange),

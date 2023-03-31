@@ -109,21 +109,23 @@ class BikerController extends ChangeNotifier {
     return null;
   }
 
-  getAcceptedAndinProgressOrders( ) async {
+  getAcceptedAndinProgressOrders() async {
     try {
       final response = await HTTPRequest.getRequest(
           Variables.uri(path: "/biker/orders/acceptedandinprogressorders/${Variables.driverId}/$pagenumber/20"));
-      
+
       var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
         acceptedList = List.generate(responseJson.length, (index) => NewOrderList.fromMap(responseJson[index]));
-        acceptedList.sort(((a, b) => a.acceptedTime.compareTo(b.acceptedTime)));
+        acceptedList.sort(((b, a) => a.acceptedTime.compareTo(b.acceptedTime)));
+        acceptedList.sort(((b, a) => a.orderCreatedTime.compareTo(b.orderCreatedTime)));
         isLastPage = false;
       } else {
         isLastPage = true;
       }
     } on SocketException {
-      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection',
+          Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
     notifyListeners();
@@ -135,7 +137,7 @@ class BikerController extends ChangeNotifier {
     } else {
       start = value ?? start;
     }
-    await getAllCompletedOrders( start.toString(), this.end.toString());
+    await getAllCompletedOrders(start.toString(), this.end.toString());
   }
 
   getAllCompletedOrders(String startdate, String enddate) async {
@@ -143,7 +145,6 @@ class BikerController extends ChangeNotifier {
       var body = MyOrderList(pageNumber: pagenumber, startDate: startdate, endDate: enddate);
       final response = await HTTPRequest.postRequest(
           Variables.uri(path: "/biker/orders/completed/${Variables.driverId}"), body.toJson());
-     
 
       var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
@@ -156,7 +157,8 @@ class BikerController extends ChangeNotifier {
         }
       }
     } on SocketException {
-      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection',
+          Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading3 = false;
     notifyListeners();

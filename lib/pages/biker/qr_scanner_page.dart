@@ -3,9 +3,9 @@ import "dart:io";
 
 import 'package:ezshipp/Provider/order_controller.dart';
 import 'package:ezshipp/Provider/update_screenprovider.dart';
-import 'package:ezshipp/pages/biker/rider_homepage.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import "package:qr_code_scanner/qr_code_scanner.dart" as qr;
 
@@ -26,10 +26,13 @@ class _QRScanerPageState extends State<QRScanerPage> {
   final GlobalKey _qrKey = GlobalKey(debugLabel: "QR");
   qr.QRViewController? _controller;
   late OrderController orderController;
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    controller = TextEditingController();
     orderController = Provider.of<OrderController>(context, listen: false);
     QRScanerPage.onlyOnce = true;
   }
@@ -44,13 +47,77 @@ class _QRScanerPageState extends State<QRScanerPage> {
     }
   }
 
+  alertdialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return SimpleDialog(
+            title: const Text("Enter Manually!"),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: Text(
+                  "Enter the barcode or Order Id",
+                  style: Variables.font(fontWeight: FontWeight.w300, fontSize: 17.5, color: Colors.grey[600]),
+                ),
+              ),
+              Form(
+                key: formKey,
+                child: TextFormField(
+                  controller: controller,
+                  inputFormatters: [FilteringTextInputFormatter(RegExp(r'[\S]'), allow: true)],
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.qr_code),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(4 * 3)),
+                      contentPadding: const EdgeInsets.all(5),
+                      hintText: "Enter Barcode/Order Id",
+                      labelText: "Barcode"),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Please enter barcode/Order Id";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(10.0)),
+                      child: const Text("Cancel")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          qrcode(controller.text);
+                        } else {
+                          Variables.showtoast(context, "Please enter barcode/Order Id", Icons.warning_rounded);
+                        }
+                      },
+                      child: const Text("Send")),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: Variables.app(),
-        body: Stack(children: [qrViewer(size), iconButtons(size)]));
+    return WillPopScope(
+      onWillPop: () async {
+        await alertdialog(context);
+        return true;
+      },
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: Variables.app(),
+          body: Stack(children: [qrViewer(size), iconButtons(size)])),
+    );
   }
 
   Widget qrViewer(Size size) {
@@ -66,37 +133,41 @@ class _QRScanerPageState extends State<QRScanerPage> {
         _controller = p0;
         p0.resumeCamera();
         _controller!.scannedDataStream.listen((event) async {
-          log("${event.code}", name: "BarCode");
-          if (event.code != null && QRScanerPage.onlyOnce) {
-            QRScanerPage.onlyOnce = false;
-            if (QRScanerPage.zoned) {
-              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-              if (event.code!.length == 6) await orderController.findOrderbyBarcode(mounted, context, event.code!, 9);
-              if (!mounted) return;
-              await orderController.getAcceptedAndinProgressOrders();
-              if (!mounted) return;
-              Navigator.popUntil(context, (route) {
-                
-
-                return route.isFirst;
-              });
-            } else {
-              Variables.updateOrderMap.barcode = event.code!;
-              Variables.updateOrderMap.zoneId = widget.zonedId + 1;
-              if (!mounted) return;
-              Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-              await Variables.updateOrder(mounted, context, widget.id, 8);
-              Variables.updateOrderMap.barcode = "";
-              Variables.updateOrderMap.zoneId = 0;
-              if (!mounted) return;
-              Navigator.popUntil(context, (route) {
-                return route.isFirst;
-              });
-            }
-          }
+          qrcode(event.code);
         });
       },
     );
+  }
+
+  qrcode(String? qrCode) async {
+    log("$qrCode", name: "BarCode");
+    if (qrCode != null && QRScanerPage.onlyOnce) {
+      QRScanerPage.onlyOnce = false;
+      if (QRScanerPage.zoned) {
+        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+        if (qrCode.length == 6 || qrCode.length == 11) {
+          await orderController.findOrderbyBarcode(mounted, context, qrCode, 9);
+        }
+        if (!mounted) return;
+        await orderController.getAcceptedAndinProgressOrders();
+        if (!mounted) return;
+        Navigator.popUntil(context, (route) {
+          return route.isFirst;
+        });
+      } else {
+        Variables.updateOrderMap.barcode = qrCode;
+        Variables.updateOrderMap.zoneId = widget.zonedId + 1;
+        if (!mounted) return;
+        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+        await Variables.updateOrder(mounted, context, widget.id, 8);
+        Variables.updateOrderMap.barcode = "";
+        Variables.updateOrderMap.zoneId = 0;
+        if (!mounted) return;
+        Navigator.popUntil(context, (route) {
+          return route.isFirst;
+        });
+      }
+    }
   }
 
   Widget iconButtons(Size size) {

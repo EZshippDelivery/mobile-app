@@ -132,7 +132,7 @@ class Variables {
         queryParameters: queryParameters);
   }
 
-  static text(BuildContext context,
+  static Widget text(BuildContext context,
           {String head = "Order ID:",
           String value = "XXXXXXXXX",
           double vpadding = 1.0,
@@ -347,6 +347,7 @@ class Variables {
     }
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+
       confirm = await showLocationDialog(context);
       if (confirm) {
         permission = await Geolocator.requestPermission();

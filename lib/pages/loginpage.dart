@@ -238,11 +238,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: const Icon(Icons.keyboard_arrow_right_rounded));
 
   writeDetails() async {
-    await Variables.write(
-        key: "username",
-        value: TextFields.data["Email id"].toString().isEmpty
-            ? TextFields.data["Username"].toString()
-            : TextFields.data["Email id"].toString());
+    await Variables.write(key: "username", value: TextFields.data["Username"].toString());
     await Variables.write(key: "password", value: TextFields.data["Password"].toString());
     await Variables.write(key: "usertype", value: authController.userType);
     await Variables.write(key: "FirstTime", value: "true");
@@ -317,6 +313,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   showdialog(BuildContext context, String phonenumber, String email, int id) async {
     var code;
     await resendOTP(id, email, phonenumber);
+    if (!mounted) return '';
     return await showDialog(
         context: context,
         barrierDismissible: false,

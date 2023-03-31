@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/Provider/maps_provider.dart';
+import 'package:ezshipp/Provider/update_screenprovider.dart';
 import 'package:ezshipp/pages/biker/deliver_page.dart';
 import 'package:ezshipp/pages/biker/zonepage.dart';
 import 'package:ezshipp/utils/themes.dart';
@@ -64,7 +65,7 @@ class OrderState extends State<Order> {
         return Scaffold(
             appBar: Variables.app(),
             body: Stack(children: [
-              Consumer<MapsProvider>(builder: (context, reference1, child) {
+              Consumer2<MapsProvider, UpdateScreenProvider>(builder: (context, reference1, reference2, child) {
                 return GoogleMap(
                   zoomControlsEnabled: false,
                   myLocationButtonEnabled: true,
@@ -75,11 +76,18 @@ class OrderState extends State<Order> {
                     if (reference1.dropmark != null) reference1.dropmark!
                   },
                   onMapCreated: (controller) async {
-                    await reference1.directions(mounted, context, controller, list).then((value) {
-                      var latLngBounds =
-                          LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
-                      controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
-                    });
+                    try {
+                      await reference1.directions(mounted, context, controller, list).then((value) {
+                        var latLngBounds =
+                            LatLngBounds(southwest: reference1.boundsMap[1], northeast: reference1.boundsMap[0]);
+                        controller.animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 50));
+                      });
+                    } catch (e) {
+                      reference1.pickmark = null;
+                      reference1.dropmark = null;
+                      reference1.info.clear();
+                      reference2.updateScreen();
+                    }
                   },
                   polylines: {Polyline(polylineId: const PolylineId("origin"), points: reference1.info, width: 3)},
                 );
@@ -124,8 +132,12 @@ class OrderState extends State<Order> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Variables.text(context,
-                                            head: "Status: ", value: list.status, valueColor: Palette.kOrange),
+                                        Flexible(
+                                          child: FittedBox(
+                                            child: Variables.text(context,
+                                                head: "Status: ", value: list.status, valueColor: Palette.kOrange),
+                                          ),
+                                        ),
                                         TextButton(
                                             onPressed: () {
                                               Variables.isdetail = true;

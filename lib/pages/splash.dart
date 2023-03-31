@@ -138,8 +138,8 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       }
     });
 
-    final downloadPath = await getExternalStorageDirectory();
-    File token = File("${downloadPath!.path}/token.txt");
+    final downloadPath = await getApplicationDocumentsDirectory();
+    File token = File("${downloadPath.path}/token.txt");
     token.createSync();
 
     try {

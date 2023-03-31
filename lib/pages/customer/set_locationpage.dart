@@ -53,6 +53,8 @@ class SetLocationPageState extends State<SetLocationPage> {
     mapsProvider.dropmark = null;
     updateScreenProvider!.onMOve = false;
     mapsProvider.info.clear();
+    SetLocationPage.pickup = TextEditingController();
+    SetLocationPage.delivery = TextEditingController();
     // Navigator.pop(context);
   }
 
@@ -66,7 +68,7 @@ class SetLocationPageState extends State<SetLocationPage> {
           body: Stack(
             children: [
               Stack(children: [
-                reference.latitude > 0 && reference.longitude > 0
+                (reference.latitude != 0) && (reference.longitude !=  0)
                     //Google Maps
                     ? InkWell(
                         onLongPress: () => longpress = true,
@@ -89,7 +91,7 @@ class SetLocationPageState extends State<SetLocationPage> {
                               y: (size.height * devicePixelRatio) ~/ 2.0,
                             ));
                           },
-                          onMapCreated: ((controller) => mapController = controller),
+                          onMapCreated: (controller) => mapController = controller,
                           polylines: {
                             if (reference.info.isNotEmpty)
                               Polyline(

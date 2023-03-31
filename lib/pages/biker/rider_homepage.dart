@@ -149,8 +149,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 appBar: Variables.app(actions: [
                   IconButton(
                       onPressed: () {
-                        Share.share(
-                            "https://play.google.com/store/apps/details?id=com.ezshipp.customer.app&hl=en&gl=US");
+                        Share.share("https://play.google.com/store/apps/details?id=com.delivery.ezshipp&hl=en&gl=US");
                       },
                       icon: const Icon(Icons.share)),
                   if (HomePage.bikerTabController.index == 1)

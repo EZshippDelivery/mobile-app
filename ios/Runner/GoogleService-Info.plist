@@ -7,7 +7,7 @@
 	<key>REVERSED_CLIENT_ID</key>
 	<string>com.googleusercontent.apps.53315141549-03bjqkus9cggpbfdq06pf1v7un8dcbjq</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBW302RMgD7nzmBWxekbe9H40pUdOOUHTA</string>
+	<string>AIzaSyCuvs8lj4MQgGWE26w3twaifCgxk_Vk8Yw</string>
 	<key>GCM_SENDER_ID</key>
 	<string>53315141549</string>
 	<key>PLIST_VERSION</key>
@@ -19,15 +19,15 @@
 	<key>STORAGE_BUCKET</key>
 	<string>ezshipp-mapsapi-283606.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:53315141549:ios:cf59569bf0dee73502ab24</string>
 </dict>

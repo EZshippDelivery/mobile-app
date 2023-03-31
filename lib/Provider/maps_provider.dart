@@ -33,48 +33,52 @@ class MapsProvider extends BikerController {
 
   dynamic _returnResponse(
       BuildContext context, NewOrderList? reference, GoogleMapController? controller, dio.Response response) {
-    switch (response.statusCode) {
-      case 200:
-        var data = response.data;
-        final encodedString = data['routes'][0]["overview_polyline"]["points"];
-        boundsMap = [data['routes'][0]['bounds']["northeast"], data['routes'][0]['bounds']["southwest"]];
-        boundsMap =
-            List.generate(boundsMap.length, (index) => LatLng(boundsMap[index]['lat'], boundsMap[index]['lng']));
-        directioDetails = [data['routes'][0]['legs'][0]["distance"], data['routes'][0]['legs'][0]["duration"]];
-        if (reference != null) {
-          pickmark = Marker(
-              onTap: () => controller!.animateCamera(CameraUpdate.newCameraPosition(
-                  CameraPosition(target: LatLng(reference.pickLatitude, reference.pickLongitude), zoom: 15))),
-              markerId: const MarkerId("origin"),
-              icon: originMarker!,
-              position: LatLng(reference.pickLatitude, reference.pickLongitude),
-              infoWindow: InfoWindow(title: "Pick Address", snippet: reference.pickAddress));
-          dropmark = Marker(
-              onTap: () => controller!.animateCamera(CameraUpdate.newCameraPosition(
-                  CameraPosition(target: LatLng(reference.dropLatitude, reference.dropLongitude), zoom: 15))),
-              markerId: const MarkerId("destination"),
-              icon: destinationMarker!,
-              position: LatLng(reference.dropLatitude, reference.dropLongitude),
-              infoWindow: InfoWindow(title: "Delivery Address", snippet: reference.dropAddress));
-        }
-        info = PolylinePoints().decodePolyline(encodedString).map((e) => LatLng(e.latitude, e.longitude)).toList();
-        //Variables.showtoast("Status updated");
+    try {
+      switch (response.statusCode) {
+        case 200:
+          var data = response.data;
+          final encodedString = data['routes'][0]["overview_polyline"]["points"];
+          boundsMap = [data['routes'][0]['bounds']["northeast"], data['routes'][0]['bounds']["southwest"]];
+          boundsMap =
+              List.generate(boundsMap.length, (index) => LatLng(boundsMap[index]['lat'], boundsMap[index]['lng']));
+          directioDetails = [data['routes'][0]['legs'][0]["distance"], data['routes'][0]['legs'][0]["duration"]];
+          if (reference != null) {
+            pickmark = Marker(
+                onTap: () => controller!.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: LatLng(reference.pickLatitude, reference.pickLongitude), zoom: 15))),
+                markerId: const MarkerId("origin"),
+                icon: originMarker!,
+                position: LatLng(reference.pickLatitude, reference.pickLongitude),
+                infoWindow: InfoWindow(title: "Pick Address", snippet: reference.pickAddress));
+            dropmark = Marker(
+                onTap: () => controller!.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: LatLng(reference.dropLatitude, reference.dropLongitude), zoom: 15))),
+                markerId: const MarkerId("destination"),
+                icon: destinationMarker!,
+                position: LatLng(reference.dropLatitude, reference.dropLongitude),
+                infoWindow: InfoWindow(title: "Delivery Address", snippet: reference.dropAddress));
+          }
+          info = PolylinePoints().decodePolyline(encodedString).map((e) => LatLng(e.latitude, e.longitude)).toList();
+          //Variables.showtoast("Status updated");
 
-        break;
-      case 400:
-        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
-        break;
-      case 401:
-      case 403:
-        Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
-        break;
-      case 500:
-      default:
-        Variables.showtoast(
-            context,
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
-            Icons.warning_rounded);
-        break;
+          break;
+        case 400:
+          Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
+          break;
+        case 401:
+        case 403:
+          Variables.showtoast(context, response.data.toString(), Icons.warning_rounded);
+          break;
+        case 500:
+        default:
+          Variables.showtoast(
+              context,
+              'Error occured while Communication with Server with StatusCode : ${response.statusCode}',
+              Icons.warning_rounded);
+          break;
+      }
+    } on Exception {
+      Variables.showtoast(context, "No Proper location details", Icons.cancel_outlined);
     }
   }
 
@@ -142,6 +146,8 @@ class MapsProvider extends BikerController {
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+    } catch (e) {
+      Variables.showtoast(context, "No Proper location details", Icons.cancel_outlined);
     }
     notifyListeners();
   }
@@ -251,7 +257,7 @@ class MapsProvider extends BikerController {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     if (!mounted) return;
-    await setCurrentLocation(mounted, context, customerId);
+    // await setCurrentLocation(mounted, context, customerId);
     notifyListeners();
   }
 
@@ -317,7 +323,8 @@ class MapsProvider extends BikerController {
           .first
           .longName;
       String city = placeAddress1.results.first.addressComponents
-          .where((element) => element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
+          .where(
+              (element) => element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
           .first
           .longName;
 

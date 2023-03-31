@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:developer' as d;
 
 import 'package:ezshipp/APIs/customer_orders.dart';
 import 'package:ezshipp/Provider/biker_controller.dart';
@@ -167,10 +168,11 @@ class CustomerController extends BikerController {
     try {
       final response =
           await HTTPRequest.getRequest(Variables.uri(path: "$customer${Variables.driverId}/myorders/$pagenumber/20"));
-      
+
       var responseJson = Variables.returnResponse(navigatorKey.currentContext!, response);
       if (responseJson != null) {
         Variables.orderscount = responseJson["totalCount"];
+        d.log("${responseJson["data"]}", name: "CustomerOrders");
         if (responseJson["data"].isNotEmpty) {
           if (pagenumber > 1 && customerOrders.length == 20 * (pagenumber - 1)) {
             customerOrders
@@ -182,10 +184,12 @@ class CustomerController extends BikerController {
           } else {
             isLastPage = true;
           }
+          // d.log("$customerOrders", name: "Customer Orders");
         }
       }
     } on SocketException {
-      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
+      Variables.showtoast(navigatorKey.currentContext!, 'No Internet connection',
+          Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
     loading2 = false;
     notifyListeners();

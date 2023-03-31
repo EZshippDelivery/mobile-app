@@ -17,10 +17,10 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.2+2
+version: 1.0.3+3
 
 environment:
-  sdk: ">=2.19.0-96.0.dev <3.0.0"
+  sdk: ">=2.18.5-96.0.dev <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -36,6 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   firebase_core: ^1.20.1
+  firebase_core_platform_interface: 4.5.1
   internet_connection_checker: ^0.0.1+4
   firebase_messaging: ^12.0.2
   firebase_analytics: ^9.3.1
@@ -83,6 +84,7 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   ios: true
+  remove_alpha_ios: true
   image_path: "assets/icon/icon.png"
 
 # The following section is specific to Flutter packages.

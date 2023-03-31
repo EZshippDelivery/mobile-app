@@ -76,6 +76,7 @@ class _SignInState extends State<SignIn> {
                       onPressed: () async {
                         if (formkey4.currentState!.validate()) {
                           await resetPassword(context);
+                          if(!mounted)return;
                           Navigator.of(context).pop();
                         } else {
                           Variables.showtoast(context, "Enter valid Username", Icons.warning_rounded);
@@ -125,7 +126,7 @@ class _SignInState extends State<SignIn> {
                   onPressed: () =>
                       showDialog(context: context, barrierDismissible: false, builder: alertdialog(context)),
                 ),
-                if (kReleaseMode == false)
+                if (kReleaseMode == false && false)
                   Row(
                     children: [
                       Consumer<UpdateScreenProvider>(builder: (context, snapshot, data) {

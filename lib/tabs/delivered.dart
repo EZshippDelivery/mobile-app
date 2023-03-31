@@ -76,20 +76,33 @@ class _DeliveredState extends State<Delivered> {
             ],
           ),
           if (reference.deliveredList.isEmpty)
-            Expanded(
-                child: Center(
-              child: SizedBox.fromSize(
-                size: Size.square(MediaQuery.of(context).size.width * 0.5),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "In range of your dates, there is no orders that are delivered",
-                    style: Variables.font(fontSize: 18, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
+            Flexible(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  orderController.pagenumber1 = 1;
+                  return await orderController.getAllCompletedOrders(
+                      orderController.start.toString(), orderController.end.toString());
+                },
+                child: ListView(
+                  children: [
+                    Expanded(
+                        child: Center(
+                      child: SizedBox.fromSize(
+                        size: Size.square(MediaQuery.of(context).size.width * 0.5),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "In range of your dates, there is no orders that are delivered",
+                            style: Variables.font(fontSize: 18, color: Colors.grey[600]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ))
+                  ],
                 ),
               ),
-            )),
+            ),
           if (reference.deliveredList.isNotEmpty)
             Flexible(
               child: RefreshIndicator(
