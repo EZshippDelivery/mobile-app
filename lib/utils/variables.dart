@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:ezshipp/APIs/new_orderlist.dart';
 import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
@@ -12,11 +13,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
+import 'package:location/location.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 
@@ -339,30 +341,30 @@ class Variables {
   static Future<bool> getLiveLocation(BuildContext context, {int? statusId}) async {
     bool serviceEnabled;
     bool confirm = false;
-    LocationPermission permission;
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    geo.LocationPermission permission;
+    serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
+      await geo.Geolocator.openLocationSettings();
       return Future.error('Location services are disabled.');
     }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-
+    permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
       confirm = await showLocationDialog(context);
       if (confirm) {
-        permission = await Geolocator.requestPermission();
+        permission = await geo.Geolocator.requestPermission();
         // if (permission == LocationPermission.denied) {
         //   Variables.showtoast(context,'Location permissions are denied',Icons.cancel_outlined);
         // }
       }
     }
-    if (permission == LocationPermission.deniedForever) {
+    if (permission == geo.LocationPermission.deniedForever) {
       Variables.showtoast(context, 'Location permissions are permanently denied, we cannot request permissions.',
           Icons.cancel_outlined);
+      await AppSettings.openLocationSettings();
     }
-    var bool2 = permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+    var bool2 = permission == geo.LocationPermission.always || permission == geo.LocationPermission.whileInUse;
     if (bool2) {
-      var currentlocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      var currentlocation = await geo.Geolocator.getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.high);
       Variables.updateOrderMap.latitude = currentlocation.latitude;
       Variables.updateOrderMap.longitude = currentlocation.longitude;
       if (statusId != null) Variables.updateOrderMap.statusId = statusId;
@@ -423,7 +425,7 @@ class Variables {
                 child: FloatingActionButton.extended(
                     heroTag: "allow_location",
                     onPressed: () => Navigator.pop(context, true),
-                    label: Text("Allow", style: Variables.font(color: Palette.kOrange)),
+                    label: Text("Continue", style: Variables.font(color: Palette.kOrange)),
                     backgroundColor: Palette.deepgrey),
               )
             ],
@@ -612,6 +614,17 @@ class Variables {
         return "Complete";
       default:
         return "";
+    }
+  }
+
+  static void enalbeLocation() async {
+    var location = Location();
+    bool ison = await location.serviceEnabled();
+    if (!ison) {
+      bool turnon = await location.requestService();
+      if (!turnon) {
+        await AppSettings.openLocationSettings();
+      }
     }
   }
 }

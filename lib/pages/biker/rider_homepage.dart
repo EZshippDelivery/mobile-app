@@ -43,6 +43,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
     subscribe();
+    Variables.enalbeLocation();
   }
 
   void subscribe() {
