@@ -22,6 +22,7 @@ class UserController extends ChangeNotifier {
       var uri = Variables.uri(path: '/users/tokenUpdate');
       final response = await HTTPRequest.putRequest(uri, jsonEncode(body));
       if (!mounted) return;
+      // ignore: unnecessary_null_comparison
       if (response != null) {
         Variables.returnResponse(context, response);
       } else {

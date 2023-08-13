@@ -127,6 +127,7 @@ class _SignInState extends State<SignIn> {
                       showDialog(context: context, barrierDismissible: false, builder: alertdialog(context)),
                 ),
                 if (kReleaseMode == false && false)
+                  // ignore: dead_code
                   Row(
                     children: [
                       Consumer<UpdateScreenProvider>(builder: (context, snapshot, data) {

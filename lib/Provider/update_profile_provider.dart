@@ -20,6 +20,7 @@ class UpdateProfileProvider extends CustomerController {
   }
 
   getProfileImage({double size = 150, bool canEdit = false, bool isNotEqual = false}) {
+    // ignore: unused_local_variable
     var split = fullName.split(" ");
     return Material(
         shape: const CircleBorder(),

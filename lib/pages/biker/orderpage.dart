@@ -443,7 +443,7 @@ class OrderState extends State<Order> {
                                             }
                                           },
                                           style: ElevatedButton.styleFrom(
-                                              primary: Palette.kOrange,
+                                              backgroundColor: Palette.kOrange,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                                           child: Row(children: [
                                             list.statusId < 5

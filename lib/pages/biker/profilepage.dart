@@ -7,8 +7,6 @@ import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-
 import '../../../utils/variables.dart';
 
 class ProfilePage extends StatefulWidget {
