@@ -15,7 +15,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_connection_checker/simple_connection_checker.dart';
 
 import 'biker/rider_homepage.dart';
 
@@ -31,7 +33,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   late Animation<double> _anim;
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   late NotificationService notificationService;
-
+  final SimpleConnectionChecker _simpleConnectionChecker = SimpleConnectionChecker()..setLookUpAddress('pub.dev');
   late AuthController authController;
   List types = ["Delivery Person", "Customer"];
 
@@ -95,6 +97,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       }
       userType = await Variables.read(key: "usertype") ?? "";
     }
+    if (await Permission.location.isGranted) Variables.enalbeLocation();
     Timer(
         const Duration(seconds: 3),
         () => Navigator.pushReplacement(
@@ -114,14 +117,23 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     notificationService = NotificationService(context);
     registerNotification();
     authController = Provider.of<AuthController>(context, listen: false);
-
     animcontroller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _anim = Tween(begin: 0.0, end: 1.0).animate(animcontroller);
     CurvedAnimation(curve: Curves.fastOutSlowIn, parent: animcontroller);
     animcontroller.forward();
     initPlatformState();
     // setlogin();
+    subscribe();
     settimer();
+  }
+
+  subscribe() {
+    Variables.subscription = _simpleConnectionChecker.onConnectionChange.listen((event) async {
+      Variables.internetStatus = event;
+      if (!event) {
+        Variables.overlayNotification();
+      }
+    });
   }
 
   Future<void> initPlatformState() async {

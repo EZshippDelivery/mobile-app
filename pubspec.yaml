@@ -37,7 +37,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core: ^1.20.1
   firebase_core_platform_interface: 4.5.1
-  internet_connection_checker: ^0.0.1+4
   firebase_messaging: ^12.0.2
   firebase_analytics: ^9.3.1
   flutter_local_notifications: ^9.7.0
@@ -66,6 +65,9 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   device_info_plus: ^4.1.0
   share_plus: ^4.0.10+1
+  location: ^4.4.0
+  app_settings: ^4.2.0
+  simple_connection_checker: ^0.2.1
 
 dev_dependencies:
   flutter_test:

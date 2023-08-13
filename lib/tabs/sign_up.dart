@@ -124,10 +124,10 @@ class SignUpState extends State<SignUp> {
                                   ..onTap = () => _launchURL("https://www.ezshipp.com/terms-conditions/")),
                             const TextSpan(text: " and "),
                             TextSpan(
-                                text: "Package & Delivery Policies",
+                                text: "Privacy Policies",
                                 style: Variables.font(color: Palette.kOrange, fontSize: 15),
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = () => _launchURL("https://www.ezshipp.com/package-delivery-policy/"))
+                                  ..onTap = () => _launchURL("https://www.ezshipp.com/privacy_policy.html"))
                           ])))
                     ]);
                   }),

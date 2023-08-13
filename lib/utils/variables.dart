@@ -16,7 +16,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -102,7 +101,8 @@ class Variables {
     [7, "Customer Rejected", 0, 0]
   ];
 
-  static InternetConnectionStatus internetStatus = InternetConnectionStatus.disconnected;
+  static bool internetStatus = false;
+  static StreamSubscription? subscription;
 
   static List device = ["ANDROID", "IOS", "WEB"];
   static read({String key = ''}) async => await pref.read(key: key, aOptions: getAndroidOptions());

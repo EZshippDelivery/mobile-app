@@ -6,8 +6,8 @@ import 'dart:convert';
 import 'package:ezshipp/APIs/register.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
-import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/pages/biker/rider_homepage.dart';
+import 'package:ezshipp/pages/customer/customer_homepage.dart';
 import 'package:ezshipp/tabs/sign_in.dart';
 import 'package:ezshipp/tabs/sign_up.dart';
 import 'package:ezshipp/utils/themes.dart';
@@ -16,7 +16,6 @@ import 'package:ezshipp/widgets/tabbar.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import '../Provider/customer_controller.dart';
@@ -54,6 +53,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // if (Platform.isIOS) checkPermissionStatus();
     authController = Provider.of<AuthController>(context, listen: false);
     customerController = Provider.of<CustomerController>(context, listen: false);
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
@@ -148,7 +148,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (!currentFocus.hasPrimaryFocus) {
           currentFocus.unfocus();
         }
-        if (await InternetConnectionChecker().hasConnection) {
+        if (Variables.internetStatus) {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
               if (!mounted) return;

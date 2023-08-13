@@ -1,6 +1,9 @@
+import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
+import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/themes.dart';
 import '../../utils/variables.dart';
@@ -24,10 +27,67 @@ class CustomerProfilePageState extends State<CustomerProfilePage> {
         centerTitle: true,
         backgroundColor: Palette.deepgrey,
         elevation: 0,
-        title: Text(
-          "Profile",
-          style: Variables.font(fontSize: 17, color: Colors.white),
-        ),
+        title: Text("Profile", style: Variables.font(fontSize: 17, color: Colors.white)),
+        actions: [
+          FloatingActionButton.extended(
+              heroTag: "driver_edit",
+              elevation: 0,
+              onPressed: () => showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                          title: Text("Alert!", style: Variables.font(fontSize: 20)),
+                          content: Text("Are you sure, you really want to delete your account?",
+                              style: Variables.font(fontSize: 16)),
+                          actionsAlignment: MainAxisAlignment.spaceEvenly,
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("NO", style: Variables.font(fontSize: 16, color: Colors.white)),
+                              ),
+                            ),
+                            ElevatedButton(
+                                onPressed: () async {
+                                  AuthController authController = Provider.of<AuthController>(context, listen: false);
+                                  // BikerController bikerController =
+                                  //     Provider.of<BikerController>(context, listen: false);
+                                  UpdateProfileProvider profileController =
+                                      Provider.of<UpdateProfileProvider>(context, listen: false);
+                                  await authController.storeLoginStatus(false);
+                                  await Variables.pref.deleteAll(aOptions: Variables.getAndroidOptions());
+                                  if (!mounted) return;
+                                  String subject = "Account Deletion Request";
+                                  String sendText =
+                                      "\nDear Ezshipp Support Team,\n\nI am writing to formally request the deletion of my Ezshipp account. After careful consideration, I have decided to discontinue my association with Ezshipp and would appreciate your assistance in permanently deleting my account.\n\nI understand that this process will involve the removal of all my personal information and associated data from your systems. Please ensure that this deletion is completed promptly and confirm the successful closure of my account at your earliest convenience.\n\nThank you for your prompt attention to this matter.\n\nSincerely,\n\n${profileController.fullName}";
+                                  var uri = Uri(
+                                      scheme: "mailto",
+                                      path: "info@ezshipp.com",
+                                      queryParameters: {"subject": subject, "body": sendText});
+                                  if (await canLaunchUrl(uri)) {
+                                    if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                      // Variables.showtoast(context, "Your request is sent", Icons.check_rounded);
+                                    }
+                                  } else {
+                                    Variables.showtoast(context, "Can't open mail App", Icons.cancel_outlined);
+                                  }
+                                  if (!mounted) return;
+                                  Navigator.pop(context);
+                                  Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (route) => false);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "YES",
+                                    style: Variables.font(fontSize: 16, color: Colors.white),
+                                  ),
+                                ))
+                          ])),
+              label: const Icon(Icons.edit_outlined))
+        ],
       ),
       body: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {
         return Column(

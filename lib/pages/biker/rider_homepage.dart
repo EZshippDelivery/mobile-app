@@ -8,7 +8,7 @@ import 'package:ezshipp/tabs/new_orders.dart';
 import 'package:ezshipp/utils/variables.dart';
 import 'package:ezshipp/widgets/drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:simple_connection_checker/simple_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -29,9 +29,9 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController controller = TextEditingController();
   late UpdateProfileProvider updateProfileProvider;
   late OrderController orderController;
+  final SimpleConnectionChecker _simpleConnectionChecker = SimpleConnectionChecker()..setLookUpAddress('pub.dev');
 
   late MapsProvider mapsProvider;
-  late StreamSubscription subscription;
 
   bool firstTime = false;
 
@@ -43,13 +43,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     updateProfileProvider = Provider.of<UpdateProfileProvider>(context, listen: false);
     orderController = Provider.of<OrderController>(context, listen: false);
     subscribe();
-    Variables.enalbeLocation();
   }
 
   void subscribe() {
-    subscription = InternetConnectionChecker().onStatusChange.listen((event) async {
+    Variables.subscription = _simpleConnectionChecker.onConnectionChange.listen((event) async {
       Variables.internetStatus = event;
-      if (event == InternetConnectionStatus.connected) {
+      if (event) {
         Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
         await updateProfileProvider.getProfile(mounted, context);
         if (!mounted) return;
@@ -58,7 +57,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (!mounted) return;
         Navigator.pop(context);
         show(context);
-      } else if (event == InternetConnectionStatus.disconnected) {
+      } else {
         Variables.overlayNotification();
       }
 
@@ -142,7 +141,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Variables.internetStatus == InternetConnectionStatus.connected
+    return Variables.internetStatus
         ? Consumer<UpdateScreenProvider>(
             builder: (context, snapshot, child) {
               return Scaffold(
@@ -205,7 +204,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     // HomePage.bikerTabController.dispose();
     controller.dispose();
-    subscription.cancel();
     super.dispose();
   }
 }
