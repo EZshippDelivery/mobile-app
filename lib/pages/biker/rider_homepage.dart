@@ -46,23 +46,24 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void subscribe() {
-    Variables.subscription = _simpleConnectionChecker.onConnectionChange.listen((event) async {
+    Variables.subscription = _simpleConnectionChecker.onConnectionChange.listen((event) {
       Variables.internetStatus = event;
-      if (event) {
-        Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-        await updateProfileProvider.getProfile(mounted, context);
-        if (!mounted) return;
-        await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
-        await setonline();
-        if (!mounted) return;
-        Navigator.pop(context);
-        show(context);
-      } else {
+      if (!event) {
         Variables.overlayNotification();
       }
-
       setState(() {});
     });
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp)async {
+      Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
+    await updateProfileProvider.getProfile(mounted, context);
+    if (!mounted) return;
+    await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
+    await setonline();
+    if (!mounted) return;
+    Navigator.pop(context);
+    show(context);
+     });
+    
   }
 
   setonline() async {

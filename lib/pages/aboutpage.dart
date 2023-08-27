@@ -38,7 +38,7 @@ class AboutPage extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 19.0),
+            padding: const EdgeInsets.only(top: 40.0),
             child: IconButton(onPressed: () => Variables.pop(context), icon: const Icon(LineIcons.arrowLeft)),
           )
         ],
