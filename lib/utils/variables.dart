@@ -403,25 +403,25 @@ class Variables {
                     child: Image.asset("assets/images/location_marker_icon.png", height: 150, width: 200),
                   ),
                   Text("Use Your Location", style: Variables.font(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Text("To see maps for automatically tracked activities.",
-                            style: Variables.font(), textAlign: TextAlign.center),
-                        Text("Allow EZshipp to use your location all of the time.",
-                            style: Variables.font(), textAlign: TextAlign.center)
-                      ])),
+                  // Padding(
+                  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  //     child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  //       Text("To see maps for automatically tracked activities.",
+                  //           style: Variables.font(), textAlign: TextAlign.center),
+                  //       Text("Allow EZshipp to use your location all of the time.",
+                  //           style: Variables.font(), textAlign: TextAlign.center)
+                  //     ])),
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                              "EZshipp collects location data to track bikers locations, pick your order and deliver your order at doorstep.",
+                              "EZshipp uses your location to make your experience better. We provide maps for activity tracking and ensure seamless order delivery while respecting your privacy. ",
                               style: Variables.font(),
                               textAlign: TextAlign.center),
-                          // Text("pick your order and deliver your order at doorstep.",
-                          //     style: Variables.font(), textAlign: TextAlign.center)
+                          Text("Grant location access for a smoother experience.",
+                              style: Variables.font(), textAlign: TextAlign.center,)
                         ],
                       )),
                 ]),
