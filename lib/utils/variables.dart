@@ -343,10 +343,7 @@ class Variables {
     bool confirm = false;
     geo.LocationPermission permission;
     serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await geo.Geolocator.openLocationSettings();
-      return Future.error('Location services are disabled.');
-    }
+
     permission = await geo.Geolocator.checkPermission();
     if (permission == geo.LocationPermission.denied) {
       confirm = await showLocationDialog(context);
@@ -357,11 +354,15 @@ class Variables {
         // }
       }
     }
+    if (!serviceEnabled) {
+      await geo.Geolocator.openLocationSettings();
+    }
     if (permission == geo.LocationPermission.deniedForever) {
       Variables.showtoast(context, 'Location permissions are permanently denied, we cannot request permissions.',
           Icons.cancel_outlined);
       await AppSettings.openLocationSettings();
     }
+    permission = await geo.Geolocator.checkPermission();
     var bool2 = permission == geo.LocationPermission.always || permission == geo.LocationPermission.whileInUse;
     if (bool2) {
       var currentlocation = await geo.Geolocator.getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.high);
@@ -436,34 +437,41 @@ class Variables {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
     CustomerController value2 = Provider.of<CustomerController>(context, listen: false);
-    await Variables.getLiveLocation(context, statusId: statusId);
-    Map body = {
-      "latitude": Variables.updateOrderMap.latitude,
-      "longitude": Variables.updateOrderMap.longitude,
-      "orderId": orderId
-    };
-    // print(jsonEncode(body));
-    // var temp = value.newOrderList[index];
-    // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
-    loadingDialogue(context: context, subHeading: "Please wait ...");
-    if (!mounted) return;
-    if (!iscustomer) {
-      var result = await value.getDistance(mounted, context, jsonEncode(body));
-      if (result != null) {
-        Variables.updateOrderMap.distance = result;
-        Variables.updateOrderMap.driverId = driverId;
-        Variables.updateOrderMap.newDriverId = driverId;
+    bool answer = await Variables.getLiveLocation(context, statusId: statusId);
+    if (answer) {
+      Map body = {
+        "latitude": Variables.updateOrderMap.latitude,
+        "longitude": Variables.updateOrderMap.longitude,
+        "orderId": orderId
+      };
+      // print(jsonEncode(body));
+      // var temp = value.newOrderList[index];
+      // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
+      loadingDialogue(context: context, subHeading: "Please wait ...");
+      if (!mounted) return;
+      if (!iscustomer) {
+        var result = await value.getDistance(mounted, context, jsonEncode(body));
+        if (result != null) {
+          Variables.updateOrderMap.distance = result;
+          Variables.updateOrderMap.driverId = driverId;
+          Variables.updateOrderMap.newDriverId = driverId;
+          if (!mounted) return;
+          responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
+          if (!mounted) return;
+          Navigator.pop(context);
+        }
+      } else {
+        Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
         if (!mounted) return;
         responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
         if (!mounted) return;
         Navigator.pop(context);
       }
+      return true;
     } else {
-      Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
       if (!mounted) return;
-      responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
-      if (!mounted) return;
-      Navigator.pop(context);
+      Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
+      return false;
     }
   }
 

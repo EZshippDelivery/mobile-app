@@ -1,6 +1,7 @@
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/update_profile_provider.dart';
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/pages/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -149,7 +150,10 @@ class _HomeTabState extends State<HomeTab> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
           elevation: 5,
-          onPressed: () => Variables.push(context, SetLocationPage.routeName),
+          onPressed: () async {
+            bool answer = await Variables.getLiveLocation(navigatorKey.currentContext!);
+            if (answer) Variables.push(context, SetLocationPage.routeName);
+          },
           child: const Icon(Icons.keyboard_arrow_right_rounded),
         ));
   }

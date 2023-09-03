@@ -35,31 +35,34 @@ class BikerController extends ChangeNotifier {
   offLineMode(bool mounted, BuildContext context, bool value, {bool fromhomepage = false}) async {
     try {
       if (!mounted) return;
-      if (value) {
-        timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-          await getCurrentlocations();
-          final response = await HTTPRequest.putRequest(
-              Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
-              jsonEncode(
-                  {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-          if (!mounted) return;
-
-          Variables.returnResponse(context, response, onlinemode: true);
-        });
-
-        Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
-      } else {
-        if (timer != null) timer!.cancel();
-        await getCurrentlocations();
-        final response = await HTTPRequest.putRequest(
-            Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
-            jsonEncode(
-                {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-        if (!mounted) return;
-
-        Variables.returnResponse(context, response, onlinemode: true);
-        Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
-      }
+      bool answer = await Variables.getLiveLocation(navigatorKey.currentContext!);
+      if (answer) {
+  if (value) {
+    timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await getCurrentlocations();
+      final response = await HTTPRequest.putRequest(
+          Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
+          jsonEncode(
+              {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
+      if (!mounted) return;
+  
+      Variables.returnResponse(context, response, onlinemode: true);
+    });
+  
+    Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
+  } else {
+    if (timer != null) timer!.cancel();
+    await getCurrentlocations();
+    final response = await HTTPRequest.putRequest(
+        Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
+        jsonEncode(
+            {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
+    if (!mounted) return;
+  
+    Variables.returnResponse(context, response, onlinemode: true);
+    Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
+  }
+}
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
@@ -70,9 +73,11 @@ class BikerController extends ChangeNotifier {
   }
 
   Future<void> getCurrentlocations() async {
-    final currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    latitude = currentLocation.latitude;
-    longitude = currentLocation.longitude;
+    bool answer = await Variables.getLiveLocation(navigatorKey.currentContext!);
+    if (answer) {
+      latitude = Variables.updateOrderMap.latitude;
+      longitude = Variables.updateOrderMap.longitude;
+    }
     notifyListeners();
   }
 

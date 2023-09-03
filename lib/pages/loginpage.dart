@@ -152,8 +152,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           if (LoginPage.tabController.index == 0) {
             if (SignIn.formkey1.currentState!.validate()) {
               if (!mounted) return;
-              bool answer = await Variables.getLiveLocation(context);
-              if (answer) {
+              // bool answer = await Variables.getLiveLocation(context);
+              // if (answer) {
                 bool login = await readDetails();
                 if (login) authController.storeLoginStatus(true);
                 if (login) {
@@ -168,10 +168,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     Variables.showtoast(context, "Sign In is failed", Icons.cancel_outlined);
                   }
                 }
-              } else {
-                if (!mounted) return;
-                Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
-              }
+              // } else {
+              //   if (!mounted) return;
+              //   Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
+              // }
             }
           } else if (LoginPage.tabController.index == 1) {
             if (SignUp.formkey2.currentState!.validate() && SignUp.check) {

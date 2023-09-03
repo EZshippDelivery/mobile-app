@@ -81,7 +81,6 @@ class SetLocationPageState extends State<SetLocationPage> {
                             snapshot.onMOve = true;
                           },
                           onCameraMove: (value) {
-                            debugPrint("Something");
                             // if (longpress) snapshot.onMOve = true;
                             snapshot.updateScreen();
                           },
