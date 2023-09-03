@@ -7,12 +7,13 @@ import 'package:ezshipp/APIs/update_order.dart';
 import 'package:ezshipp/Provider/auth_controller.dart';
 import 'package:ezshipp/Provider/customer_controller.dart';
 import 'package:ezshipp/Provider/order_controller.dart';
+import 'package:ezshipp/main.dart';
 import 'package:ezshipp/utils/themes.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:fluttertoast/fluttertoast.dart' as f;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
@@ -28,7 +29,7 @@ enum AlertDialogAction { cancel, save }
 
 class Variables {
   static GlobalKey<FormState> formkey = GlobalKey<FormState>();
-
+  static f.FToast fToast = f.FToast();
   static String token = "";
   static Map<String, String> headers = {"Content-Type": 'application/json'};
   static String locationPin = "assets/icon/icons8-location-48.png";
@@ -224,10 +225,20 @@ class Variables {
       ),
       centerTitle: true);
 
-  static void showtoast(BuildContext context, String message, IconData icon, [bool shouldup = false]) {
-    FToast fToast = FToast();
-    fToast.init(context);
-    Widget toast = Container(
+  static void showtoast(BuildContext context, String message, IconData icon, [bool shouldup = false]) async {
+    Variables.fToast = f.FToast();
+    Variables.fToast.init(navigatorKey.currentState!.context);
+    Widget toast = newMethod(icon, message);
+    f.Fluttertoast.showToast(
+        msg: message,
+        toastLength: f.Toast.LENGTH_LONG,
+        fontSize: 14,
+        backgroundColor: Colors.green,
+        gravity: shouldup ? f.ToastGravity.TOP : f.ToastGravity.BOTTOM);
+  }
+
+  static Container newMethod(IconData icon, String message) {
+    return Container(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25.0),
@@ -238,17 +249,14 @@ class Variables {
           const SizedBox(
             width: 10.0,
           ),
-          Expanded(
+          Flexible(
+            fit: FlexFit.tight,
             child: Text(
               message,
               style: font(color: null),
             ),
           )
         ]));
-    fToast.showToast(
-        child: toast,
-        toastDuration: const Duration(seconds: 2),
-        gravity: shouldup ? ToastGravity.TOP : ToastGravity.BOTTOM);
   }
 
   static String datetime(value, {bool timeNeed = false}) {
@@ -342,7 +350,6 @@ class Variables {
     bool serviceEnabled;
     bool confirm = false;
     geo.LocationPermission permission;
-    serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
 
     permission = await geo.Geolocator.checkPermission();
     if (permission == geo.LocationPermission.denied) {
@@ -354,16 +361,18 @@ class Variables {
         // }
       }
     }
-    if (!serviceEnabled) {
-      await geo.Geolocator.openLocationSettings();
-    }
     if (permission == geo.LocationPermission.deniedForever) {
       Variables.showtoast(context, 'Location permissions are permanently denied, we cannot request permissions.',
           Icons.cancel_outlined);
-      await AppSettings.openLocationSettings();
+      await geo.GeolocatorPlatform.instance.openAppSettings();
     }
-    permission = await geo.Geolocator.checkPermission();
-    var bool2 = permission == geo.LocationPermission.always || permission == geo.LocationPermission.whileInUse;
+    serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await geo.Geolocator.openLocationSettings();
+      // return Future.error('Location services are disabled.');
+    }
+    var bool2 = (permission == geo.LocationPermission.always || permission == geo.LocationPermission.whileInUse) &&
+        serviceEnabled;
     if (bool2) {
       var currentlocation = await geo.Geolocator.getCurrentPosition(desiredAccuracy: geo.LocationAccuracy.high);
       Variables.updateOrderMap.latitude = currentlocation.latitude;
@@ -437,41 +446,34 @@ class Variables {
     UpdateProfileProvider value = Provider.of<UpdateProfileProvider>(context, listen: false);
     OrderController value1 = Provider.of<OrderController>(context, listen: false);
     CustomerController value2 = Provider.of<CustomerController>(context, listen: false);
-    bool answer = await Variables.getLiveLocation(context, statusId: statusId);
-    if (answer) {
-      Map body = {
-        "latitude": Variables.updateOrderMap.latitude,
-        "longitude": Variables.updateOrderMap.longitude,
-        "orderId": orderId
-      };
-      // print(jsonEncode(body));
-      // var temp = value.newOrderList[index];
-      // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
-      loadingDialogue(context: context, subHeading: "Please wait ...");
-      if (!mounted) return;
-      if (!iscustomer) {
-        var result = await value.getDistance(mounted, context, jsonEncode(body));
-        if (result != null) {
-          Variables.updateOrderMap.distance = result;
-          Variables.updateOrderMap.driverId = driverId;
-          Variables.updateOrderMap.newDriverId = driverId;
-          if (!mounted) return;
-          responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
-          if (!mounted) return;
-          Navigator.pop(context);
-        }
-      } else {
-        Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
+    await Variables.getLiveLocation(context, statusId: statusId);
+    Map body = {
+      "latitude": Variables.updateOrderMap.latitude,
+      "longitude": Variables.updateOrderMap.longitude,
+      "orderId": orderId
+    };
+    // print(jsonEncode(body));
+    // var temp = value.newOrderList[index];
+    // print("${temp.pickLatitude} ${temp.pickLongitude}   ${temp.dropLatitude} ${temp.dropLongitude}");
+    loadingDialogue(context: context, subHeading: "Please wait ...");
+    if (!mounted) return;
+    if (!iscustomer) {
+      var result = await value.getDistance(mounted, context, jsonEncode(body));
+      if (result != null) {
+        Variables.updateOrderMap.distance = result;
+        Variables.updateOrderMap.driverId = driverId;
+        Variables.updateOrderMap.newDriverId = driverId;
         if (!mounted) return;
         responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
         if (!mounted) return;
         Navigator.pop(context);
       }
-      return true;
     } else {
+      Variables.updateOrderMap.distance = value2.customerOrders[Variables.index].distance;
       if (!mounted) return;
-      Variables.showtoast(context, "Location Permission is denied!", Icons.cancel_outlined);
-      return false;
+      responseJson = await value1.updateOrder(mounted, context, Variables.updateOrderMap.toJson(), orderId);
+      if (!mounted) return;
+      Navigator.pop(context);
     }
   }
 
@@ -534,22 +536,24 @@ class Variables {
   static Padding dividerName(String name, {double hpadding = 10, double vpadding = 15}) => Padding(
         padding: EdgeInsets.symmetric(vertical: vpadding, horizontal: hpadding),
         child: Row(children: [
-          const Expanded(
+          const Flexible(
+              fit: FlexFit.tight,
               child: Divider(
-            indent: 10,
-            endIndent: 10,
-            thickness: 2,
-          )),
+                indent: 10,
+                endIndent: 10,
+                thickness: 2,
+              )),
           Text(
             name,
             style: Variables.font(fontSize: 15, color: Colors.grey),
           ),
-          const Expanded(
+          const Flexible(
+              fit: FlexFit.tight,
               child: Divider(
-            indent: 10,
-            endIndent: 10,
-            thickness: 2,
-          )),
+                indent: 10,
+                endIndent: 10,
+                thickness: 2,
+              )),
         ]),
       );
 

@@ -23,7 +23,7 @@ class SetAddressPage extends StatefulWidget {
 }
 
 class SetAddressPageState extends State<SetAddressPage> {
-  late GoogleMapController mapController;
+  late GoogleMapController? mapController;
   late MapsProvider mapsProvider;
   late UpdateScreenProvider updateScreenProvider;
   late CustomerController customerController;
@@ -43,7 +43,6 @@ class SetAddressPageState extends State<SetAddressPage> {
 
   constructor() async {
     Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    mapsProvider.getCurrentlocations();
     await mapsProvider.setCurrentLocation(mounted, context, Variables.driverId, addAddress: true);
     mapsProvider.pickmark = null;
     if (!mounted) return;
@@ -67,7 +66,7 @@ class SetAddressPageState extends State<SetAddressPage> {
                 reference.latitude > 0 && reference.longitude > 0
                     ? GoogleMap(
                         onCameraIdle: () async {
-                          screenCoordinates = await mapController.getLatLng(ScreenCoordinate(
+                          screenCoordinates = await mapController!.getLatLng(ScreenCoordinate(
                             x: (size.width * devicePixelRatio) ~/ 2.0,
                             y: (size.height * devicePixelRatio) ~/ 2.0,
                           ));
@@ -136,7 +135,7 @@ class SetAddressPageState extends State<SetAddressPage> {
                                               widget.pickup.text = recentAddress[index].address1;
                                               screenCoordinates =
                                                   LatLng(recentAddress[index].latitude, recentAddress[index].longitude);
-                                              reference.setMarkers(mounted, context, mapController,
+                                              reference.setMarkers(mounted, context, mapController!,
                                                   pickup: screenCoordinates);
                                             } else {
                                               widget.pickup.text = reference.placesList[index].description;
@@ -146,7 +145,7 @@ class SetAddressPageState extends State<SetAddressPage> {
                                                   .then((value) async {
                                                 var location = reference.placesDetails.result.geometry.location;
                                                 screenCoordinates = LatLng(location.lat, location.lng);
-                                                reference.setMarkers(mounted, context, mapController,
+                                                reference.setMarkers(mounted, context, mapController!,
                                                     pickup: screenCoordinates);
                                                 // await mapController.animateCamera(CameraUpdate.newCameraPosition(
                                                 //     CameraPosition(target: screenCoordinates!, zoom: 17)));
@@ -295,7 +294,7 @@ class SetAddressPageState extends State<SetAddressPage> {
 
   @override
   void dispose() {
-    mapController.dispose();
+    if (mapController != null) mapController!.dispose();
     super.dispose();
   }
 }

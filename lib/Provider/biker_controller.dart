@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:ezshipp/main.dart';
 import 'package:ezshipp/widgets/textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../APIs/my_orderlist.dart';
@@ -37,38 +36,42 @@ class BikerController extends ChangeNotifier {
       if (!mounted) return;
       bool answer = await Variables.getLiveLocation(navigatorKey.currentContext!);
       if (answer) {
-  if (value) {
-    timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      await getCurrentlocations();
-      final response = await HTTPRequest.putRequest(
-          Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
-          jsonEncode(
-              {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-      if (!mounted) return;
-  
-      Variables.returnResponse(context, response, onlinemode: true);
-    });
-  
-    Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
-  } else {
-    if (timer != null) timer!.cancel();
-    await getCurrentlocations();
-    final response = await HTTPRequest.putRequest(
-        Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
-        jsonEncode(
-            {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
-    if (!mounted) return;
-  
-    Variables.returnResponse(context, response, onlinemode: true);
-    Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
-  }
-}
+        if (value) {
+          timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+            await getCurrentlocations();
+            final response = await HTTPRequest.putRequest(
+                Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
+                jsonEncode({
+                  "driverId": Variables.driverId,
+                  "latitude": latitude,
+                  "longitude": longitude,
+                  "onlineMode": value
+                }));
+            if (!mounted) return;
+
+            Variables.returnResponse(context, response, onlinemode: true);
+          });
+
+          Variables.showtoast(context, "You are in online mode ", Icons.info_outline_rounded);
+        } else {
+          if (timer != null) timer!.cancel();
+          await getCurrentlocations();
+          final response = await HTTPRequest.putRequest(
+              Variables.uri(path: "/biker/onoff/${Variables.driverId}"),
+              jsonEncode(
+                  {"driverId": Variables.driverId, "latitude": latitude, "longitude": longitude, "onlineMode": value}));
+          if (!mounted) return;
+
+          Variables.returnResponse(context, response, onlinemode: true);
+          Variables.showtoast(context, "You are in offline mode ", Icons.info_outline_rounded);
+        }
+        await Variables.write(key: "isOnline", value: value.toString());
+        isOnline = value;
+      }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
     }
 
-    await Variables.write(key: "isOnline", value: value.toString());
-    isOnline = value;
     if (!fromhomepage) notifyListeners();
   }
 

@@ -53,26 +53,27 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
       setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp)async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       Variables.loadingDialogue(context: context, subHeading: "Please wait ...");
-    await updateProfileProvider.getProfile(mounted, context);
-    if (!mounted) return;
-    await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
-    await setonline();
-    if (!mounted) return;
-    Navigator.pop(context);
-    show(context);
-     });
-    
+      await updateProfileProvider.getProfile(mounted, context);
+      await setonline();
+      if (!mounted) return;
+      await updateProfileProvider.getAllOrdersByBikerId(mounted, context);
+      if (!mounted) return;
+      Navigator.pop(context);
+      show(context);
+    });
   }
 
   setonline() async {
     final value = await Variables.read(key: "isOnline");
     final value1 = await Variables.read(key: "FirstTime");
-    firstTime = value1 != null ? value1 == "true" : false;
-    if (!mounted) return;
-    await mapsProvider.offLineMode(mounted, context, value != null ? value.toLowerCase() == "true" : true,
-        fromhomepage: true);
+    firstTime = value1 != null ? value1.toLowerCase() == "true" : false;
+    var value2 = value != null ? value.toLowerCase() == "true" : false;
+    if (value2) {
+      if (!mounted) return;
+      await mapsProvider.offLineMode(mounted, context, value2, fromhomepage: true);
+    }
     if (updateProfileProvider.newOrderList.isNotEmpty && firstTime) {
       firstTime = false;
       await Variables.write(key: "FirstTime", value: "false");

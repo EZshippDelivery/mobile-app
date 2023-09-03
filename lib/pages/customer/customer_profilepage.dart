@@ -86,7 +86,7 @@ class CustomerProfilePageState extends State<CustomerProfilePage> {
                                   ),
                                 ))
                           ])),
-              label: const Icon(Icons.edit_outlined))
+              label: const Icon(Icons.delete_outline))
         ],
       ),
       body: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {

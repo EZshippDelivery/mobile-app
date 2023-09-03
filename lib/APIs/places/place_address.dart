@@ -16,7 +16,7 @@ class PlaceAddress {
 
   factory PlaceAddress.fromMap(Map<String, dynamic> map) {
     return PlaceAddress(
-      results: List<Result>.from(map['results']?.map((x) => Result.fromMap(x))),
+      results: map['results'] == null ? [] : List<Result>.from(map['results']?.map((x) => Result.fromMap(x))),
     );
   }
 
@@ -30,9 +30,8 @@ class PlaceAddress {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is PlaceAddress &&
-      listEquals(other.results, results);
+
+    return other is PlaceAddress && listEquals(other.results, results);
   }
 
   @override
@@ -56,7 +55,8 @@ class Result {
 
   factory Result.fromMap(Map<String, dynamic> map) {
     return Result(
-      addressComponents: List<AddressComponent>.from(map['address_components']?.map((x) => AddressComponent.fromMap(x))),
+      addressComponents:
+          List<AddressComponent>.from(map['address_components']?.map((x) => AddressComponent.fromMap(x))),
       formattedAddress: map['formatted_address'] ?? '',
     );
   }
@@ -71,10 +71,10 @@ class Result {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is Result &&
-      listEquals(other.addressComponents, addressComponents) &&
-      other.formattedAddress == formattedAddress;
+        listEquals(other.addressComponents, addressComponents) &&
+        other.formattedAddress == formattedAddress;
   }
 
   @override
@@ -117,11 +117,11 @@ class AddressComponent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is AddressComponent &&
-      other.longName == longName &&
-      other.shortName == shortName &&
-      listEquals(other.types, types);
+        other.longName == longName &&
+        other.shortName == shortName &&
+        listEquals(other.types, types);
   }
 
   @override

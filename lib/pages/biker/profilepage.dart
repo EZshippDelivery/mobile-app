@@ -68,8 +68,10 @@ class ProfilePageState extends State<ProfilePage> {
                                   String subject = "Account Deletion Request";
                                   String sendText =
                                       "\nDear Ezshipp Support Team,\n\nI am writing to formally request the deletion of my Ezshipp account. After careful consideration, I have decided to discontinue my association with Ezshipp and would appreciate your assistance in permanently deleting my account.\n\nI understand that this process will involve the removal of all my personal information and associated data from your systems. Please ensure that this deletion is completed promptly and confirm the successful closure of my account at your earliest convenience.\n\nThank you for your prompt attention to this matter.\n\nSincerely,\n\n${profileController.fullName}";
-                                  var uri =
-                                      Uri(scheme: "mailto",path: "info@ezshipp.com", queryParameters: {"subject": subject, "body": sendText});
+                                  var uri = Uri(
+                                      scheme: "mailto",
+                                      path: "info@ezshipp.com",
+                                      queryParameters: {"subject": subject, "body": sendText});
                                   if (await canLaunchUrl(uri)) {
                                     if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
                                       Variables.showtoast(context, "Your", Icons.cancel_outlined);
@@ -89,7 +91,7 @@ class ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ))
                           ])),
-              label: const Icon(Icons.edit_outlined))
+              label: const Icon(Icons.delete_outline))
         ],
       ),
       body: Consumer<UpdateProfileProvider>(builder: (context, reference, child) {

@@ -264,40 +264,44 @@ class MapsProvider extends BikerController {
   Future<void> setCurrentLocation(bool mounted, BuildContext context, int customerId, {bool addAddress = false}) async {
     try {
       await getCurrentlocations();
-      final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
-        "latlng": "$latitude,$longitude",
-        "key": Variables.key,
-      });
-      if (!mounted) return;
-      returnResponse(mounted, context, response, 2);
-      placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
-          i.addressComponents.first.types.contains("premise")));
-      placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
+      if (latitude > 0 && longitude > 0) {
+        final response = await dio.Dio().get("https://maps.googleapis.com/maps/api/geocode/json?", queryParameters: {
+          "latlng": "$latitude,$longitude",
+          "key": Variables.key,
+        });
+        if (!mounted) return;
+        returnResponse(mounted, context, response, 2);
+        placeAddress.results.removeWhere((i) => (i.addressComponents.first.types.contains("plus_code") ||
+            i.addressComponents.first.types.contains("premise")));
+        placeAddress.results.retainWhere((i) => i.addressComponents.last.types.contains("postal_code"));
 
-      String state = placeAddress.results.first.addressComponents
-          .where((element) => element.types.contains("administrative_area_level_1"))
-          .first
-          .longName;
-      String city = placeAddress.results.first.addressComponents
-          .where(
-              (element) => element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
-          .first
-          .longName;
+        String state = placeAddress.results.first.addressComponents
+            .where((element) => element.types.contains("administrative_area_level_1"))
+            .first
+            .longName;
+        String city = placeAddress.results.first.addressComponents
+            .where((element) =>
+                element.types.contains("administrative_area_level_2") || element.types.contains("locality"))
+            .first
+            .longName;
 
-      Map<String, dynamic> currentLocation = {
-        "customerId": customerId,
-        "address1": placeAddress.results.first.formattedAddress,
-        "pincode": int.parse(placeAddress.results.first.addressComponents.last.longName),
-        "state": state,
-        "addressType": "CURRENT",
-        "longitude": longitude,
-        "latitude": latitude,
-        "city": city,
-      };
-      if (addAddress) {
-        savedAddress = [GetAllAddresses.fromMap(currentLocation)];
+        Map<String, dynamic> currentLocation = {
+          "customerId": customerId,
+          "address1": placeAddress.results.first.formattedAddress,
+          "pincode": int.parse(placeAddress.results.first.addressComponents.last.longName),
+          "state": state,
+          "addressType": "CURRENT",
+          "longitude": longitude,
+          "latitude": latitude,
+          "city": city,
+        };
+        if (addAddress) {
+          savedAddress = [GetAllAddresses.fromMap(currentLocation)];
+        } else {
+          savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
+        }
       } else {
-        savedAddress.insert(0, GetAllAddresses.fromMap(currentLocation));
+        // Variables.showtoast(context, "Please enable Location", icon);
       }
     } on SocketException {
       Variables.showtoast(context, 'No Internet connection', Icons.signal_cellular_connected_no_internet_4_bar_rounded);
